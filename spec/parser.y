@@ -23,12 +23,12 @@ int lineNumber = 1;   // Keep track of the line number
 
 %%
 
-program: directiveList END
+program: extrGlobList sectionList END
 
-directiveList: directive directiveList 
-             | /* epsilon */
+extrGlobList: extrGlob extrGlobList
+            | /* epsilon */
 
-directive: extern | global | section
+extrGlob: extern | global
 
 extern: EXTERN symbolList
 
@@ -37,10 +37,13 @@ global: GLOBAL symbolList
 symbolList: IDENT COMMA symbolList
           | IDENT
 
-section: SECTION IDENT sectionList
+sectionList: section sectionList
+            | /* epsilon */
 
-sectionList: sectionPart sectionList
-           | sectionPart
+section: SECTION IDENT sectionPartList
+
+sectionPartList: sectionPart sectionPartList
+               | sectionPart
 
 sectionPart: labelSection | global
 
