@@ -23,30 +23,26 @@ int lineNumber = 1;   // Keep track of the line number
 
 %%
 
-program: externList postexternList END
+program: directiveList END
 
-externList: extern externList 
-          | /* epsilon */
+directiveList: directive directiveList 
+             | /* epsilon */
+
+directive: extern | global | section
 
 extern: EXTERN symbolList
 
-globalList: global globalList 
-          | /* epsilon */
-
 global: GLOBAL symbolList
 
-symbolList: symbolList COMMA IDENT
-          | IDENT 
+symbolList: IDENT COMMA symbolList
+          | IDENT
 
-postexternList: postextern postexternList
-              | /* epsilon */
+section: SECTION IDENT sectionList
 
-postextern: globalList | section
+sectionList: sectionPart sectionList
+           | sectionPart
 
-section: SECTION IDENT labelList
-
-labelList: labelSection labelList
-         | labelSection
+sectionPart: labelSection | global
 
 labelSection: LABEL instructionList
 
@@ -57,7 +53,7 @@ instruction: ONE_WORD_INST
            | TWO_WORD_INST twoWord
            | THREE_WORD_INST threeWord
            | FOUR_WORD_INST fourWord
-           | CALL_JUMP jmpCall
+           | CALL_JUMP literal
            | LD ldPart
            | ST stPart
            | CSRRD csrrdPart
@@ -71,8 +67,6 @@ threeWord: GPR_REG COMMA GPR_REG
 
 fourWord: GPR_REG COMMA GPR_REG COMMA operand
 
-jmpCall: literal
-
 ldPart: operand COMMA GPR_REG
 
 stPart: GPR_REG COMMA operand
@@ -83,10 +77,8 @@ csrwrPart: GPR_REG COMMA CSR_REG
 
 operand: OPR_DEC | OPR_HEX | OPR_STRING
 
-symbolLiteralList: symbolLiteral COMMA symbolLiteralList
-                 | symbolLiteral
-
-symbolLiteral: IDENT | literal
+symbolLiteralList: literal COMMA symbolLiteralList
+                 | literal
 
 literal: DEC | HEX | IDENT
 
