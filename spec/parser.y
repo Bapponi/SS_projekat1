@@ -14,41 +14,81 @@ int lineNumber = 1;   // Keep track of the line number
     char* ident;
 }
 
-%token <ident> SYMBOL_MIGRATION ONE_WORD_INST TWO_WORD_INST
-%token <ident> THREE_WORD_INST FOUR_WORD_INST JMP_CALL
-%token <ident> STRING OPR_STRING IDENT LABEL SIS_REG REG
+%token <ident> ONE_WORD_INST TWO_WORD_INST
+%token <ident> THREE_WORD_INST FOUR_WORD_INST CALL_JUMP
+%token <ident> STRING OPR_STRING IDENT LABEL CSR_REG GPR_REG
 %token <num> OPR_HEX HEX OPR_DEC DEC
-%token SECTION WORD SKIP END LD ST CSRRD CSRWR PLUS
-%token MINUS LPARREN RPARREN SEMI COMMA ENDL
+%token GLOBAL EXTERN SECTION WORD SKIP END LD ST CSRRD 
+%token CSRWR PLUS MINUS LPARREN RPARREN SEMI COMMA ENDL
 
 %%
 
-program: statements
+program: externList postexternList END
 
-statements: /* empty */
-         | statements statement
+externList: extern externList 
+          | /* epsilon */
 
-statement: directive ENDL
-         | instruction ENDL
-         | LABEL instruction ENDL
+extern: EXTERN symbolList
 
-directive: SYMBOL_MIGRATION IDENT
-         | SECTION
-         | WORD
-         | SKIP
-         | END
-         | OPR_STRING STRING
-         | IDENT OPR_STRING STRING
+globalList: global globalList 
+          | /* epsilon */
+
+global: GLOBAL symbolList
+
+symbolList: symbolList COMMA IDENT
+          | IDENT 
+
+postexternList: postextern postexternList
+              | /* epsilon */
+
+postextern: globalList | section
+
+section: SECTION IDENT labelList
+
+labelList: labelSection labelList
+         | labelSection
+
+labelSection: LABEL instructionList
+
+instructionList: instruction instructionList
+               | /* epsilon */
 
 instruction: ONE_WORD_INST
-           | TWO_WORD_INST
-           | THREE_WORD_INST
-           | FOUR_WORD_INST
-           | JMP_CALL
-           | LD
-           | ST
-           | CSRRD
-           | CSRWR
+           | TWO_WORD_INST twoWord
+           | THREE_WORD_INST threeWord
+           | FOUR_WORD_INST fourWord
+           | CALL_JUMP jmpCall
+           | LD ldPart
+           | ST stPart
+           | CSRRD csrrdPart
+           | CSRWR csrwrPart
+           | WORD symbolLiteralList
+           | SKIP literal
+
+twoWord: GPR_REG
+
+threeWord: GPR_REG COMMA GPR_REG
+
+fourWord: GPR_REG COMMA GPR_REG COMMA operand
+
+jmpCall: literal
+
+ldPart: operand COMMA GPR_REG
+
+stPart: GPR_REG COMMA operand
+
+csrrdPart: CSR_REG COMMA GPR_REG
+
+csrwrPart: GPR_REG COMMA CSR_REG
+
+operand: OPR_DEC | OPR_HEX | OPR_STRING
+
+symbolLiteralList: symbolLiteral COMMA symbolLiteralList
+                 | symbolLiteral
+
+symbolLiteral: IDENT | literal
+
+literal: DEC | HEX | IDENT
 
 %%
 

@@ -10,23 +10,22 @@ int lineNumber=1;
 %option nodefault
 
 
-SYMBOL_MIGR             \.(extern|global)[ \t]+[A-Za-z_][A-Za-z0-9_]*[ \t]*([ \t]*,[ \t]*[A-Za-z_][A-Za-z0-9_]*)*        
 THREE_WORD_INSTRUCT     (xchg|add|sub|mul|div|and|or|xor|shl|shr)[ \t]        
 OPR_STR                 \$([A-Za-z_][A-Za-z0-9_]*)
 IDENTIFICATOR           [A-Za-z_][A-Za-z0-9_]*
 LAB                     [A-Za-z_][A-Za-z0-9_]*:
-SIS_REGISTER            "%"(status|handler|cause)
-REGISTER                "%"(r(0|[1-9]|1[0-5])|sp|pc)
+CSR_REGISTER            "%"(status|handler|cause)
+GPR_REGISTER            "%"(r(0|[1-9]|1[0-5])|sp|pc)
 OPR_HEXA                \$0[Xx][0-9A-Fa-f]+
 HEXA                    0[Xx][0-9A-Fa-f]+
 OPR_DECI                \$(0|[1-9][0-9]*)
 DECI                    (0|[1-9][0-9]*)
-BADIDENT                  [0-9][A-Za-z0-9_]*
+BADIDENT                [0-9][A-Za-z0-9_]*
 
 
 %%
-{SYMBOL_MIGR}           { yylval.directive = strdup(yytext);
-                          return SYMBOL_MIGRATION; }
+\.global[ \t]           { return GLOBAL; }
+\.extern[ \t]           { return EXTERN; }
 \.section[ \t]          { return SECTION; }
 \.word[ \t]             { return WORD; }  
 \.skip[ \t]             { return SKIP; }
@@ -42,7 +41,7 @@ BADIDENT                  [0-9][A-Za-z0-9_]*
 (beq|bne|bgt)[ \t]      { yylval.directive = strdup(yytext);
                           return FOUR_WORD_INST; }
 (jmp|call)[ \t]         { yylval.directive = strdup(yytext);
-                          return JMP_CALL; }
+                          return CALL_JUMP; }
 ld[ \t]                 { return LD; }
 st[ \t]                 { return ST; }
 csrrd[ \t]              { return CSRRD; }
@@ -67,10 +66,10 @@ csrwr[ \t]              { return CSRWR; }
                           return IDENT; }
 {LAB}                   { yylval.ident = strdup(yytext);
                           return LABEL; }
-{SIS_REGISTER}          { yylval.ident = strdup(yytext);
-                          return SIS_REG; }
-{REGISTER}              { yylval.ident = strdup(yytext);
-                          return REG; }
+{CSR_REGISTER}          { yylval.ident = strdup(yytext);
+                          return CSR_REG; }
+{GPR_REGISTER}          { yylval.ident = strdup(yytext);
+                          return GPR_REG; }
 {OPR_HEXA}              { yytext++;
                           sscanf(yytext, "%x", &yylval.num); 
                           return OPR_HEX; }
