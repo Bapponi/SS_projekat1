@@ -8,6 +8,9 @@
 #include <map>
 #include <list>
 
+//1. napraviti funkcionalan lekser
+//2. baviti se potrebnim strukturama fajla
+
 //razmisli sta sve treba od struktura
 //bazen literala (simboli i konstante koje su vece od 12b ili cija se vrednost ne yna u toku asembliranja) 
 //na kraju svake sekcije, to je potrebno zbog velicine
