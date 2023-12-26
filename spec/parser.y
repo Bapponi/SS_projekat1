@@ -1,22 +1,25 @@
 %{
-#include "parser.h"
-#include "./inc/assembler.hpp"
+//#include "parser.h"
+//#include "./inc/assembler.hpp"
+#include <stdio.h>
+
+extern int yyparse(void);
+extern int yyerror(const char *s);
 
 extern int yylex();   // Bison needs to know how to call the lexer
 extern char* yytext;  // Bison needs to know about yytext
-
-int lineNumber = 1;   // Keep track of the line number
 
 %}
 
 %union {
     int num;
     char* ident;
+    char* directive;
 }
 
-%token <ident> ONE_WORD_INST TWO_WORD_INST
-%token <ident> THREE_WORD_INST FOUR_WORD_INST CALL_JUMP
-%token <ident> STRING OPR_STRING IDENT LABEL CSR_REG GPR_REG
+%token <directive> ONE_WORD_INST TWO_WORD_INST
+%token <directive> THREE_WORD_INST FOUR_WORD_INST CALL_JUMP
+%token <directive> STRING OPR_STRING IDENT LABEL CSR_REG GPR_REG
 %token <num> OPR_HEX HEX OPR_DEC DEC
 %token GLOBAL EXTERN SECTION WORD SKIP END LD ST CSRRD 
 %token CSRWR PLUS MINUS LPARREN RPARREN SEMI COMMA ENDL
@@ -83,16 +86,6 @@ operand: OPR_DEC | OPR_HEX | OPR_STRING
 symbolLiteralList: literal COMMA symbolLiteralList
                  | literal
 
-literal: DEC | HEX | IDENT
+literal: DEC | HEX
 
 %%
-
-int yyerror(const char* msg) {
-    fprintf(stderr, "Parser ERROR: %s on line %d\n", msg, lineNumber);
-    exit(EXIT_FAILURE);
-}
-
-int main() {
-    yyparse();
-    return 0;
-}

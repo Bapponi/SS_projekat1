@@ -1,10 +1,9 @@
 %{
-#include "parser.h"
-#include "./inc/assembler.hpp"
+#include "parser.tab.h"
+//#include "parser.h"
+//#include "./inc/assembler.hpp"
 int lineNumber=1;
 %}
-
-%option outfile="lexer.c" header-file="lexer.h"
 
 %option noyywrap
 %option nodefault
@@ -60,7 +59,7 @@ csrwr[ \t]              { return CSRWR; }
 [ \t]*                  { /* whitespace */ }
 \"(.+|\n+)\"            { yylval.ident = strdup(yytext);
                           return STRING; }
-{OPR_STR}               { yytext++;yylval.ident = strdup(yytext); 
+{OPR_STR}               { yylval.ident = strdup(yytext); 
                           return OPR_STRING; }
 {IDENTIFICATOR}         { yylval.ident = strdup(yytext);
                           return IDENT; }
@@ -70,13 +69,11 @@ csrwr[ \t]              { return CSRWR; }
                           return CSR_REG; }
 {GPR_REGISTER}          { yylval.ident = strdup(yytext);
                           return GPR_REG; }
-{OPR_HEXA}              { yytext++;
-                          sscanf(yytext, "%x", &yylval.num); 
+{OPR_HEXA}              { sscanf(yytext, "%x", &yylval.num); 
                           return OPR_HEX; }
 {HEXA}                  { sscanf(yytext, "%x", &yylval.num);
                           return HEX; }
-{OPR_DECI}              { yytext++;
-                          sscanf(yytext, "%d", &yylval.num); 
+{OPR_DECI}              { sscanf(yytext, "%d", &yylval.num); 
                           return OPR_DEC; }
 {DECI}                   { sscanf(yytext, "%d", &yylval.num); 
                           return DEC; }

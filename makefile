@@ -4,12 +4,19 @@ SRCL = src/mainL.cpp src/linker.cpp
 SRCE = src/mainE.cpp src/emulator.cpp
 
 lexer: spec/lexer.l inc/assembler.hpp
-	flex spec/lexer.l
+	flex -l spec/lexer.l
+	mv lex.yy.c src
 
 parser: spec/lexer.l spec/parser.y inc/assembler.hpp
-	bison spec/parser.y
+	bison -d spec/parser.y
+	mv parser.tab.c src
+	mv parser.tab.h src
 
 preas: lexer parser
+
+test: src/assembler.cpp src/parser.tab.c src/lex.yy.c
+	g++ -o my_test src/assembler.cpp src/parser.tab.c src/lex.yy.c 
+	./my_test
 
 assembler: $(SRCA) inc/assembler.hpp
 	$(CC) $(SRCA) -g -o assembler
@@ -21,5 +28,5 @@ emulator: $(SRCE) inc/emulator.hpp
 	$(CC) $(SRCE) -g -o emulator
 
 clean:
-		rm -rf *.o lexer.c lexer.h parser.c parser.h parser *.hex assembler linker emulator parser.tab.c
+		rm -rf *.o src/lex.yy.c src/parser.tab.c src/parser.tab.h my_test
 
