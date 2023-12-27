@@ -15,6 +15,7 @@ parser: spec/lexer.l spec/parser.y inc/assembler.hpp
 preas: lexer parser
 
 test: src/assembler.cpp src/parser.tab.c src/lex.yy.c
+	rm -rf *.o my_test
 	g++ -o my_test src/assembler.cpp src/parser.tab.c src/lex.yy.c 
 	./my_test
 

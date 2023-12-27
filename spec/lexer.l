@@ -23,9 +23,12 @@ BADIDENT                [0-9][A-Za-z0-9_]*
 
 
 %%
-\.global[ \t]           { return GLOBAL; }
-\.extern[ \t]           { return EXTERN; }
-\.section[ \t]          { return SECTION; }
+\.global[ \t]           { printf("Global");
+                          return GLOBAL; }
+\.extern[ \t]           { printf("Extern");
+                          return EXTERN; }
+\.section[ \t]          { printf("Section");
+                          return SECTION; }
 \.word[ \t]             { return WORD; }  
 \.skip[ \t]             { return SKIP; }
 \.end                   { lineNumber=1;
