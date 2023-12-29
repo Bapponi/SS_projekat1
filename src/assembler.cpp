@@ -17,7 +17,7 @@ int main(int argc, char* argv[]){
     printf("I can't open the file!\n");
     return -1;
   }
-  printf("Nesto");
+  
   // set lex to read from it instead of defaulting to STDIN:
   yyin = file;
   
