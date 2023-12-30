@@ -8,6 +8,9 @@ using namespace std;
 
 extern int yyparse();
 extern FILE *yyin, *yyout;
+extern char yytext[];
+extern char * yyget_text();
+// extern char *token;
 
 int main(int argc, char* argv[]){
 
@@ -22,7 +25,9 @@ int main(int argc, char* argv[]){
   yyin = file;
   
   // lex through the input:
-  while(yyparse());
+  while(yyparse()){
+    char * text = yyget_text();
+  }
   fclose(file);
 
   printf("Prosao ceo fajl bez greske");

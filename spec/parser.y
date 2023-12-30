@@ -81,11 +81,20 @@ csrrdPart: CSR_REG COMMA GPR_REG
 
 csrwrPart: GPR_REG COMMA CSR_REG
 
-operand: OPR_DEC | OPR_HEX | OPR_STRING
+operand: OPR_DEC | OPR_HEX | OPR_STRING | IDENT | parrens
+
+parrens: LPARREN parrensBodyList RPARREN
+
+parrensBodyList: parrensBody plusMinus parrensBodyList
+               | parrensBody
+
+parrensBody: GPR_REG | HEX
+
+plusMinus: PLUS | MINUS
 
 symbolLiteralList: literal COMMA symbolLiteralList
                  | literal
 
-literal: DEC | HEX
+literal: DEC | HEX | IDENT
 
 %%

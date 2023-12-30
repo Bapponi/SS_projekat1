@@ -19,6 +19,8 @@ test: src/assembler.cpp src/parser.tab.c src/lex.yy.c
 	g++ -o my_test src/assembler.cpp src/parser.tab.c src/lex.yy.c 
 	./my_test
 
+asmTest: clean preas test
+
 assembler: $(SRCA) inc/assembler.hpp
 	$(CC) $(SRCA) -g -o assembler
 

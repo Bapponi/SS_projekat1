@@ -3,6 +3,8 @@
 //#include "parser.h"
 //#include "./inc/assembler.hpp"
 int lineNumber=1;
+//extern char *token;
+
 %}
 
 %option noyywrap
@@ -11,110 +13,112 @@ int lineNumber=1;
 
 THREE_WORD_INSTRUCT     (xchg|add|sub|mul|div|and|or|xor|shl|shr)[ \t]        
 OPR_STR                 \$([A-Za-z_][A-Za-z0-9_]*)
-IDENTIFICATOR           [A-Za-z_][A-Za-z0-9_]*
-LAB                     [A-Za-z_][A-Za-z0-9_]*:
 CSR_REGISTER            "%"(status|handler|cause)
 GPR_REGISTER            "%"(r(0|[1-9]|1[0-5])|sp|pc)
 OPR_HEXA                \$0[Xx][0-9A-Fa-f]+
 HEXA                    0[Xx][0-9A-Fa-f]+
 OPR_DECI                \$(0|[1-9][0-9]*)
 DECI                    (0|[1-9][0-9]*)
+LAB                     [A-Za-z_][A-Za-z0-9_]*:
+IDENTIFICATOR           [A-Za-z_][A-Za-z0-9_]*
 BADIDENT                [0-9][A-Za-z0-9_]*
 
 
 %%
-\.global[ \t]           { printf("GLOBAL\n");
+\.global[ \t]           { printf(" GLOBAL");
                           return GLOBAL; }
-\.extern[ \t]           { printf("EXTERN\n");
+\.extern[ \t]           { printf(" EXTERN");
                           return EXTERN; }
-\.section[ \t]          { printf("SECTION\n");
+\.section[ \t]          { printf(" SECTION");
                           return SECTION; }
-\.word[ \t]             { printf("WORD\n");
+\.word[ \t]             { printf(" WORD");
                           return WORD; }  
-\.skip[ \t]             { printf("SKIP\n");
+\.skip[ \t]             { printf(" SKIP");
                           return SKIP; }
 \.end                   { lineNumber=1;
-                          printf("END\n");
+                          printf(" END");
                           return END; }  
 
 (halt|int|iret|ret)     { yylval.directive = strdup(yytext);
-                          printf("ONE_WORD_INST\n");
+                          printf(" ONE_WORD_INST");
                           return ONE_WORD_INST; }
 (push|pop|not)[ \t]     { yylval.directive = strdup(yytext);
-                          printf("TWO_WORD_INST\n");
+                          printf(" TWO_WORD_INST");
                           return TWO_WORD_INST; }
 {THREE_WORD_INSTRUCT}   { yylval.directive = strdup(yytext);
-                          printf("THREE_WORD_INST\n");
+                          printf(" THREE_WORD_INST");
                           return THREE_WORD_INST; }
 (beq|bne|bgt)[ \t]      { yylval.directive = strdup(yytext);
-                          printf("FOUR_WORD_INST\n");
+                          printf(" FOUR_WORD_INST");
                           return FOUR_WORD_INST; }
 (jmp|call)[ \t]         { yylval.directive = strdup(yytext);
-                          printf("CALL_JUMP\n");
+                          printf(" CALL_JUMP");
                           return CALL_JUMP; }
-ld[ \t]                 { printf("LD\n");
+ld[ \t]                 { printf(" LD");
                           return LD; }
-st[ \t]                 { printf("ST\n");
+st[ \t]                 { printf(" ST");
                           return ST; }
-csrrd[ \t]              { printf("CSRRD\n");
+csrrd[ \t]              { printf(" CSRRD");
                           return CSRRD; }
-csrwr[ \t]              { printf("CSRWR\n");
+csrwr[ \t]              { printf(" CSRWR");
                           return CSRWR; }
 
-"+"                     { printf("PLUS\n");
+"+"                     { printf(" PLUS");
                           return PLUS; }
-"-"                     { printf("MINUS\n");
+"-"                     { printf(" MINUS");
                           return MINUS; }
-"["                     { printf("LPARREN\n");
+"["                     { printf(" LPARREN");
                           return LPARREN; }
-"]"                     { printf("RPARREN\n");
+"]"                     { printf(" RPARREN");
                           return RPARREN; }
-";"                     { printf("SEMI\n");
+";"                     { printf(" SEMI");
                           return SEMI; }
-","                     { printf("COMMA\n");
+","                     { printf(" COMMA");
                           return COMMA; }
-"\n"                    { ++lineNumber;
-                          printf("ENDL\n");
-                          return ENDL; }
 
-"#"[^\n\r]*             { printf("komentar\n");
+
+"#"[^\n\r]*             { printf(" komentar");
                           /* skips comments */ }
-[ \t]*                  { printf("prazno\n");
+[ \t]*                  { printf(" ");
                           /* whitespace */ }
+[ \n]                  { printf("\n");
+                          lineNumber++;
+                          /* new row */ }                          
 \"(.+|\n+)\"            { yylval.ident = strdup(yytext);
-                          printf("STRING\n");
+                          printf(" STRING");
                           return STRING; }
 {OPR_STR}               { yylval.ident = strdup(yytext);
-                          printf("OPR_STRING\n");
+                          printf(" OPR_STRING");
                           return OPR_STRING; }
-{IDENTIFICATOR}         { yylval.ident = strdup(yytext);
-                          printf("IDENT\n");
-                          return IDENT; }
-{LAB}                   { yylval.ident = strdup(yytext);
-                          printf("LABEL\n");
-                          return LABEL; }
 {CSR_REGISTER}          { yylval.ident = strdup(yytext);
-                          printf("CSR_REG\n");
+                          printf(" CSR_REG");
                           return CSR_REG; }
 {GPR_REGISTER}          { yylval.ident = strdup(yytext);
-                          printf("GPR_REG\n");
+                          printf(" GPR_REG");
                           return GPR_REG; }
 {OPR_HEXA}              { sscanf(yytext, "%x", &yylval.num);
-                          printf("OPR_HEX\n");
+                          printf(" OPR_HEX");
                           return OPR_HEX; }
 {HEXA}                  { sscanf(yytext, "%x", &yylval.num);
-                          printf("HEX\n");
+                          printf(" HEX");
                           return HEX; }
 {OPR_DECI}              { sscanf(yytext, "%d", &yylval.num); 
-                          printf("OPR_DEC\n");
+                          printf(" OPR_DEC");
                           return OPR_DEC; }
 {DECI}                   { sscanf(yytext, "%d", &yylval.num); 
-                          printf("DEC\n");
+                          printf(" DEC");
                           return DEC; }
+{LAB}                   { yylval.ident = strdup(yytext);
+                          printf(" LABEL");
+                          return LABEL; }
+{IDENTIFICATOR}         { yylval.ident = strdup(yytext);
+                          printf(" IDENT");
+                          return IDENT; }
 
-{BADIDENT}              { printf("BAD IDENTIFICATOR!!!\n"); 
+
+{BADIDENT}              { printf(" BAD IDENTIFICATOR!!!"); 
                           return 1; }
-.                       { printf("UNKNOWN TOKEN: %s\n", yytext);
+.                       { printf(" UNKNOWN TOKEN: %s", yytext);
                           return 1;}
 %%
 
