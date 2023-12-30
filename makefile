@@ -19,6 +19,11 @@ test: src/assembler.cpp src/parser.tab.c src/lex.yy.c
 	g++ -o my_test src/assembler.cpp src/parser.tab.c src/lex.yy.c 
 	./my_test
 
+test2:
+	rm -rf *.o test2
+	g++ -o test2 src/assemblerNoFlex.cpp
+	./test2
+
 asmTest: clean preas test
 
 assembler: $(SRCA) inc/assembler.hpp
@@ -31,5 +36,5 @@ emulator: $(SRCE) inc/emulator.hpp
 	$(CC) $(SRCE) -g -o emulator
 
 clean:
-		rm -rf *.o src/lex.yy.c src/parser.tab.c src/parser.tab.h my_test
+		rm -rf *.o src/lex.yy.c src/parser.tab.c src/parser.tab.h my_test test2
 

@@ -1,9 +1,12 @@
 %{
+//#include <iostream>
+//#include <fstream>
+//#include <string>
 #include "parser.tab.h"
 //#include "parser.h"
 //#include "./inc/assembler.hpp"
 int lineNumber=1;
-//extern char *token;
+//extern int token;
 
 %}
 
@@ -26,6 +29,7 @@ BADIDENT                [0-9][A-Za-z0-9_]*
 
 %%
 \.global[ \t]           { printf(" GLOBAL");
+                          //token = 1;
                           return GLOBAL; }
 \.extern[ \t]           { printf(" EXTERN");
                           return EXTERN; }
