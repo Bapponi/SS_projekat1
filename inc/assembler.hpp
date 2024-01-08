@@ -23,6 +23,11 @@
 //predavanja za 2 prolazni asembler - predavanje 5, 6 i 7 do 26 minuta
 //vezbe trebaju da se odgledaju zadaci 1, 2, 5, 8, 9  
 
+//treba u parseru da se napravi niz struktura gde ce da se pamte stvari iz parsera
+//za stvari poput labela, direktiva, instrukcija, konstanti (razdvojiti sve logicke stvari)
+//U akcijama u parseru se dodaju stvari u te nizove i nakon zavrsetka parsiranja se imaju
+//popunjene strukture sa kojima moze da se radi u assembler.cpp delu
+
 using namespace std;
 
 struct RealocationEntry {
@@ -90,6 +95,7 @@ class Assembler{
 private:
 
 public:
+  static void test();
 
 };
 

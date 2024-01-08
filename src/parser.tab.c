@@ -69,7 +69,7 @@
 #line 1 "spec/parser.y"
 
 //#include "parser.h"
-//#include "./inc/assembler.hpp"
+#include "../inc/assembler.hpp"
 #include <stdio.h>
 
 extern int yyparse(void);
@@ -550,12 +550,12 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    29,    29,    31,    32,    34,    34,    36,    38,    40,
-      41,    43,    44,    46,    48,    49,    51,    51,    53,    55,
-      56,    58,    59,    60,    61,    62,    63,    64,    65,    66,
-      67,    68,    70,    72,    74,    76,    78,    80,    82,    84,
-      84,    84,    84,    84,    86,    88,    89,    91,    91,    93,
-      93,    95,    96,    98,    98,    98
+       0,    29,    29,    31,    32,    34,    34,    36,    40,    42,
+      43,    45,    46,    48,    50,    51,    53,    53,    55,    57,
+      58,    60,    61,    62,    63,    64,    65,    66,    67,    68,
+      69,    70,    72,    74,    76,    78,    80,    82,    84,    86,
+      86,    86,    86,    86,    88,    90,    91,    93,    93,    95,
+      95,    97,    98,   100,   100,   100
 };
 #endif
 
@@ -1404,8 +1404,16 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
+  case 7:
+#line 36 "spec/parser.y"
+                         {
+    Assembler::test();
+}
+#line 1413 "parser.tab.c"
+    break;
 
-#line 1409 "parser.tab.c"
+
+#line 1417 "parser.tab.c"
 
       default: break;
     }
@@ -1637,5 +1645,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 100 "spec/parser.y"
+#line 102 "spec/parser.y"
 

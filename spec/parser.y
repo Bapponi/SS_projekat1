@@ -1,6 +1,6 @@
 %{
 //#include "parser.h"
-//#include "./inc/assembler.hpp"
+#include "../inc/assembler.hpp"
 #include <stdio.h>
 
 extern int yyparse(void);
@@ -33,7 +33,9 @@ extrGlobList: extrGlob extrGlobList
 
 extrGlob: extern | global
 
-extern: EXTERN symbolList
+extern: EXTERN symbolList{
+    Assembler::test();
+}
 
 global: GLOBAL symbolList
 

@@ -3,6 +3,7 @@
 #include <string>
 
 #include "parser.tab.h"
+#include "../inc/assembler.hpp"
 
 using namespace std;
 
@@ -10,8 +11,10 @@ extern int yyparse();
 extern FILE *yyin, *yyout;
 extern char yytext[];
 extern char * yyget_text();
-// extern char *token;
-// extern int token;
+
+void Assembler::test(){
+  printf("Test\n");
+}
 
 int main(int argc, char* argv[]){
 
@@ -22,18 +25,12 @@ int main(int argc, char* argv[]){
     return -1;
   }
   
-  // set lex to read from it instead of defaulting to STDIN:
   yyin = file;
   
-  // lex through the input:
-  while(yyparse()){
-    char * text = yyget_text();
-    // const char *text1 = std::to_string(token).c_str();
-    printf("%s", "Buraz sto si debil");
-  }
+  while(yyparse());
   fclose(file);
 
-  printf("Prosao ceo fajl bez greske");
+  printf("Prosao ceo fajl bez greske\n");
 
   return 1;
 }
