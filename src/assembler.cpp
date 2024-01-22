@@ -9,26 +9,44 @@ using namespace std;
 
 extern int yyparse();
 extern FILE *yyin, *yyout;
-extern char yytext[];
-extern char * yyget_text();
 
-void Assembler::test(){
+bool Assembler::secondPass;
+
+void Assembler::init(){
   printf("Test\n");
+  secondPass = false;
 }
 
-int main(int argc, char* argv[]){
-
+void Assembler::passFile(){
   FILE *file = fopen("./test/nivo-a/main.s", "r");
 
   if ((!file)) {
     printf("I can't open the file!\n");
-    return -1;
+    return;
   }
   
   yyin = file;
-  
+
   while(yyparse());
+
+  string boolString = to_string(secondPass);
+  cout << "SecondPass: " << boolString << endl;
+
+  if(secondPass == false){
+    Assembler::init();
+    secondPass = true;
+  }
+  else
+    secondPass = false;
+
   fclose(file);
+
+}
+
+int main(int argc, char* argv[]){
+
+  Assembler::passFile();
+  Assembler::passFile();
 
   printf("Prosao ceo fajl bez greske\n");
 

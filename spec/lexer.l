@@ -6,7 +6,6 @@
 //#include "parser.h"
 //#include "./inc/assembler.hpp"
 int lineNumber=1;
-//extern int token;
 
 %}
 

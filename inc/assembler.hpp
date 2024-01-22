@@ -93,9 +93,11 @@ class Assembler{
   //(povecavanje bazena literala nakon svake instrukcije je no no)
 
 private:
+  static bool secondPass;
 
 public:
-  static void test();
+  static void init();
+  static void passFile();
 
 };
 

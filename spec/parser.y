@@ -33,9 +33,7 @@ extrGlobList: extrGlob extrGlobList
 
 extrGlob: extern | global
 
-extern: EXTERN symbolList{
-    Assembler::test();
-}
+extern: EXTERN symbolList
 
 global: GLOBAL symbolList
 
