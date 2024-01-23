@@ -23,6 +23,10 @@ void Assembler::init(){
   // sections.clear();
 }
 
+void Assembler::getIdent(string name, bool isGlobal){
+  cout << name << endl;
+}
+
 void Assembler::passFile(string fileName, int fileNum, int passNum){
   
   const char * filePath = fileName.c_str();
@@ -35,15 +39,11 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
   
   yyin = file;
 
-  if(passNum == 1 && fileNum == 0){
+  if(passNum == 1 && fileNum == 0)
     Assembler::init();
-  }
 
-  if(passNum == 2){
+  if(passNum == 2)
     secondPass = true;
-  }
-  // else
-  //   secondPass = false;
 
   while(yyparse());
 
@@ -54,11 +54,11 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
 
 }
 
-array<string,2> inputFiles{ 
+array<string,1> inputFiles{ 
   // "handler.s", 
   // "isr_software.s", 
   // "isr_terminal.s",
-  "isr_timer.s",
+  // "isr_timer.s",
   "main.s",
   // "math.s"
 };
@@ -73,9 +73,9 @@ int main(int argc, char* argv[]){
   }
 
   //drugi prolaz
-  for(int i = 0; i < inputFiles.size(); i++){
-    Assembler::passFile(srcFolder + inputFiles[i], i, 2);
-  }
+  // for(int i = 0; i < inputFiles.size(); i++){
+  //   Assembler::passFile(srcFolder + inputFiles[i], i, 2);
+  // }
 
   printf("Prosao ceo fajl bez greske\n");
 

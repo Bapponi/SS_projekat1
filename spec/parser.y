@@ -35,8 +35,8 @@ programElem: extern
            | section
            | labelSection
 
-symbolList: IDENT COMMA symbolList
-          | IDENT
+symbolList: symbolList COMMA IDENT {Assembler::getIdent($3, true);}
+          | IDENT {Assembler::getIdent($1, true);}
 
 extern: EXTERN symbolList
 
@@ -46,7 +46,7 @@ section: SECTION IDENT
 
 labelSection: LABEL instructionList
 
-instructionList: instruction instructionList
+instructionList: instructionList instruction
                | /* epsilon */
 
 instruction: ONE_WORD_INST
@@ -75,20 +75,28 @@ csrrdPart: CSR_REG COMMA GPR_REG
 
 csrwrPart: GPR_REG COMMA CSR_REG
 
-operand: OPR_DEC | OPR_HEX | OPR_STRING | IDENT | parrens
+operand: OPR_DEC 
+       | OPR_HEX
+       | OPR_STRING 
+       | IDENT 
+       | parrens
 
 parrens: LPARREN parrensBodyList RPARREN
 
-parrensBodyList: parrensBody plusMinus parrensBodyList
+parrensBodyList: parrensBodyList plusMinus parrensBody
                | parrensBody
 
-parrensBody: GPR_REG | HEX
+parrensBody: GPR_REG 
+           | HEX
 
-plusMinus: PLUS | MINUS
+plusMinus: PLUS 
+         | MINUS
 
-symbolLiteralList: literal COMMA symbolLiteralList
+symbolLiteralList: symbolLiteralList COMMA literal
                  | literal
 
-literal: DEC | HEX | IDENT
+literal: DEC 
+       | HEX 
+       | IDENT
 
 %%

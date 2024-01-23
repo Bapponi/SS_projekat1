@@ -102,6 +102,7 @@ private:
 public:
   static void init();
   static void passFile(string fileName, int fileNum, int passNum);
+  static void getIdent(string name, bool isGlobal);
 
 };
 
