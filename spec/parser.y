@@ -8,7 +8,6 @@ extern int yyerror(const char *s);
 
 extern int yylex();   // Bison needs to know how to call the lexer
 extern char* yytext;  // Bison needs to know about yytext
-
 %}
 
 %union {
@@ -26,12 +25,14 @@ extern char* yytext;  // Bison needs to know about yytext
 
 %%
 
-program: extrGlobList sectionList END
+program : programList END
 
-extrGlobList: extrGlob extrGlobList
-            | /* epsilon */
+programList: programList programElem
+           | programElem
 
-extrGlob: extern | global
+programElem: extern
+           | global
+           | section
 
 extern: EXTERN symbolList
 
@@ -40,15 +41,12 @@ global: GLOBAL symbolList
 symbolList: IDENT COMMA symbolList
           | IDENT
 
-sectionList: section sectionList
-            | /* epsilon */
-
 section: SECTION IDENT sectionPartList
 
 sectionPartList: sectionPart sectionPartList
                | sectionPart
 
-sectionPart: labelSection | global
+sectionPart: labelSection
 
 labelSection: LABEL instructionList
 

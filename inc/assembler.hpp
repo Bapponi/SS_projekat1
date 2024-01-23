@@ -43,7 +43,7 @@ struct RealocationEntry {
   //isData - opciono (ne treba)
 };
 
-struct SymbolTableEntry {
+struct Symbol {
   //val
   int value;
   //flag - local or global (mogu i 2 flaga za svaki po jedan)
@@ -69,7 +69,7 @@ struct PoolOfLiterals{
   int symbolName;
 };
 
-struct SectionEntry {
+struct Section {
   //velicina
   int size;
   //redni br sekcije
@@ -93,6 +93,11 @@ class Assembler{
   //(povecavanje bazena literala nakon svake instrukcije je no no)
 
 private:
+  static list<string> inputFiles;
+  static map<string, RealocationEntry> relocations;
+  static map<string, Symbol> symbols;
+  static map<string, PoolOfLiterals> poolOfLiterals;
+  static map<string, Section> sections;
   static bool secondPass;
 
 public:

@@ -13,8 +13,12 @@ extern FILE *yyin, *yyout;
 bool Assembler::secondPass;
 
 void Assembler::init(){
-  printf("Test\n");
   secondPass = false;
+  // inputFiles.clear();
+  // relocations.clear();
+  // symbols.clear();
+  // poolOfLiterals.clear();
+  // sections.clear();
 }
 
 void Assembler::passFile(){
