@@ -93,7 +93,6 @@ class Assembler{
   //(povecavanje bazena literala nakon svake instrukcije je no no)
 
 private:
-  static list<string> inputFiles;
   static map<string, RealocationEntry> relocations;
   static map<string, Symbol> symbols;
   static map<string, PoolOfLiterals> poolOfLiterals;
@@ -102,7 +101,7 @@ private:
 
 public:
   static void init();
-  static void passFile();
+  static void passFile(string fileName, int fileNum, int passNum);
 
 };
 
