@@ -33,20 +33,16 @@ programList: programList programElem
 programElem: extern
            | global
            | section
+           | labelSection
+
+symbolList: IDENT COMMA symbolList
+          | IDENT
 
 extern: EXTERN symbolList
 
 global: GLOBAL symbolList
 
-symbolList: IDENT COMMA symbolList
-          | IDENT
-
-section: SECTION IDENT sectionPartList
-
-sectionPartList: sectionPart sectionPartList
-               | sectionPart
-
-sectionPart: labelSection
+section: SECTION IDENT
 
 labelSection: LABEL instructionList
 
