@@ -27,56 +27,72 @@ BADIDENT                [0-9][A-Za-z0-9_]*
 
 
 %%
-\.global[ \t]           { printf(" GLOBAL");
+\.global[ \t]           { yylval.string = strdup(yytext);
+                          printf(" GLOBAL");
                           //token = 1;
                           return GLOBAL; }
-\.extern[ \t]           { printf(" EXTERN");
+\.extern[ \t]           { yylval.string = strdup(yytext);
+                          printf(" EXTERN");
                           return EXTERN; }
-\.section[ \t]          { printf(" SECTION");
+\.section[ \t]          { yylval.string = strdup(yytext);
+                          printf(" SECTION");
                           return SECTION; }
-\.word[ \t]             { printf(" WORD");
+\.word[ \t]             { yylval.string = strdup(yytext);
+                          printf(" WORD");
                           return WORD; }  
-\.skip[ \t]             { printf(" SKIP");
+\.skip[ \t]             { yylval.string = strdup(yytext);
+                          printf(" SKIP");
                           return SKIP; }
-\.end                   { lineNumber=1;
+\.end                   { yylval.string = strdup(yytext);
+                          lineNumber=1;
                           printf(" END");
                           return END; }  
 
-(halt|int|iret|ret)     { yylval.directive = strdup(yytext);
+(halt|int|iret|ret)     { yylval.string = strdup(yytext);
                           printf(" ONE_WORD_INST");
                           return ONE_WORD_INST; }
-(push|pop|not)[ \t]     { yylval.directive = strdup(yytext);
+(push|pop|not)[ \t]     { yylval.string = strdup(yytext);
                           printf(" TWO_WORD_INST");
                           return TWO_WORD_INST; }
-{THREE_WORD_INSTRUCT}   { yylval.directive = strdup(yytext);
+{THREE_WORD_INSTRUCT}   { yylval.string = strdup(yytext);
                           printf(" THREE_WORD_INST");
                           return THREE_WORD_INST; }
-(beq|bne|bgt)[ \t]      { yylval.directive = strdup(yytext);
+(beq|bne|bgt)[ \t]      { yylval.string = strdup(yytext);
                           printf(" FOUR_WORD_INST");
                           return FOUR_WORD_INST; }
-(jmp|call)[ \t]         { yylval.directive = strdup(yytext);
+(jmp|call)[ \t]         { yylval.string = strdup(yytext);
                           printf(" CALL_JUMP");
                           return CALL_JUMP; }
-ld[ \t]                 { printf(" LD");
+ld[ \t]                 { yylval.string = strdup(yytext);
+                          printf(" LD");
                           return LD; }
-st[ \t]                 { printf(" ST");
+st[ \t]                 { yylval.string = strdup(yytext);
+                          printf(" ST");
                           return ST; }
-csrrd[ \t]              { printf(" CSRRD");
+csrrd[ \t]              { yylval.string = strdup(yytext);
+                          printf(" CSRRD");
                           return CSRRD; }
-csrwr[ \t]              { printf(" CSRWR");
+csrwr[ \t]              { yylval.string = strdup(yytext);
+                          printf(" CSRWR");
                           return CSRWR; }
 
-"+"                     { printf(" PLUS");
+"+"                     { yylval.string = strdup(yytext);
+                          printf(" PLUS");
                           return PLUS; }
-"-"                     { printf(" MINUS");
+"-"                     { yylval.string = strdup(yytext);
+                          printf(" MINUS");
                           return MINUS; }
-"["                     { printf(" LPARREN");
+"["                     { yylval.string = strdup(yytext);
+                          printf(" LPARREN");
                           return LPARREN; }
-"]"                     { printf(" RPARREN");
+"]"                     { yylval.string = strdup(yytext);
+                          printf(" RPARREN");
                           return RPARREN; }
-";"                     { printf(" SEMI");
+";"                     { yylval.string = strdup(yytext);
+                          printf(" SEMI");
                           return SEMI; }
-","                     { printf(" COMMA");
+","                     { yylval.string = strdup(yytext);
+                          printf(" COMMA");
                           return COMMA; }
 
 

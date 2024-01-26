@@ -13,18 +13,24 @@ extern int yyparse();
 extern FILE *yyin, *yyout;
 
 bool Assembler::secondPass;
+map<string, RealocationEntry> Assembler::relocations;
+map<string, Symbol> Assembler::symbols;
+map<string, PoolOfLiterals> Assembler::pools;
+map<string, Section> Assembler::sections;
+string Assembler::currentSection;
+int Assembler::instructionNum;
+int Assembler::currentSectionSize;
+string Assembler::currentDirective;
 
 void Assembler::init(){
   secondPass = false;
-  // inputFiles.clear();
-  // relocations.clear();
-  // symbols.clear();
-  // poolOfLiterals.clear();
-  // sections.clear();
-}
-
-void Assembler::getIdent(string name, bool isGlobal){
-  cout << name << endl;
+  relocations.clear();
+  symbols.clear();
+  pools.clear();
+  sections.clear();
+  currentSection = "";
+  currentSectionSize = 0;
+  currentDirective = "";
 }
 
 void Assembler::passFile(string fileName, int fileNum, int passNum){
@@ -51,6 +57,44 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
   cout << "SecondPass: " << boolString << endl;
 
   fclose(file);
+
+}
+
+//global ne obradjujemo u prvom prolazu, ali zato to radimo sa extern-om
+void Assembler::getIdent(string name, bool isGlobal){
+  if(!secondPass){
+    cout << name << endl;
+  }
+}
+
+void Assembler::startSection(string name){
+  //ovde smestiti staru sekciju
+  currentSection = name;
+  currentSectionSize = 0;
+  if(!secondPass){
+    cout << name << endl;
+  }
+}
+
+void Assembler::directiveStart(string name){
+  currentDirective = name;
+  cout << name << endl;
+}
+
+void Assembler::directiveEnd(){
+  currentDirective = "";
+}
+
+void Assembler::labelStart(string name){
+  cout << name << endl;
+}
+
+void Assembler::instructionPass(string name){
+  currentSectionSize += 4;
+  cout << name << endl;
+}
+
+void Assembler::getLiteral(string name){
 
 }
 

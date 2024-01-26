@@ -13,15 +13,15 @@ extern char* yytext;  // Bison needs to know about yytext
 %union {
     int num;
     char* ident;
-    char* directive;
+    char* string;
 }
 
-%token <directive> ONE_WORD_INST TWO_WORD_INST
-%token <directive> THREE_WORD_INST FOUR_WORD_INST CALL_JUMP
-%token <directive> STRING OPR_STRING IDENT LABEL CSR_REG GPR_REG
+%token <string> ONE_WORD_INST TWO_WORD_INST
+%token <string> THREE_WORD_INST FOUR_WORD_INST CALL_JUMP
+%token <string> STRING OPR_STRING IDENT LABEL CSR_REG GPR_REG
+%token <string> GLOBAL EXTERN SECTION WORD SKIP END LD ST CSRRD 
+%token <string> CSRWR PLUS MINUS LPARREN RPARREN SEMI COMMA ENDL
 %token <num> OPR_HEX HEX OPR_DEC DEC
-%token GLOBAL EXTERN SECTION WORD SKIP END LD ST CSRRD 
-%token CSRWR PLUS MINUS LPARREN RPARREN SEMI COMMA ENDL
 
 %%
 
@@ -38,42 +38,34 @@ programElem: extern
 symbolList: symbolList COMMA IDENT {Assembler::getIdent($3, true);}
           | IDENT {Assembler::getIdent($1, true);}
 
-extern: EXTERN symbolList
+extern: externStart symbolList {Assembler::directiveEnd();}
 
-global: GLOBAL symbolList
+externStart: EXTERN {Assembler::directiveStart("extern");}
 
-section: SECTION IDENT
+global: globalStart symbolList {Assembler::directiveEnd();}
 
-labelSection: LABEL instructionList
+globalStart: GLOBAL {Assembler::directiveStart("global");}
+
+section: SECTION IDENT {Assembler::startSection($2);}
+
+labelSection: labelStart instructionList
+
+labelStart: LABEL {Assembler::labelStart($1);}
 
 instructionList: instructionList instruction
                | /* epsilon */
 
-instruction: ONE_WORD_INST
-           | TWO_WORD_INST twoWord
-           | THREE_WORD_INST threeWord
-           | FOUR_WORD_INST fourWord
-           | CALL_JUMP literal
-           | LD ldPart
-           | ST stPart
-           | CSRRD csrrdPart
-           | CSRWR csrwrPart
-           | WORD symbolLiteralList
-           | SKIP literal
-
-twoWord: GPR_REG
-
-threeWord: GPR_REG COMMA GPR_REG
-
-fourWord: GPR_REG COMMA GPR_REG COMMA operand
-
-ldPart: operand COMMA GPR_REG
-
-stPart: GPR_REG COMMA operand
-
-csrrdPart: CSR_REG COMMA GPR_REG
-
-csrwrPart: GPR_REG COMMA CSR_REG
+instruction: ONE_WORD_INST                                      {Assembler::instructionPass($1);}
+           | TWO_WORD_INST GPR_REG                              {Assembler::instructionPass($1);}
+           | THREE_WORD_INST GPR_REG COMMA GPR_REG              {Assembler::instructionPass($1);}
+           | FOUR_WORD_INST GPR_REG COMMA GPR_REG COMMA operand {Assembler::instructionPass($1);}
+           | CALL_JUMP literal                                  {Assembler::instructionPass($1);}
+           | LD operand COMMA GPR_REG                           {Assembler::instructionPass($1);}
+           | ST GPR_REG COMMA operand                           {Assembler::instructionPass($1);}
+           | CSRRD CSR_REG COMMA GPR_REG                        {Assembler::instructionPass($1);}
+           | CSRWR GPR_REG COMMA CSR_REG                        {Assembler::instructionPass($1);}
+           | WORD symbolLiteralList                             {Assembler::instructionPass($1);}
+           | SKIP literal                                       {Assembler::instructionPass($1);}
 
 operand: OPR_DEC 
        | OPR_HEX
@@ -92,8 +84,8 @@ parrensBody: GPR_REG
 plusMinus: PLUS 
          | MINUS
 
-symbolLiteralList: symbolLiteralList COMMA literal
-                 | literal
+symbolLiteralList: symbolLiteralList COMMA literal //{Assembler::getLiteral($3);}
+                 | literal //{Assembler::getLiteral($1);}
 
 literal: DEC 
        | HEX 

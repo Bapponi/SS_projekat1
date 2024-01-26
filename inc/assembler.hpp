@@ -8,7 +8,7 @@
 #include <map>
 #include <list>
 
-//1. napraviti funkcionalan lekser
+//1. napraviti funkcionalan lekser i parser
 //2. baviti se potrebnim strukturama fajla
 
 //razmisli sta sve treba od struktura
@@ -28,82 +28,69 @@
 //U akcijama u parseru se dodaju stvari u te nizove i nakon zavrsetka parsiranja se imaju
 //popunjene strukture sa kojima moze da se radi u assembler.cpp delu
 
+//vodi racuna o bazenu literala
+//o tome da se ne moze svaka instrukcija isto uraditi zbog bazena literala 
+//(povecavanje bazena literala nakon svake instrukcije je no no)
+
 using namespace std;
 
 struct RealocationEntry {
-  //u kojoj sekciji se radi realokacija
   string section;
-  //offset - ovo je offset od pocetka sekcije gde treba da se upise
-  int offset; //mozda da bude long long kao i addent
-  //simbol
+  int offset;
   string symbol;
-  //simbol koji treba da se redefinise zato sto se lokalni simboli ne upisuju u tabelu - addent
-  //addent je offset od pocetka sekcija simbola koji se upisuje
   int addent;
-  //isData - opciono (ne treba)
 };
 
 struct Symbol {
-  //val
   int value;
-  //flag - local or global (mogu i 2 flaga za svaki po jedan)
-  bool local;
-  bool global;
-  //isDefined - opciono (mozda treba samo za equ sekciju)
-  //name simbola
+  bool isLocal;
   string name;
-  //sekcija kojoj pripada
   string section;
-  //flag - da li je simbol sekcija ili nije - opciono
   bool isSection;
 };
 
 struct PoolOfLiterals{
-  //da li je konstanta ili simbol
   bool isSymbol;
-  //adresa - vrednost na kojoj se taj simbol nalazi - treba da se cuva od pocetka sekcije, a ne od bazena literala
   int symbolAdress;
-  //value simbola
   int symbolValue;
-  //string - ime simbola
-  int symbolName;
+  string symbolName;
 };
 
 struct Section {
-  //velicina
   int size;
-  //redni br sekcije
   int serialNum;
-  //ime sekcije
   int name;
-  //da li ova sekcija ima bazen
   bool hasPool;
-  //velicina bazena - sekcija ne sme da ima vise od 2 na 12 bita ako ima bazen
   int poolSize;
-  //vektor ovseta <Long Long>
   vector <long long> offsets;
-  //vektor data <Char>
-  vector <char> data; //ovo moze da se implementira i kao niz
+  vector <char> data;
 };
 
 /////////////////KLASA/////////////////
 class Assembler{
-  //vodi racuna o bazenu literala
-  //o tome da se ne moze svaka instrukcija isto uraditi zbog bazena literala 
-  //(povecavanje bazena literala nakon svake instrukcije je no no)
 
 private:
   static map<string, RealocationEntry> relocations;
   static map<string, Symbol> symbols;
-  static map<string, PoolOfLiterals> poolOfLiterals;
+  static map<string, PoolOfLiterals> pools;
   static map<string, Section> sections;
   static bool secondPass;
+  static string currentSection;
+  static int instructionNum;
+  static int currentSectionSize;
+  static string currentDirective;
 
 public:
   static void init();
   static void passFile(string fileName, int fileNum, int passNum);
-  static void getIdent(string name, bool isGlobal);
 
+  static void getIdent(string name, bool isGlobal);
+  static void startSection(string name);
+  static void directiveStart(string name);
+  static void directiveEnd();
+  static void labelStart(string name);
+  static void instructionPass(string name);
+  static void getLiteral(string name);
 };
 
 #endif

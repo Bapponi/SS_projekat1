@@ -60,27 +60,27 @@ extern int yydebug;
     LABEL = 266,
     CSR_REG = 267,
     GPR_REG = 268,
-    OPR_HEX = 269,
-    HEX = 270,
-    OPR_DEC = 271,
-    DEC = 272,
-    GLOBAL = 273,
-    EXTERN = 274,
-    SECTION = 275,
-    WORD = 276,
-    SKIP = 277,
-    END = 278,
-    LD = 279,
-    ST = 280,
-    CSRRD = 281,
-    CSRWR = 282,
-    PLUS = 283,
-    MINUS = 284,
-    LPARREN = 285,
-    RPARREN = 286,
-    SEMI = 287,
-    COMMA = 288,
-    ENDL = 289
+    GLOBAL = 269,
+    EXTERN = 270,
+    SECTION = 271,
+    WORD = 272,
+    SKIP = 273,
+    END = 274,
+    LD = 275,
+    ST = 276,
+    CSRRD = 277,
+    CSRWR = 278,
+    PLUS = 279,
+    MINUS = 280,
+    LPARREN = 281,
+    RPARREN = 282,
+    SEMI = 283,
+    COMMA = 284,
+    ENDL = 285,
+    OPR_HEX = 286,
+    HEX = 287,
+    OPR_DEC = 288,
+    DEC = 289
   };
 #endif
 
@@ -92,7 +92,7 @@ union YYSTYPE
 
     int num;
     char* ident;
-    char* directive;
+    char* string;
 
 #line 98 "parser.tab.h"
 

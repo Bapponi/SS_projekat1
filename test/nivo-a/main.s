@@ -2,12 +2,12 @@
 
 .extern handler, mathAdd, mathSub, mathMul, mathDiv
 
-.global my_start
+.global my_start #u tabelu simbola u prvom prelazu, ali se nista ne zna
 
 .global value1, value2, value3, value4, value5, value6, value7
 
 .section my_code
-my_start:
+my_start:              
     ld $0xFFFFFEFE, %sp
     ld $handler, %r1
     csrwr %r1, %handler
@@ -61,7 +61,7 @@ my_start:
 
 .section my_data
 value1:
-.word 0
+.word 0 # ako je manje od 12b ok, ako je vece onda u bazen literala
 value2:
 .word 0
 value3:
