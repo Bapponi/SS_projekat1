@@ -42,11 +42,13 @@ struct RealocationEntry {
 };
 
 struct Symbol {
+  int serialNum;
   int value;
   bool isLocal;
   string name;
   string section;
   bool isSection;
+  int offset;
 };
 
 struct PoolOfLiterals{
@@ -59,7 +61,7 @@ struct PoolOfLiterals{
 struct Section {
   int size;
   int serialNum;
-  int name;
+  string name;
   bool hasPool;
   int poolSize;
   vector <long long> offsets;
@@ -75,10 +77,13 @@ private:
   static map<string, PoolOfLiterals> pools;
   static map<string, Section> sections;
   static bool secondPass;
-  static string currentSection;
+  static string currentSectionName;
   static int instructionNum;
   static int currentSectionSize;
   static string currentDirective;
+  static int symSerialNum;
+  static int secSerialNum;
+
 
 public:
   static void init();
@@ -86,11 +91,14 @@ public:
 
   static void getIdent(string name, bool isGlobal);
   static void startSection(string name);
+  static void programEnd();
   static void directiveStart(string name);
   static void directiveEnd();
   static void labelStart(string name);
   static void instructionPass(string name);
   static void getLiteral(string name);
+
+  static bool inTable(string name);
 };
 
 #endif

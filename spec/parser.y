@@ -25,7 +25,9 @@ extern char* yytext;  // Bison needs to know about yytext
 
 %%
 
-program : programList END
+program : programList end
+
+end: END {Assembler::programEnd();}
 
 programList: programList programElem
            | programElem
