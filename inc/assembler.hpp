@@ -83,8 +83,9 @@ class Assembler{
 private:
   static map<string, RealocationEntry> relocations;
   static map<string, Symbol> symbols;
-  static map<string, PoolOfLiterals> pools;
+  static map<string, vector<PoolOfLiterals>> pools;
   static map<string, Section> sections;
+  static vector<PoolOfLiterals> poolVector;
   
   static string currentSectionName;
   static int instructionNum;
@@ -114,7 +115,9 @@ public:
   static void getOperand(string name, string type);
   static void getParrensBody(string name, string type);
 
-  static void instructionPass2();
+  static void instructionPass2(string name);
+  static void startSection2(string name);
+  static void programEnd2();
 
   static bool inTable(string name);
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);

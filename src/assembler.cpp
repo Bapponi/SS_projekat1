@@ -2,7 +2,8 @@
 #include <fstream>
 #include <string>
 #include <list>
-#include <array> 
+#include <array>
+#include <vector> 
 #include <iomanip> //za setw
 
 #include "parser.tab.h"
@@ -17,8 +18,9 @@ extern FILE *yyin, *yyout;
 bool Assembler::secondPass;
 map<string, RealocationEntry> Assembler::relocations;
 map<string, Symbol> Assembler::symbols;
-map<string, PoolOfLiterals> Assembler::pools;
+map<string, vector<PoolOfLiterals>> Assembler::pools;
 map<string, Section> Assembler::sections;
+vector<PoolOfLiterals> Assembler::poolVector;
 string Assembler::currentSectionName;
 int Assembler::instructionNum;
 int Assembler::currentSectionSize;
@@ -35,6 +37,7 @@ void Assembler::init(){
   symbols.clear();
   pools.clear();
   sections.clear();
+  poolVector.clear();
   currentSectionName = "";
   currentSectionSize = 0;
   currentDirective = "";
@@ -69,7 +72,7 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
 
   displaySymbolTable(symbols);
   displaySectionTable(sections);
-  displayPoolTable(pools);
+  // displayPoolTable(pools);
   displayRelocationTable(relocations);
 
   fclose(file);
@@ -80,7 +83,6 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
 void Assembler::getIdent(string name, bool isGlobal){
   if(currentDirective.compare("extern") == 0){ // on je extern i prvi je prolaz
     
-    cout << "Extern: " << name << endl;
     if (inTable(name)) {
         cout << "ERROR:Label already in table " << name << endl;
         exit(1);
@@ -112,6 +114,9 @@ void Assembler::startSection(string name){
 
     sections.insert(make_pair(currentSectionName, sec));
 
+    pools.insert(make_pair(currentSectionName, poolVector));
+    poolVector.clear();
+
     hasPool = false;
 
     if (inTable(currentSectionName)) {
@@ -133,8 +138,6 @@ void Assembler::startSection(string name){
 
   currentSectionName = name;
   currentSectionSize = 0;
-    
-  cout << name << endl;
 }
 
 void Assembler::programEnd(){
@@ -148,6 +151,9 @@ void Assembler::programEnd(){
     sec.poolSize = 0;
 
     sections.insert(make_pair(currentSectionName, sec));
+
+    pools.insert(make_pair(currentSectionName, poolVector));
+    poolVector.clear();
 
     hasPool = false;
 
@@ -174,7 +180,6 @@ void Assembler::programEnd(){
 
 void Assembler::directiveStart(string name){
   currentDirective = name;
-  cout << name << endl;
 }
 
 void Assembler::directiveEnd(){
@@ -197,11 +202,11 @@ void Assembler::labelStart(string name){
       //     exit(1);
       // }
       if(!it->second.isLocal){
-          cout<<"Label "<< name <<" is extern/not local"<<endl;
+          cout<<"ERROR: Label "<< name <<" is extern/not local"<<endl;
           exit(1);
       }
       if(it->second.isSection){
-          cout << "Label "<< name << " is a section" << endl;
+          cout << "ERROR: Label "<< name << " is a section" << endl;
           exit(1);
       }
       // entry->second.isDefined=true;
@@ -222,25 +227,19 @@ void Assembler::labelStart(string name){
 
       symbols[name] = s;
   }
-
-  cout << name << endl;
 }
 
 void Assembler::instructionPass(string name){
-
-  //proveriti za word i skip - mozda se razlikuju malo za currentSectionSize
   currentInstruction = name;
   currentSectionSize += 4;
   fileOffset += 4;
-  cout << name << endl;
 }
 
 void Assembler::getLiteral(string name, string type){
-  cout << " Literal: " << name << ", tip: " << type << endl;
+
   PoolOfLiterals p;
 
   if(type.compare("dec") == 0){
-    cout << "DEC in!!!" << endl;
     int num = stoi(name);
     if(num > 2047 || num < -2048){
       p.isSymbol = false;
@@ -248,12 +247,11 @@ void Assembler::getLiteral(string name, string type){
       p.symbolName = "dec"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
-      pools[name] = p;
+      poolVector.push_back(p);
       hasPool = true;
     }
 
   }else if(type.compare("hex") == 0){
-    cout << "HEX in!!!" << endl;
     name.erase(0, 2);
     long long num = stoll(name, nullptr, 16);
 
@@ -263,27 +261,24 @@ void Assembler::getLiteral(string name, string type){
       p.symbolName = "hex"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
-      pools[name] = p;
+      poolVector.push_back(p);
       hasPool = true;
     }
 
   }else{
-    cout << "Ident in!!!" << endl;
     p.isSymbol = true;
     p.symbolAddress = currentSectionSize;
     p.symbolName = name;
     p.symbolValue = 0;
 
-    pools[name] = p;
+    poolVector.push_back(p);
     hasPool = true;
   }
 }
 
 void Assembler::getOperand(string name, string type){
-  cout << " Operand: " << name << ", tip: " << type << endl;
   PoolOfLiterals p;
   if(type.compare("opr_dec") == 0){
-    cout << "OPR_DEC in!!!" << endl;
     name.erase(0, 1);
     int num = stoi(name);
     if(num > 2047 || num < -2048){
@@ -292,12 +287,11 @@ void Assembler::getOperand(string name, string type){
       p.symbolName = "opr_dec"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
-      pools[name] = p;
+      poolVector.push_back(p);
       hasPool = true;
     }
 
   }else if(type.compare("opr_hex") == 0){
-    cout << "OPR_HEX in!!!" << endl;
     name.erase(0, 3);
     long long num = stoll(name, nullptr, 16);
 
@@ -307,40 +301,36 @@ void Assembler::getOperand(string name, string type){
       p.symbolName = "opr_hex"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
-      pools[name] = p;
+      poolVector.push_back(p);
       hasPool = true;
     }
 
   }else if(type.compare("opr_string") == 0){
-    cout << "OPR_STRING in!!!" << endl;
     name.erase(0, 1);
     p.isSymbol = true;
     p.symbolAddress = currentSectionSize;
     p.symbolName = name;
     p.symbolValue = 0;
 
-    pools[name] = p;
+    poolVector.push_back(p);
     hasPool = true;
 
   }else{
-    cout << "Ident in!!!" << endl;
     p.isSymbol = true;
     p.symbolAddress = currentSectionSize;
     p.symbolName = name;
     p.symbolValue = 0;
 
-    pools[name] = p;
+    poolVector.push_back(p);
     hasPool = true;
   }
 }
 
 void Assembler::getParrensBody(string name, string type){
-  cout << " ParrensBody: " << ", tip: " << type << endl;
   PoolOfLiterals p;
 
   if(type.compare("hex") == 0){
 
-    cout << "HEX in parrens in!!!" << endl;
     name.erase(0, 2);
     long long num = stoll(name, nullptr, 16);
 
@@ -350,7 +340,7 @@ void Assembler::getParrensBody(string name, string type){
       p.symbolName = "hex"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
-      pools[name] = p;
+      poolVector.push_back(p);
       hasPool = true;
     }
 
@@ -364,12 +354,18 @@ void Assembler::getParrensBody(string name, string type){
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 
-// void Assembler::startSection2(string name){
+void Assembler::startSection2(string name){
+  currentSectionName = name;
+  currentSectionSize = 0;
+}
 
-// }
+void Assembler::programEnd2(){
+  currentSectionName = "";
+  currentSectionSize = 0;
+}
 
-void Assembler::instructionPass2(){
-
+void Assembler::instructionPass2(string name){
+  currentSectionSize += 4;
 }
 
 //////////////////POMOCNE FUNKCIJE////////////////////////////////////////////////////////////////////////////////////////
@@ -431,20 +427,20 @@ void Assembler::displaySectionTable(const map<string, Section>& symbolMap){
   cout << "\n" << endl;
 }
 
-void Assembler::displayPoolTable(const map<string, PoolOfLiterals>& symbolMap){
-  cout << "       -------------------------POOLS-----------------------" << endl;
-  cout << setw(15) << "Name" << setw(15) << "Address" << setw(15) << "Value"
-       << setw(15) << "IsSymbol" << endl;
+// void Assembler::displayPoolTable(const map<string, PoolOfLiterals>& symbolMap){
+//   cout << "       -------------------------POOLS-----------------------" << endl;
+//   cout << setw(15) << "Name" << setw(15) << "Address" << setw(15) << "Value"
+//        << setw(15) << "IsSymbol" << endl;
 
-  for (const auto& entry : pools) {
-      const PoolOfLiterals& pool = entry.second;
+//   for (const auto& entry : pools) {
+//       const PoolOfLiterals& pool = entry.second;
 
-      cout << setw(15) << pool.symbolName << setw(15) << pool.symbolAddress
-           << setw(15) << pool.symbolValue << setw(15) << pool.isSymbol << endl;
-  }
+//       cout << setw(15) << pool.symbolName << setw(15) << pool.symbolAddress
+//            << setw(15) << pool.symbolValue << setw(15) << pool.isSymbol << endl;
+//   }
 
-  cout << "\n" << endl;
-}
+//   cout << "\n" << endl;
+// }
 
 void Assembler::displayRelocationTable(const map<string, RealocationEntry>& symbolMap){
   
