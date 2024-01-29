@@ -1069,91 +1069,95 @@ case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
 #line 106 "spec/lexer.l"
-{ yylval.ident = strdup(yytext);
+{ yylval.string = strdup(yytext);
                           printf(" STRING");
                           return STRING; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
 #line 109 "spec/lexer.l"
-{ yylval.ident = strdup(yytext);
+{ yylval.string = strdup(yytext);
                           printf(" OPR_STRING");
                           return OPR_STRING; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
 #line 112 "spec/lexer.l"
-{ yylval.ident = strdup(yytext);
+{ yylval.string = strdup(yytext);
                           printf(" CSR_REG");
                           return CSR_REG; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
 #line 115 "spec/lexer.l"
-{ yylval.ident = strdup(yytext);
+{ yylval.string = strdup(yytext);
                           printf(" GPR_REG");
                           return GPR_REG; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 118 "spec/lexer.l"
-{ sscanf(yytext, "%x", &yylval.num);
+{ //sscanf(yytext, "%x", &yylval.num);
+                          yylval.string = strdup(yytext);
                           printf(" OPR_HEX");
                           return OPR_HEX; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 121 "spec/lexer.l"
-{ sscanf(yytext, "%x", &yylval.num);
+#line 122 "spec/lexer.l"
+{ //sscanf(yytext, "%x", &yylval.num);
+                          yylval.string = strdup(yytext);
                           printf(" HEX");
                           return HEX; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 124 "spec/lexer.l"
-{ sscanf(yytext, "%d", &yylval.num); 
+#line 126 "spec/lexer.l"
+{ //sscanf(yytext, "%d", &yylval.num); 
+                          yylval.string = strdup(yytext);
                           printf(" OPR_DEC");
                           return OPR_DEC; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 127 "spec/lexer.l"
-{ sscanf(yytext, "%d", &yylval.num); 
-                          printf(" DEC");
-                          return DEC; }
+#line 130 "spec/lexer.l"
+{ //sscanf(yytext, "%d", &yylval.num); 
+                           yylval.string = strdup(yytext);
+                           printf(" DEC");
+                           return DEC; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 130 "spec/lexer.l"
-{ yylval.ident = strdup(yytext);
+#line 134 "spec/lexer.l"
+{ yylval.string = strdup(yytext);
                           printf(" LABEL");
                           return LABEL; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 133 "spec/lexer.l"
-{ yylval.ident = strdup(yytext);
+#line 137 "spec/lexer.l"
+{ yylval.string = strdup(yytext);
                           printf(" IDENT");
                           return IDENT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 138 "spec/lexer.l"
+#line 142 "spec/lexer.l"
 { printf(" BAD IDENTIFICATOR!!!"); 
                           return 1; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 140 "spec/lexer.l"
+#line 144 "spec/lexer.l"
 { printf(" UNKNOWN TOKEN: %s", yytext);
                           return 1;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 142 "spec/lexer.l"
+#line 146 "spec/lexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1157 "lex.yy.c"
+#line 1161 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2170,7 +2174,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 142 "spec/lexer.l"
+#line 146 "spec/lexer.l"
 
 
 int

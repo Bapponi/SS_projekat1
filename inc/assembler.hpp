@@ -32,6 +32,15 @@
 //o tome da se ne moze svaka instrukcija isto uraditi zbog bazena literala 
 //(povecavanje bazena literala nakon svake instrukcije je no no)
 
+//u drugom prolazu se generise kod na osnovu instrukcija
+//moguce je da se za jednu naredbu generisu dve instrukcije zbog bazena literala
+//generisanje relokacionih zapisa
+//u instrukciji se generise odskok od same instrukcije do same instrukcije u bazenu literala
+//za drugi prolaz raditi generisanje koda kod instrukcije
+//radi u sekcijama locationCounter da je nula
+//map<string, vector<PoolOfLiterals>>
+//za generisanje koda napravi sheet sta se u sta mapira!!!
+
 using namespace std;
 
 struct RealocationEntry {
@@ -53,8 +62,8 @@ struct Symbol {
 
 struct PoolOfLiterals{
   bool isSymbol;
-  int symbolAdress;
-  int symbolValue;
+  int symbolAddress;
+  long long symbolValue;
   string symbolName;
 };
 
@@ -76,16 +85,21 @@ private:
   static map<string, Symbol> symbols;
   static map<string, PoolOfLiterals> pools;
   static map<string, Section> sections;
-  static bool secondPass;
+  
   static string currentSectionName;
   static int instructionNum;
   static int currentSectionSize;
   static string currentDirective;
   static int symSerialNum;
   static int secSerialNum;
+  static string currentInstruction;
+  static int fileOffset;
+  static bool hasPool;
 
 
 public:
+
+  static bool secondPass;
   static void init();
   static void passFile(string fileName, int fileNum, int passNum);
 
@@ -96,9 +110,18 @@ public:
   static void directiveEnd();
   static void labelStart(string name);
   static void instructionPass(string name);
-  static void getLiteral(string name);
+  static void getLiteral(string name, string type);
+  static void getOperand(string name, string type);
+  static void getParrensBody(string name, string type);
+
+  static void instructionPass2();
 
   static bool inTable(string name);
+  static void displaySymbolTable(const map<string, Symbol>& symbolMap);
+  static void displaySectionTable(const map<string, Section>& symbolMap);
+  static void displayPoolTable(const map<string, PoolOfLiterals>& symbolMap);
+  static void displayRelocationTable(const map<string, RealocationEntry>& symbolMap);
+
 };
 
 #endif

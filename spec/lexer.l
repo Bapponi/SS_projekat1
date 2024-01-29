@@ -103,34 +103,38 @@ csrwr[ \t]              { yylval.string = strdup(yytext);
 [ \n]                  { printf("\n");
                           lineNumber++;
                           /* new row */ }                          
-\"(.+|\n+)\"            { yylval.ident = strdup(yytext);
+\"(.+|\n+)\"            { yylval.string = strdup(yytext);
                           printf(" STRING");
                           return STRING; }
-{OPR_STR}               { yylval.ident = strdup(yytext);
+{OPR_STR}               { yylval.string = strdup(yytext);
                           printf(" OPR_STRING");
                           return OPR_STRING; }
-{CSR_REGISTER}          { yylval.ident = strdup(yytext);
+{CSR_REGISTER}          { yylval.string = strdup(yytext);
                           printf(" CSR_REG");
                           return CSR_REG; }
-{GPR_REGISTER}          { yylval.ident = strdup(yytext);
+{GPR_REGISTER}          { yylval.string = strdup(yytext);
                           printf(" GPR_REG");
                           return GPR_REG; }
-{OPR_HEXA}              { sscanf(yytext, "%x", &yylval.num);
+{OPR_HEXA}              { //sscanf(yytext, "%x", &yylval.num);
+                          yylval.string = strdup(yytext);
                           printf(" OPR_HEX");
                           return OPR_HEX; }
-{HEXA}                  { sscanf(yytext, "%x", &yylval.num);
+{HEXA}                  { //sscanf(yytext, "%x", &yylval.num);
+                          yylval.string = strdup(yytext);
                           printf(" HEX");
                           return HEX; }
-{OPR_DECI}              { sscanf(yytext, "%d", &yylval.num); 
+{OPR_DECI}              { //sscanf(yytext, "%d", &yylval.num); 
+                          yylval.string = strdup(yytext);
                           printf(" OPR_DEC");
                           return OPR_DEC; }
-{DECI}                   { sscanf(yytext, "%d", &yylval.num); 
-                          printf(" DEC");
-                          return DEC; }
-{LAB}                   { yylval.ident = strdup(yytext);
+{DECI}                   { //sscanf(yytext, "%d", &yylval.num); 
+                           yylval.string = strdup(yytext);
+                           printf(" DEC");
+                           return DEC; }
+{LAB}                   { yylval.string = strdup(yytext);
                           printf(" LABEL");
                           return LABEL; }
-{IDENTIFICATOR}         { yylval.ident = strdup(yytext);
+{IDENTIFICATOR}         { yylval.string = strdup(yytext);
                           printf(" IDENT");
                           return IDENT; }
 

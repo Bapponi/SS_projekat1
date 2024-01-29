@@ -1399,126 +1399,180 @@ yyreduce:
     {
   case 3:
 #line 30 "spec/parser.y"
-         {Assembler::programEnd();}
+         {if(!Assembler::secondPass) Assembler::programEnd();}
 #line 1404 "parser.tab.c"
     break;
 
   case 10:
 #line 40 "spec/parser.y"
-                                   {Assembler::getIdent((yyvsp[0].string), true);}
+                                   {if(!Assembler::secondPass) Assembler::getIdent((yyvsp[0].string), true);}
 #line 1410 "parser.tab.c"
     break;
 
   case 11:
 #line 41 "spec/parser.y"
-                  {Assembler::getIdent((yyvsp[0].string), true);}
+                  {if(!Assembler::secondPass) Assembler::getIdent((yyvsp[0].string), true);}
 #line 1416 "parser.tab.c"
     break;
 
   case 12:
 #line 43 "spec/parser.y"
-                               {Assembler::directiveEnd();}
+                               {if(!Assembler::secondPass) Assembler::directiveEnd();}
 #line 1422 "parser.tab.c"
     break;
 
   case 13:
 #line 45 "spec/parser.y"
-                    {Assembler::directiveStart("extern");}
+                    {if(!Assembler::secondPass) Assembler::directiveStart("extern");}
 #line 1428 "parser.tab.c"
     break;
 
   case 14:
 #line 47 "spec/parser.y"
-                               {Assembler::directiveEnd();}
+                               {if(!Assembler::secondPass) Assembler::directiveEnd();}
 #line 1434 "parser.tab.c"
     break;
 
   case 15:
 #line 49 "spec/parser.y"
-                    {Assembler::directiveStart("global");}
+                    {if(!Assembler::secondPass) Assembler::directiveStart("global");}
 #line 1440 "parser.tab.c"
     break;
 
   case 16:
 #line 51 "spec/parser.y"
-                       {Assembler::startSection((yyvsp[0].string));}
+                       {if(!Assembler::secondPass) Assembler::startSection((yyvsp[0].string));}
 #line 1446 "parser.tab.c"
     break;
 
   case 18:
 #line 55 "spec/parser.y"
-                  {Assembler::labelStart((yyvsp[0].string));}
+                  {if(!Assembler::secondPass) Assembler::labelStart((yyvsp[0].string));}
 #line 1452 "parser.tab.c"
     break;
 
   case 21:
 #line 60 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[0].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[0].string));}
 #line 1458 "parser.tab.c"
     break;
 
   case 22:
 #line 61 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-1].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string));}
 #line 1464 "parser.tab.c"
     break;
 
   case 23:
 #line 62 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-3].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string));}
 #line 1470 "parser.tab.c"
     break;
 
   case 24:
 #line 63 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-5].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-5].string));}
 #line 1476 "parser.tab.c"
     break;
 
   case 25:
 #line 64 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-1].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string));}
 #line 1482 "parser.tab.c"
     break;
 
   case 26:
 #line 65 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-3].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string));}
 #line 1488 "parser.tab.c"
     break;
 
   case 27:
 #line 66 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-3].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string));}
 #line 1494 "parser.tab.c"
     break;
 
   case 28:
 #line 67 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-3].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string));}
 #line 1500 "parser.tab.c"
     break;
 
   case 29:
 #line 68 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-3].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string));}
 #line 1506 "parser.tab.c"
     break;
 
   case 30:
 #line 69 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-1].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string));}
 #line 1512 "parser.tab.c"
     break;
 
   case 31:
 #line 70 "spec/parser.y"
-                                                                {Assembler::instructionPass((yyvsp[-1].string));}
+                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string));}
 #line 1518 "parser.tab.c"
     break;
 
+  case 32:
+#line 72 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_dec");}
+#line 1524 "parser.tab.c"
+    break;
 
-#line 1522 "parser.tab.c"
+  case 33:
+#line 73 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_hex");}
+#line 1530 "parser.tab.c"
+    break;
+
+  case 34:
+#line 74 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_string");}
+#line 1536 "parser.tab.c"
+    break;
+
+  case 35:
+#line 75 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "ident");}
+#line 1542 "parser.tab.c"
+    break;
+
+  case 40:
+#line 83 "spec/parser.y"
+                        {if(!Assembler::secondPass) Assembler::getParrensBody((yyvsp[0].string), "gpr_reg");}
+#line 1548 "parser.tab.c"
+    break;
+
+  case 41:
+#line 84 "spec/parser.y"
+                        {if(!Assembler::secondPass) Assembler::getParrensBody((yyvsp[0].string), "hex");}
+#line 1554 "parser.tab.c"
+    break;
+
+  case 46:
+#line 92 "spec/parser.y"
+                {if(!Assembler::secondPass) Assembler::getLiteral((yyvsp[0].string), "dec");}
+#line 1560 "parser.tab.c"
+    break;
+
+  case 47:
+#line 93 "spec/parser.y"
+                {if(!Assembler::secondPass) Assembler::getLiteral((yyvsp[0].string), "hex");}
+#line 1566 "parser.tab.c"
+    break;
+
+  case 48:
+#line 94 "spec/parser.y"
+                {if(!Assembler::secondPass) Assembler::getLiteral((yyvsp[0].string), "ident");}
+#line 1572 "parser.tab.c"
+    break;
+
+
+#line 1576 "parser.tab.c"
 
       default: break;
     }
