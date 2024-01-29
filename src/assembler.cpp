@@ -72,7 +72,7 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
 
   displaySymbolTable(symbols);
   displaySectionTable(sections);
-  // displayPoolTable(pools);
+  displayPoolTable(pools);
   displayRelocationTable(relocations);
 
   fclose(file);
@@ -441,6 +441,25 @@ void Assembler::displaySectionTable(const map<string, Section>& symbolMap){
 
 //   cout << "\n" << endl;
 // }
+
+void Assembler::displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap){
+  
+  cout << "    ----------------------------POOLS---------------------------" << endl;
+  cout << setw(15) << "Key" << setw(15) << "SymbolName" << setw(15) << "SymbolAddress" 
+       << setw(20) << "SymbolValue" << setw(15) << "IsSymbol" << endl;
+
+  for (const auto& entry : symbolMap) {
+      const vector<PoolOfLiterals>& literalsVector = entry.second;
+
+      for (const auto& literal : literalsVector) {
+          cout << setw(15) << entry.first << setw(15) << literal.symbolName << setw(15) << literal.symbolAddress
+               << setw(20) << literal.symbolValue << setw(15) << (literal.isSymbol ? "true" : "false")
+               << endl;
+      }
+  }
+
+  cout << "\n" << endl;
+}
 
 void Assembler::displayRelocationTable(const map<string, RealocationEntry>& symbolMap){
   

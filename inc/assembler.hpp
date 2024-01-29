@@ -122,7 +122,7 @@ public:
   static bool inTable(string name);
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
-  static void displayPoolTable(const map<string, PoolOfLiterals>& symbolMap);
+  static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);
   static void displayRelocationTable(const map<string, RealocationEntry>& symbolMap);
 
 };
