@@ -115,11 +115,12 @@ public:
   static void getOperand(string name, string type);
   static void getParrensBody(string name, string type);
 
-  static void instructionPass2(string name);
+  static void instructionPass2(string name, string op1, string op2);
   static void startSection2(string name);
   static void programEnd2();
 
   static bool inTable(string name);
+  static string getBits(const string& stringInt, int nBits);
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);

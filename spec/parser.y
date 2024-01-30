@@ -57,17 +57,39 @@ labelStart: LABEL {if(!Assembler::secondPass) Assembler::labelStart($1);}
 instructionList: instructionList instruction
                | /* epsilon */
 
-instruction: ONE_WORD_INST                                      {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | TWO_WORD_INST GPR_REG                              {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | THREE_WORD_INST GPR_REG COMMA GPR_REG              {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | FOUR_WORD_INST GPR_REG COMMA GPR_REG COMMA operand {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | CALL_JUMP literal                                  {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | LD operand COMMA GPR_REG                           {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | ST GPR_REG COMMA operand                           {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | CSRRD CSR_REG COMMA GPR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | CSRWR GPR_REG COMMA CSR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | WORD symbolLiteralList                             {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
-           | SKIP literal                                       {if(!Assembler::secondPass) Assembler::instructionPass($1); else Assembler::instructionPass2($1);}
+instruction: ONE_WORD_INST                                      {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, "", "");
+                                                                }
+           | TWO_WORD_INST GPR_REG                              {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, $2, "");
+                                                                }
+           | THREE_WORD_INST GPR_REG COMMA GPR_REG              {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, $2, $3);
+                                                                }
+           | FOUR_WORD_INST GPR_REG COMMA GPR_REG COMMA operand {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, $2, $4);
+                                                                }
+           | CALL_JUMP literal                                  {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, "", "");
+                                                                }
+           | LD operand COMMA GPR_REG                           {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, $4, "");
+                                                                }
+           | ST GPR_REG COMMA operand                           {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, $2, "");
+                                                                }
+           | CSRRD CSR_REG COMMA GPR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, $2, $4);
+                                                                }
+           | CSRWR GPR_REG COMMA CSR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, "2", "4");
+                                                                }
+           | WORD symbolLiteralList                             {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, "", "");
+                                                                }
+           | SKIP literal                                       {if(!Assembler::secondPass) Assembler::instructionPass($1); 
+                                                                      else Assembler::instructionPass2($1, "", "");
+                                                                }
 
 operand: OPR_DEC    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_dec");}
        | OPR_HEX    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_hex");}

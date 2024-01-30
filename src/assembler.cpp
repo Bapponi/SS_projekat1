@@ -366,7 +366,7 @@ void Assembler::programEnd2(){
   fileOffset = 0;
 }
 
-void Assembler::instructionPass2(string name){
+void Assembler::instructionPass2(string name, string op1, string op2){
   
   auto sec = sections.find(currentSectionName);
 
@@ -374,6 +374,11 @@ void Assembler::instructionPass2(string name){
       cout << "\nKey: " << currentSectionName << " not found" << endl;
       exit(1);
   }
+
+  if(op1 == "%sp") op1 = "%r14";
+  if(op1 == "%pc") op1 = "%r15";
+  if(op2 == "%sp") op2 = "%r14";
+  if(op2 == "%pc") op2 = "%r15";
 
   sec->second.offsets.push_back(currentSectionSize);
 
@@ -404,7 +409,8 @@ void Assembler::instructionPass2(string name){
 
     string code = "1000000111100000";
 
-    //dodaj
+    op1 = op1.substr(2);
+    code += getBits(op1, 4);
 
     code += "111111111100";
     sec->second.data.push_back(code);
@@ -413,7 +419,8 @@ void Assembler::instructionPass2(string name){
 
     string code = "10010011";
 
-    //dodaj
+    op1 = op1.substr(2);
+    code += getBits(op1, 4);
 
     code += "11100000000000000100";
     sec->second.data.push_back(code);
@@ -421,7 +428,9 @@ void Assembler::instructionPass2(string name){
   }else if(name.compare("not ") == 0){
     string code = "01100000";
 
-    //dodaj
+    op1 = op1.substr(2);
+    code += getBits(op1, 4);
+    code += getBits(op1, 4);
 
     code += "0000000000000000";
     sec->second.data.push_back(code);
@@ -472,7 +481,7 @@ void Assembler::instructionPass2(string name){
     //dodaj
 
     code += "000000000000";
-    sec->second.data.push_back(code);
+    sec-> second.data.push_back(code);
 
   }else if(name.compare("or ") == 0){
     string code = "01100010";
@@ -528,7 +537,7 @@ void Assembler::instructionPass2(string name){
 
     //nesto
 
-    code+= "00000000";
+    code += "00000000";
 
     //nesto
 
@@ -547,7 +556,7 @@ void Assembler::instructionPass2(string name){
 
     //nesto
 
-    code+= "0000000000000000";
+    code += "0000000000000000";
     sec->second.data.push_back(code);
 
   }else if(name.compare("csrwr ") == 0){
@@ -555,16 +564,18 @@ void Assembler::instructionPass2(string name){
 
     //nesto
 
-    code+= "0000000000000000 ";
+    code += "0000000000000000";
     sec->second.data.push_back(code);
 
   }else if(name.compare(".skip ") == 0){
     string code = "2";
     sec->second.data.push_back(code);
 
-  }else { //ovde je problem da kaze da ima problem sa string-om .word_
+  }else if(name == ".word "){ //ovde je problem da kaze da ima problem sa string-om .word_
     string code = "3";
     sec->second.data.push_back(code);
+  }else{
+    cout << "Netacna operacija!!!" << endl;
   }
 
   currentSectionSize += 4;
@@ -586,6 +597,24 @@ bool Assembler::inTable(string name){
       return true;
 
   return false; 
+}
+
+string Assembler::getBits(const string& stringInt, int nBits) {
+    // Convert string to integer
+    int intValue = stoi(stringInt);
+
+    // Ensure the integer value can be represented in nBits
+    if (intValue >= (1 << nBits)) {
+        cout << "Error: Integer value exceeds " << nBits << " bits representation." << endl;
+        return "-1";
+    }
+
+    // Convert integer to binary representation
+    bitset<32> bits(intValue);
+    string bitString = bits.to_string();
+
+    // Extract the last nBits characters
+    return bitString.substr(32 - nBits);
 }
 
 void Assembler::displaySymbolTable(const map<string, Symbol>& symbolMap){
