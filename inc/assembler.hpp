@@ -97,6 +97,9 @@ private:
   static int fileOffset;
   static bool hasPool;
 
+  static string currentOperandOffset;
+  static bool hasPool2;
+
 
 public:
 
@@ -118,9 +121,14 @@ public:
   static void instructionPass2(string name, string op1, string op2);
   static void startSection2(string name);
   static void programEnd2();
+  static void getOperand2(string name, string type);
+  static void getParrensBody2(string name, string type);
+  static void getLiteral2(string name, string type);
 
   static bool inTable(string name);
   static string getBits(const string& stringInt, int nBits);
+  static string getOperandOffset();
+
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);

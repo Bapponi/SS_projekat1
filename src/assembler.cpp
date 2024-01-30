@@ -30,6 +30,8 @@ int Assembler::secSerialNum;
 string Assembler::currentInstruction;
 int Assembler::fileOffset;
 bool Assembler::hasPool;
+string Assembler::currentOperandOffset;
+bool Assembler::hasPool2;
 
 void Assembler::init(){
   secondPass = false;
@@ -46,6 +48,9 @@ void Assembler::init(){
   currentInstruction = "";
   fileOffset = 0;
   hasPool = false;
+
+  currentOperandOffset = " OFFSET ";
+  hasPool2 = false;
 }
 
 void Assembler::passFile(string fileName, int fileNum, int passNum){
@@ -382,13 +387,15 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
   sec->second.offsets.push_back(currentSectionSize);
 
+  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+  map<string,Section>::iterator itSection = sections.find(currentSectionName);
+
   if(name.compare("halt") == 0){
 
     sec->second.data.push_back("00000000000000000000000000000000");
 
   }else if(name.compare("int") == 0){
 
-    //generise softverski prekid
     sec->second.data.push_back("00010000000000000000000000000000");
 
   }else if(name.compare("iret") == 0){
@@ -554,42 +561,6 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     code += "000000000000";
     sec->second.data.push_back(code);
 
-  }else if(name.compare("beq ") == 0){
-    string code = "0011";
-    sec->second.data.push_back(code);
-
-  }else if(name.compare("bne ") == 0){
-    string code = "0011";
-    sec->second.data.push_back(code);
-
-  }else if(name.compare("bgt ") == 0){
-    string code = "0011";
-    sec->second.data.push_back(code);
-
-  }else if(name.compare("jmp ") == 0){
-    cout << "JMP" << endl;
-    string code = "0011";
-    sec->second.data.push_back(code);
-
-  }else if(name.compare("call ") == 0){
-    string code = "0010";
-
-    //nesto
-
-    code += "00000000";
-
-    //nesto
-
-    sec->second.data.push_back(code);
-
-  }else if(name.compare("ld ") == 0){
-    string code = "0";
-    sec->second.data.push_back(code);
-
-  }else if(name.compare("st ") == 0){
-    string code = "1";
-    sec->second.data.push_back(code);
-
   }else if(name.compare("csrrd ") == 0){
     string code = "10010000";
 
@@ -629,6 +600,89 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     code += "0000000000000000";
     sec->second.data.push_back(code);
 
+  }else if(name.compare("beq ") == 0){
+
+    string code = "0011";
+    if(hasPool2){
+      code += "10011111";
+    }else{
+      code += "00010000";
+    }
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op1, 4);
+    code += getBits(op2, 4);
+    // code += getOperandOffset();
+    code += currentOperandOffset;
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("bne ") == 0){
+
+    string code = "0011";
+    if(hasPool2){
+      code += "10101111";
+    }else{
+      code += "00100000";
+    }
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op1, 4);
+    code += getBits(op2, 4);
+    // code += getOperandOffset();
+    code += currentOperandOffset;
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("bgt ") == 0){
+
+    string code = "0011";
+    if(hasPool2){
+      code += "10111111";
+    }else{
+      code += "00110000";
+    }
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op1, 4);
+    code += getBits(op2, 4);
+    // code += getOperandOffset();
+    code += currentOperandOffset;
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("jmp ") == 0){
+
+    string code = "0011";
+    if(hasPool2){
+      code += "10001111";
+    }else{
+      code += "00000000";
+    }
+    code += "00000000";
+    // code += getOperandOffset();
+    code += currentOperandOffset;
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("call ") == 0){
+
+    cout << " HasPool2: " << hasPool2 << endl;
+    string code = "0010";
+    if(hasPool2){
+      code += "00011111";
+    }else{
+      code += "00000000";
+    }
+    code += "00000000";
+    // code += getOperandOffset();
+    code += currentOperandOffset;
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("ld ") == 0){
+    string code = "0";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("st ") == 0){
+    string code = "1";
+    sec->second.data.push_back(code);
+
   }else if(name.compare(".skip ") == 0){
     string code = "2";
     sec->second.data.push_back(code);
@@ -642,6 +696,82 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
   currentSectionSize += 4;
   fileOffset += 4;
+  currentOperandOffset = " OFFSET ";
+}
+
+//offset do bazena literala gde se nalazi ta konstanta ili simbol (ako je veci od 12b)
+//posle se za bazen literala generisu relokacione zapise gde se za svaki simbol ide i upisuje, 
+  //gde koji simbol treba da upisuje koju vrednost
+void Assembler::getOperand2(string name, string type){
+
+  if(type == "opr_dec"){
+    cout << " USAO OPR_DEC" << endl;
+    
+    name.erase(0, 1);
+    int num = stoi(name);
+    if(num <= 2047 && num >= -2048){
+      currentOperandOffset = getBits(name, 12); //potencijalno problem
+      hasPool2 = false;
+    }else{
+      hasPool2 = true;
+    }
+
+  }else if(type == "opr_hex"){
+    cout << " USAO OPR_HEX" << endl;
+    name.erase(0, 3);
+    long long num = stoll(name, nullptr, 16);
+
+    if(num <= 4095){
+      currentOperandOffset = getBits(name, 12); //potencijalno problem
+      hasPool2 = false;
+    }else{
+      hasPool2 = true;
+    }
+
+  }else if(type == "opr_string"){
+    cout << " USAO OPR_STRING" << endl;
+    name.erase(0, 1);
+    hasPool2 = true;
+
+  }else{
+    cout << " USAO IDENT" << endl;
+    hasPool2 = true;
+  }
+
+}
+
+void Assembler::getParrensBody2(string name, string type){
+
+}
+
+void Assembler::getLiteral2(string name, string type){
+  if(type == "dec"){
+    cout << " USAO DEC" << endl;
+    
+    int num = stoi(name);
+    if(num <= 2047 && num >= -2048){
+      currentOperandOffset = getBits(name, 12); //potencijalno problem
+      hasPool2 = false;
+    }else{
+      hasPool2 = true;
+    }
+
+  }else if(type == "hex"){
+    cout << " USAO HEX" << endl;
+    name.erase(0, 2);
+    long long num = stoll(name, nullptr, 16);
+
+    if(num <= 4095){
+      currentOperandOffset = getBits(name, 12); //potencijalno problem
+      hasPool2 = false;
+    }else{
+      hasPool2 = true;
+    }
+
+  }else{
+    cout << " USAO IDENT" << endl;
+    hasPool2 = true;
+  }
 }
 
 //////////////////POMOCNE FUNKCIJE////////////////////////////////////////////////////////////////////////////////////////
@@ -677,6 +807,10 @@ string Assembler::getBits(const string& stringInt, int nBits) {
 
     // Extract the last nBits characters
     return bitString.substr(32 - nBits);
+}
+
+string Assembler::getOperandOffset(){
+  return "OFFSET";
 }
 
 void Assembler::displaySymbolTable(const map<string, Symbol>& symbolMap){

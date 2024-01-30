@@ -91,10 +91,18 @@ instruction: ONE_WORD_INST                                      {if(!Assembler::
                                                                       else Assembler::instructionPass2($1, "", "");
                                                                 }
 
-operand: OPR_DEC    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_dec");}
-       | OPR_HEX    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_hex");}
-       | OPR_STRING {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_string");}
-       | IDENT      {if(!Assembler::secondPass) Assembler::getOperand($1, "ident");}
+operand: OPR_DEC    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_dec"); 
+                     else Assembler::getOperand2($1, "opr_dec");
+                    }
+       | OPR_HEX    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_hex"); 
+                     else Assembler::getOperand2($1, "opr_hex");
+                    }
+       | OPR_STRING {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_string"); 
+                     else Assembler::getOperand2($1, "opr_string");
+                    }
+       | IDENT      {if(!Assembler::secondPass) Assembler::getOperand($1, "ident"); 
+                     else Assembler::getOperand2($1, "ident");
+                    }
        | parrens
 
 parrens: LPARREN parrensBodyList RPARREN
@@ -102,8 +110,12 @@ parrens: LPARREN parrensBodyList RPARREN
 parrensBodyList: parrensBodyList plusMinus parrensBody
                | parrensBody
 
-parrensBody: GPR_REG    {if(!Assembler::secondPass) Assembler::getParrensBody($1, "gpr_reg");}
-           | HEX        {if(!Assembler::secondPass) Assembler::getParrensBody($1, "hex");}
+parrensBody: GPR_REG    {if(!Assembler::secondPass) Assembler::getParrensBody($1, "gpr_reg"); 
+                            else Assembler::getParrensBody2($1, "gpr_reg");
+                        }
+           | HEX        {if(!Assembler::secondPass) Assembler::getParrensBody($1, "hex");
+                            else Assembler::getParrensBody2($1, "hex");
+                        }
 
 plusMinus: PLUS 
          | MINUS
@@ -111,8 +123,14 @@ plusMinus: PLUS
 symbolLiteralList: symbolLiteralList COMMA literal
                  | literal
 
-literal: DEC    {if(!Assembler::secondPass) Assembler::getLiteral($1, "dec");}
-       | HEX    {if(!Assembler::secondPass) Assembler::getLiteral($1, "hex");}
-       | IDENT  {if(!Assembler::secondPass) Assembler::getLiteral($1, "ident");}
+literal: DEC    {if(!Assembler::secondPass) Assembler::getLiteral($1, "dec");
+                     else Assembler::getLiteral2($1, "dec");
+                }
+       | HEX    {if(!Assembler::secondPass) Assembler::getLiteral($1, "hex");
+                     Assembler::getLiteral2($1, "hex");
+                }
+       | IDENT  {if(!Assembler::secondPass) Assembler::getLiteral($1, "ident");
+                     Assembler::getLiteral2($1, "ident");
+                }
 
 %%
