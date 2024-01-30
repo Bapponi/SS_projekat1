@@ -593,15 +593,38 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("csrrd ") == 0){
     string code = "10010000";
 
-    //nesto
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    
+    if(op1 == "%status"){
+      code += "0000";
+    }else if(op1 == "%handler"){
+      code += "0001";
+    }else if(op1 == "%cause"){
+      code += "0010";
+    }else{
+      cout << " ERROR: invalid CSR register: " << op1 << endl;
+    }
 
     code += "0000000000000000";
     sec->second.data.push_back(code);
 
   }else if(name.compare("csrwr ") == 0){
-    string code = "10010000";
+    string code = "10010100";
 
-    //nesto
+    op1 = op1.substr(2);
+
+    if(op2 == "%status"){
+      code += "0000";
+    }else if(op2 == "%handler"){
+      code += "0001";
+    }else if(op2 == "%cause"){
+      code += "0010";
+    }else{
+      cout << " ERROR: invalid CSR register: " << op2 << endl;
+    }
+
+    code += getBits(op1, 4);
 
     code += "0000000000000000";
     sec->second.data.push_back(code);

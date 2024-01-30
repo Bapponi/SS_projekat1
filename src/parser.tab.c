@@ -1518,7 +1518,7 @@ yyreduce:
   case 29:
 #line 84 "spec/parser.y"
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
-                                                                      else Assembler::instructionPass2((yyvsp[-3].string), "2", "4");
+                                                                      else Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));
                                                                 }
 #line 1524 "parser.tab.c"
     break;

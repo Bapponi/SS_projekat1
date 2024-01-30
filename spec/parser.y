@@ -82,7 +82,7 @@ instruction: ONE_WORD_INST                                      {if(!Assembler::
                                                                       else Assembler::instructionPass2($1, $2, $4);
                                                                 }
            | CSRWR GPR_REG COMMA CSR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); 
-                                                                      else Assembler::instructionPass2($1, "2", "4");
+                                                                      else Assembler::instructionPass2($1, $2, $4);
                                                                 }
            | WORD symbolLiteralList                             {if(!Assembler::secondPass) Assembler::instructionPass($1); 
                                                                       else Assembler::instructionPass2($1, "", "");
