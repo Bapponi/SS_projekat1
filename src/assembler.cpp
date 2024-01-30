@@ -438,7 +438,10 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("xchg ") == 0){
     string code = "010000000000";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -446,7 +449,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("add ") == 0){
     string code = "01010000";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -454,7 +461,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("sub ") == 0){
     string code = "01010001";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -462,7 +473,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("mul ") == 0){
     string code = "01010010";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -470,7 +485,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("div ") == 0){
     string code = "01010011";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -478,7 +497,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("and ") == 0){
     string code = "01100001";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec-> second.data.push_back(code);
@@ -486,7 +509,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("or ") == 0){
     string code = "01100010";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -494,7 +521,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("xor ") == 0){
     string code = "01100011";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -502,7 +533,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("shl ") == 0){
     string code = "01110000";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);
@@ -510,7 +545,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("shr ") == 0){
     string code = "01110001";
 
-    //dodaj
+    op1 = op1.substr(2);
+    op2 = op2.substr(2);
+    code += getBits(op2, 4);
+    code += getBits(op2, 4);
+    code += getBits(op1, 4);
 
     code += "000000000000";
     sec->second.data.push_back(code);

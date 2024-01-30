@@ -64,7 +64,7 @@ instruction: ONE_WORD_INST                                      {if(!Assembler::
                                                                       else Assembler::instructionPass2($1, $2, "");
                                                                 }
            | THREE_WORD_INST GPR_REG COMMA GPR_REG              {if(!Assembler::secondPass) Assembler::instructionPass($1); 
-                                                                      else Assembler::instructionPass2($1, $2, $3);
+                                                                      else Assembler::instructionPass2($1, $2, $4);
                                                                 }
            | FOUR_WORD_INST GPR_REG COMMA GPR_REG COMMA operand {if(!Assembler::secondPass) Assembler::instructionPass($1); 
                                                                       else Assembler::instructionPass2($1, $2, $4);
