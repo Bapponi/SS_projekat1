@@ -383,11 +383,18 @@ void Assembler::instructionPass2(string name){
 
   }else if(name.compare("int") == 0){
 
+    //generise softverski prekid
     sec->second.data.push_back("00010000000000000000000000000000");
 
-  }else if(name.compare("iret ") == 0){
+  }else if(name.compare("iret") == 0){
 
     sec->second.data.push_back("10010001111011100000000000001000");
+    sec->second.offsets.push_back(-1);
+    sec->second.data.push_back("10010110000011100000111111111100");
+    sec->second.offsets.push_back(-1);
+    sec->second.data.push_back("10010001111011100000000000001000");
+
+    currentSectionSize += 8;
 
   }else if(name.compare("ret ") == 0){
 
