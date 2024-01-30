@@ -176,6 +176,7 @@ void Assembler::programEnd(){
 
   currentSectionName = "";
   currentSectionSize = 0;
+  fileOffset = 0;
 }
 
 void Assembler::directiveStart(string name){
@@ -362,10 +363,205 @@ void Assembler::startSection2(string name){
 void Assembler::programEnd2(){
   currentSectionName = "";
   currentSectionSize = 0;
+  fileOffset = 0;
 }
 
 void Assembler::instructionPass2(string name){
+  
+  auto sec = sections.find(currentSectionName);
+
+  if (sec == sections.end()) {
+      cout << "\nKey: " << currentSectionName << " not found" << endl;
+      exit(1);
+  }
+
+  sec->second.offsets.push_back(currentSectionSize);
+
+  if(name.compare("halt") == 0){
+
+    sec->second.data.push_back("00000000000000000000000000000000");
+
+  }else if(name.compare("int") == 0){
+
+    sec->second.data.push_back("00010000000000000000000000000000");
+
+  }else if(name.compare("iret ") == 0){
+
+    sec->second.data.push_back("10010001111011100000000000001000");
+
+  }else if(name.compare("ret ") == 0){
+
+    sec->second.data.push_back("10010011111111100000000000000100");
+
+  }else if(name.compare("push ") == 0){
+
+    string code = "1000000111100000";
+
+    //dodaj
+
+    code += "111111111100";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("pop ") == 0){
+
+    string code = "10010011";
+
+    //dodaj
+
+    code += "11100000000000000100";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("not ") == 0){
+    string code = "01100000";
+
+    //dodaj
+
+    code += "0000000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("xchg ") == 0){
+    string code = "010000000000";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("add ") == 0){
+    string code = "01010000";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("sub ") == 0){
+    string code = "01010001";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("mul ") == 0){
+    string code = "01010010";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("div ") == 0){
+    string code = "01010011";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("and ") == 0){
+    string code = "01100001";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("or ") == 0){
+    string code = "01100010";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("xor ") == 0){
+    string code = "01100011";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("shl ") == 0){
+    string code = "01110000";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("shr ") == 0){
+    string code = "01110001";
+
+    //dodaj
+
+    code += "000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("beq ") == 0){
+    string code = "0011";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("bne ") == 0){
+    string code = "0011";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("bgt ") == 0){
+    string code = "0011";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("jmp ") == 0){
+    cout << "JMP" << endl;
+    string code = "0011";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("call ") == 0){
+    string code = "0010";
+
+    //nesto
+
+    code+= "00000000";
+
+    //nesto
+
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("ld ") == 0){
+    string code = "0";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("st ") == 0){
+    string code = "1";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("csrrd ") == 0){
+    string code = "10010000";
+
+    //nesto
+
+    code+= "0000000000000000";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare("csrwr ") == 0){
+    string code = "10010000";
+
+    //nesto
+
+    code+= "0000000000000000 ";
+    sec->second.data.push_back(code);
+
+  }else if(name.compare(".skip ") == 0){
+    string code = "2";
+    sec->second.data.push_back(code);
+
+  }else { //ovde je problem da kaze da ima problem sa string-om .word_
+    string code = "3";
+    sec->second.data.push_back(code);
+  }
+
   currentSectionSize += 4;
+  fileOffset += 4;
 }
 
 //////////////////POMOCNE FUNKCIJE////////////////////////////////////////////////////////////////////////////////////////
@@ -405,42 +601,31 @@ void Assembler::displaySymbolTable(const map<string, Symbol>& symbolMap){
 void Assembler::displaySectionTable(const map<string, Section>& symbolMap){
   cout << "       ------------------------------------------SECTIONS-------------------------------------------" << endl;
   cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Size"
-       << setw(10) << "HasPool" << setw(15) << "PoolSize" << setw(20) << "Offsets"
-       << setw(20) << "Data" << endl;
+       << setw(10) << "HasPool" << setw(15) << "PoolSize" << endl;
 
   for (const auto& entry : sections) {
       const Section& section = entry.second;
 
-      string offsetsStr;
-      for (const auto& offset : section.offsets) {
-          offsetsStr += to_string(offset) + " ";
-      }
-
-      string dataStr(section.data.begin(), section.data.end());
-
       cout << setw(15) << section.name << setw(10) << section.serialNum
                 << setw(10) << section.size << setw(10) << section.hasPool
-                << setw(15) << section.poolSize << setw(20) << offsetsStr
-                << setw(20) << dataStr << endl;
+                << setw(15) << section.poolSize << endl;
+  }
+
+  cout << "\n" << endl;
+
+  cout << setw(15) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+
+  for (const auto& entry : symbolMap) {
+      const vector<long long>& offsetsVector = entry.second.offsets;
+      const vector<string>& dataVector = entry.second.data;
+
+      for (int i = 0; i < offsetsVector.size(); i++) {
+          cout << setw(15) << entry.first << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+      }
   }
 
   cout << "\n" << endl;
 }
-
-// void Assembler::displayPoolTable(const map<string, PoolOfLiterals>& symbolMap){
-//   cout << "       -------------------------POOLS-----------------------" << endl;
-//   cout << setw(15) << "Name" << setw(15) << "Address" << setw(15) << "Value"
-//        << setw(15) << "IsSymbol" << endl;
-
-//   for (const auto& entry : pools) {
-//       const PoolOfLiterals& pool = entry.second;
-
-//       cout << setw(15) << pool.symbolName << setw(15) << pool.symbolAddress
-//            << setw(15) << pool.symbolValue << setw(15) << pool.isSymbol << endl;
-//   }
-
-//   cout << "\n" << endl;
-// }
 
 void Assembler::displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap){
   
@@ -480,11 +665,6 @@ void Assembler::displayRelocationTable(const map<string, RealocationEntry>& symb
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// ispis svih elemenata mape
-// for (const auto& pair : symbols) {
-//   cout << pair.first << endl;
-// }
 
 
 array<string,1> inputFiles{ 

@@ -48,7 +48,7 @@ global: globalStart symbolList {if(!Assembler::secondPass) Assembler::directiveE
 
 globalStart: GLOBAL {if(!Assembler::secondPass) Assembler::directiveStart("global");}
 
-section: SECTION IDENT {if(!Assembler::secondPass) Assembler::startSection($2); else Assembler::startSection2($1);}
+section: SECTION IDENT {if(!Assembler::secondPass) Assembler::startSection($2); else Assembler::startSection2($2);}
 
 labelSection: labelStart instructionList
 

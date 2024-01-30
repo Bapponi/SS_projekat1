@@ -74,7 +74,7 @@ struct Section {
   bool hasPool;
   int poolSize;
   vector <long long> offsets;
-  vector <char> data;
+  vector <string> data;
 };
 
 /////////////////KLASA/////////////////
