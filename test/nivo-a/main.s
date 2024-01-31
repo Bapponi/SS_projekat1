@@ -50,6 +50,7 @@ my_start:
     st %r1, value6
 
     ld value1, %r1
+    
     ld value2, %r2
     ld value3, %r3
     ld value4, %r4

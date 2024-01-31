@@ -41,6 +41,8 @@
 //map<string, vector<PoolOfLiterals>>
 //za generisanje koda napravi sheet sta se u sta mapira!!!
 
+
+
 using namespace std;
 
 struct RealocationEntry {
@@ -96,6 +98,7 @@ private:
   static string currentInstruction;
   static int fileOffset;
   static bool hasPool;
+  static int poolOffset;
 
   static string currentOperandOffset;
   static bool hasPool2;

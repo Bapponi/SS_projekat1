@@ -30,6 +30,8 @@ int Assembler::secSerialNum;
 string Assembler::currentInstruction;
 int Assembler::fileOffset;
 bool Assembler::hasPool;
+int Assembler::poolOffset;
+
 string Assembler::currentOperandOffset;
 bool Assembler::hasPool2;
 
@@ -48,6 +50,7 @@ void Assembler::init(){
   currentInstruction = "";
   fileOffset = 0;
   hasPool = false;
+  poolOffset = 0;
 
   currentOperandOffset = " OFFSET ";
   hasPool2 = false;
@@ -96,7 +99,8 @@ void Assembler::getIdent(string name, bool isGlobal){
     Symbol s;
     s.name = name;
     s.section = "UND";
-    s.offset = -1;
+    // s.offset = -1;
+    s.offset = 0;
     s.isLocal = !isGlobal;
     s.isSection = false;
     s.serialNum = symSerialNum++;
@@ -141,6 +145,12 @@ void Assembler::startSection(string name){
     symbols.insert(make_pair(currentSectionName, s));
   }
 
+  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+  for (int i = 0; i < itPool->second.size(); i++) {
+    itPool->second[i].symbolAddress += currentSectionSize;
+  }
+
+  poolOffset = 0;
   currentSectionName = name;
   currentSectionSize = 0;
 }
@@ -179,9 +189,15 @@ void Assembler::programEnd(){
     symbols.insert(make_pair(currentSectionName, s));
   }
 
+  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+  for (int i = 0; i < itPool->second.size(); i++) {
+    itPool->second[i].symbolAddress += currentSectionSize;
+  }
+
   currentSectionName = "";
   currentSectionSize = 0;
   fileOffset = 0;
+  poolOffset = 0;
 }
 
 void Assembler::directiveStart(string name){
@@ -249,12 +265,13 @@ void Assembler::getLiteral(string name, string type){
     int num = stoi(name);
     if(num > 2047 || num < -2048){
       p.isSymbol = false;
-      p.symbolAddress = currentSectionSize;
+      p.symbolAddress = poolOffset;
       p.symbolName = "dec"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
       poolVector.push_back(p);
       hasPool = true;
+      poolOffset += 4;
     }
 
   }else if(type.compare("hex") == 0){
@@ -263,38 +280,53 @@ void Assembler::getLiteral(string name, string type){
 
     if(num > 4095){
       p.isSymbol = false;
-      p.symbolAddress = currentSectionSize;
+      p.symbolAddress = poolOffset;
       p.symbolName = "hex"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
       poolVector.push_back(p);
       hasPool = true;
+      poolOffset += 4;
     }
 
   }else{
+    map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+    cout << " USAO BANANA " << itPool->second.size() << endl;
+    for (int i = 0; i < itPool->second.size(); i++) {
+      cout << " CIGANEEE " << endl;
+      // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
+      if(itPool->second[i].symbolName == name){
+        cout << " USAO FOR " << endl;
+        return;
+      };
+    }
+
     p.isSymbol = true;
-    p.symbolAddress = currentSectionSize;
+    p.symbolAddress = poolOffset;
     p.symbolName = name;
     p.symbolValue = 0;
 
     poolVector.push_back(p);
     hasPool = true;
+    poolOffset += 4;
   }
 }
 
 void Assembler::getOperand(string name, string type){
+
   PoolOfLiterals p;
   if(type.compare("opr_dec") == 0){
     name.erase(0, 1);
     int num = stoi(name);
     if(num > 2047 || num < -2048){
       p.isSymbol = false;
-      p.symbolAddress = currentSectionSize;
+      p.symbolAddress = poolOffset;
       p.symbolName = "opr_dec"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
       poolVector.push_back(p);
       hasPool = true;
+      poolOffset += 4;
     }
 
   }else if(type.compare("opr_hex") == 0){
@@ -303,32 +335,58 @@ void Assembler::getOperand(string name, string type){
 
     if(num > 4095){
       p.isSymbol = false;
-      p.symbolAddress = currentSectionSize;
+      p.symbolAddress = poolOffset;
       p.symbolName = "opr_hex"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
       poolVector.push_back(p);
       hasPool = true;
+      poolOffset += 4;
     }
 
   }else if(type.compare("opr_string") == 0){
+
     name.erase(0, 1);
+
+    map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+    cout << " USAO BANANA " << itPool->second.size() << endl;
+    for (int i = 0; i < itPool->second.size(); i++) {
+      cout << " CIGANEEE " << endl;
+      // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;      
+      if(itPool->second[i].symbolName == name){
+        cout << " USAO FOR " << endl;
+        return;
+      };
+    }
     p.isSymbol = true;
-    p.symbolAddress = currentSectionSize;
+    p.symbolAddress = poolOffset;
     p.symbolName = name;
     p.symbolValue = 0;
 
     poolVector.push_back(p);
     hasPool = true;
+    poolOffset += 4;
 
   }else{
+    map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+    cout << " USAO BANANA " << itPool->second.size() << endl;
+    for (int i = 0; i < itPool->second.size(); i++) {
+      cout << " CIGANEEE " << i << endl;
+      // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
+      if(itPool->second[i].symbolName == name){
+        cout << " USAO FOR " << endl;
+        return;
+      };
+    }
+
     p.isSymbol = true;
-    p.symbolAddress = currentSectionSize;
+    p.symbolAddress = poolOffset;
     p.symbolName = name;
     p.symbolValue = 0;
 
     poolVector.push_back(p);
     hasPool = true;
+    poolOffset += 4;
   }
 }
 
@@ -342,12 +400,13 @@ void Assembler::getParrensBody(string name, string type){
 
     if(num > 4095){
       p.isSymbol = false;
-      p.symbolAddress = currentSectionSize;
+      p.symbolAddress = poolOffset;
       p.symbolName = "hex"; //ne znam sta za ime, da li samo redni broj
       p.symbolValue = num;
 
       poolVector.push_back(p);
       hasPool = true;
+      poolOffset += 4;
     }
 
   }else{} //deo sa registrom 
@@ -704,6 +763,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   //gde koji simbol treba da upisuje koju vrednost
 void Assembler::getOperand2(string name, string type){
 
+  map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
   if(type == "opr_dec"){
     cout << " USAO OPR_DEC" << endl;
     
@@ -713,7 +773,14 @@ void Assembler::getOperand2(string name, string type){
       currentOperandOffset = getBits(name, 12); //potencijalno problem
       hasPool2 = false;
     }else{
-      hasPool2 = true;
+      for(auto pool:itPool->second){
+        if(!pool.isSymbol && pool.symbolValue == num){
+          string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+          currentOperandOffset = getBits(a, 12);
+          hasPool2=true;
+          break;
+        }
+      }
     }
 
   }else if(type == "opr_hex"){
@@ -725,7 +792,14 @@ void Assembler::getOperand2(string name, string type){
       currentOperandOffset = getBits(name, 12); //potencijalno problem
       hasPool2 = false;
     }else{
-      hasPool2 = true;
+      for(auto pool:itPool->second){
+        if(!pool.isSymbol && pool.symbolValue == num){
+          string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+          currentOperandOffset = getBits(a, 12);
+          hasPool2=true;
+          break;
+        }
+      }
     }
 
   }else if(type == "opr_string"){
@@ -745,15 +819,24 @@ void Assembler::getParrensBody2(string name, string type){
 }
 
 void Assembler::getLiteral2(string name, string type){
+
+  map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
   if(type == "dec"){
     cout << " USAO DEC" << endl;
-    
+
     int num = stoi(name);
     if(num <= 2047 && num >= -2048){
       currentOperandOffset = getBits(name, 12); //potencijalno problem
       hasPool2 = false;
     }else{
-      hasPool2 = true;
+      for(auto pool:itPool->second){
+        if(!pool.isSymbol && pool.symbolValue == num){
+          string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+          currentOperandOffset = getBits(a, 12);
+          hasPool2=true;
+          break;
+        }
+      }
     }
 
   }else if(type == "hex"){
@@ -765,7 +848,14 @@ void Assembler::getLiteral2(string name, string type){
       currentOperandOffset = getBits(name, 12); //potencijalno problem
       hasPool2 = false;
     }else{
-      hasPool2 = true;
+      for(auto pool:itPool->second){
+        if(!pool.isSymbol && pool.symbolValue == num){
+          string a = to_string(pool.symbolAddress - currentSectionSize - 4); //problem posto je ovo sve ista adresa pa je resenje samo -4
+          currentOperandOffset = getBits(a, 12);                             //promeniti gde se pravi simbol za bazen literala
+          hasPool2=true;
+          break;
+        }
+      }
     }
 
   }else{
