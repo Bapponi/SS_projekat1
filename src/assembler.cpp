@@ -290,16 +290,16 @@ void Assembler::getLiteral(string name, string type){
     }
 
   }else{
-    map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    cout << " USAO BANANA " << itPool->second.size() << endl;
-    for (int i = 0; i < itPool->second.size(); i++) {
-      cout << " CIGANEEE " << endl;
-      // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
-      if(itPool->second[i].symbolName == name){
-        cout << " USAO FOR " << endl;
-        return;
-      };
-    }
+    // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+    // cout << " USAO BANANA " << itPool->second.size() << endl;
+    // for (int i = 0; i < itPool->second.size(); i++) {
+    //   cout << " CIGANEEE " << endl;
+    //   // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
+    //   if(itPool->second[i].symbolName == name){
+    //     cout << " USAO FOR " << endl;
+    //     return;
+    //   };
+    // }
 
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
@@ -348,16 +348,22 @@ void Assembler::getOperand(string name, string type){
 
     name.erase(0, 1);
 
+    // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+    // cout << " USAO BANANA " << itPool->second.size() << endl;
+    // for (int i = 0; i < itPool->second.size(); i++) {
+    //   cout << " CIGANEEE " << endl;
+    //   // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;      
+    //   if(itPool->second[i].symbolName == name){
+    //     cout << " USAO FOR " << endl;
+    //     return;
+    //   };
+    // }
+
     map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    cout << " USAO BANANA " << itPool->second.size() << endl;
     for (int i = 0; i < itPool->second.size(); i++) {
-      cout << " CIGANEEE " << endl;
-      // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;      
-      if(itPool->second[i].symbolName == name){
-        cout << " USAO FOR " << endl;
-        return;
-      };
+      cout << " IME SIMBOLA: " << itPool->second[i].symbolName << endl;
     }
+    
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
     p.symbolName = name;
@@ -368,16 +374,16 @@ void Assembler::getOperand(string name, string type){
     poolOffset += 4;
 
   }else{
-    map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    cout << " USAO BANANA " << itPool->second.size() << endl;
-    for (int i = 0; i < itPool->second.size(); i++) {
-      cout << " CIGANEEE " << i << endl;
-      // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
-      if(itPool->second[i].symbolName == name){
-        cout << " USAO FOR " << endl;
-        return;
-      };
-    }
+    // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+    // cout << " USAO BANANA " << itPool->second.size() << endl;
+    // for (int i = 0; i < itPool->second.size(); i++) {
+    //   cout << " CIGANEEE " << i << endl;
+    //   // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
+    //   if(itPool->second[i].symbolName == name){
+    //     cout << " USAO FOR " << endl;
+    //     return;
+    //   };
+    // }
 
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
@@ -803,13 +809,30 @@ void Assembler::getOperand2(string name, string type){
     }
 
   }else if(type == "opr_string"){
+    
     cout << " USAO OPR_STRING" << endl;
     name.erase(0, 1);
-    hasPool2 = true;
+
+    for(auto pool:itPool->second){
+      if(pool.isSymbol && pool.symbolName == name){
+        string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+        currentOperandOffset = getBits(a, 12);
+        hasPool2=true;
+        break;
+      }
+    }
 
   }else{
     cout << " USAO IDENT" << endl;
-    hasPool2 = true;
+    
+    for(auto pool:itPool->second){
+      if(pool.isSymbol && pool.symbolName == name){
+        string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+        currentOperandOffset = getBits(a, 12);
+        hasPool2=true;
+        break;
+      }
+    }
   }
 
 }
@@ -860,7 +883,14 @@ void Assembler::getLiteral2(string name, string type){
 
   }else{
     cout << " USAO IDENT" << endl;
-    hasPool2 = true;
+    for(auto pool:itPool->second){
+      if(pool.isSymbol && pool.symbolName == name){
+        string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+        currentOperandOffset = getBits(a, 12);
+        hasPool2=true;
+        break;
+      }
+    }
   }
 }
 
