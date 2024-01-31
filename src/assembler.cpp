@@ -677,7 +677,6 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     op2 = op2.substr(2);
     code += getBits(op1, 4);
     code += getBits(op2, 4);
-    // code += getOperandOffset();
     code += currentOperandOffset;
     sec->second.data.push_back(code);
 
@@ -693,7 +692,6 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     op2 = op2.substr(2);
     code += getBits(op1, 4);
     code += getBits(op2, 4);
-    // code += getOperandOffset();
     code += currentOperandOffset;
     sec->second.data.push_back(code);
 
@@ -709,7 +707,6 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     op2 = op2.substr(2);
     code += getBits(op1, 4);
     code += getBits(op2, 4);
-    // code += getOperandOffset();
     code += currentOperandOffset;
     sec->second.data.push_back(code);
 
@@ -722,13 +719,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
       code += "00000000";
     }
     code += "00000000";
-    // code += getOperandOffset();
     code += currentOperandOffset;
     sec->second.data.push_back(code);
 
   }else if(name.compare("call ") == 0){
 
-    cout << " HasPool2: " << hasPool2 << endl;
     string code = "0010";
     if(hasPool2){
       code += "00011111";
@@ -736,16 +731,38 @@ void Assembler::instructionPass2(string name, string op1, string op2){
       code += "00000000";
     }
     code += "00000000";
-    // code += getOperandOffset();
     code += currentOperandOffset;
     sec->second.data.push_back(code);
 
   }else if(name.compare("ld ") == 0){
-    string code = "0";
+
+    string code = "1001";
+    //promeniti
+
+    //modifikator
+
+    op1 = op1.substr(2);
+    code += getBits(op1, 4);
+
+    //BBBB
+    //CCCC
+
+    //promeniti
+    code += currentOperandOffset;
     sec->second.data.push_back(code);
 
   }else if(name.compare("st ") == 0){
-    string code = "1";
+    string code = "1000";
+    //promeniti
+
+    //modifikator
+    //AAAA
+    //BBBB
+
+    //promeniti
+    op1 = op1.substr(2);
+    code += getBits(op1, 4);
+    code += currentOperandOffset;
     sec->second.data.push_back(code);
 
   }else if(name.compare(".skip ") == 0){
@@ -761,17 +778,13 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
   currentSectionSize += 4;
   fileOffset += 4;
-  currentOperandOffset = " OFFSET ";
+  currentOperandOffset = " OFFSET "; //da se vidi greska
 }
 
-//offset do bazena literala gde se nalazi ta konstanta ili simbol (ako je veci od 12b)
-//posle se za bazen literala generisu relokacione zapise gde se za svaki simbol ide i upisuje, 
-  //gde koji simbol treba da upisuje koju vrednost
 void Assembler::getOperand2(string name, string type){
 
   map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
   if(type == "opr_dec"){
-    cout << " USAO OPR_DEC" << endl;
     
     name.erase(0, 1);
     int num = stoi(name);
@@ -790,7 +803,7 @@ void Assembler::getOperand2(string name, string type){
     }
 
   }else if(type == "opr_hex"){
-    cout << " USAO OPR_HEX" << endl;
+    
     name.erase(0, 3);
     long long num = stoll(name, nullptr, 16);
 
@@ -809,8 +822,7 @@ void Assembler::getOperand2(string name, string type){
     }
 
   }else if(type == "opr_string"){
-    
-    cout << " USAO OPR_STRING" << endl;
+
     name.erase(0, 1);
 
     for(auto pool:itPool->second){
@@ -823,13 +835,12 @@ void Assembler::getOperand2(string name, string type){
     }
 
   }else{
-    cout << " USAO IDENT" << endl;
     
     for(auto pool:itPool->second){
       if(pool.isSymbol && pool.symbolName == name){
         string a = to_string(pool.symbolAddress - currentSectionSize - 4);
         currentOperandOffset = getBits(a, 12);
-        hasPool2=true;
+        hasPool2 = true;
         break;
       }
     }
@@ -845,7 +856,6 @@ void Assembler::getLiteral2(string name, string type){
 
   map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
   if(type == "dec"){
-    cout << " USAO DEC" << endl;
 
     int num = stoi(name);
     if(num <= 2047 && num >= -2048){
@@ -856,14 +866,14 @@ void Assembler::getLiteral2(string name, string type){
         if(!pool.isSymbol && pool.symbolValue == num){
           string a = to_string(pool.symbolAddress - currentSectionSize - 4);
           currentOperandOffset = getBits(a, 12);
-          hasPool2=true;
+          hasPool2 = true;
           break;
         }
       }
     }
 
   }else if(type == "hex"){
-    cout << " USAO HEX" << endl;
+
     name.erase(0, 2);
     long long num = stoll(name, nullptr, 16);
 
@@ -873,24 +883,25 @@ void Assembler::getLiteral2(string name, string type){
     }else{
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
-          string a = to_string(pool.symbolAddress - currentSectionSize - 4); //problem posto je ovo sve ista adresa pa je resenje samo -4
-          currentOperandOffset = getBits(a, 12);                             //promeniti gde se pravi simbol za bazen literala
-          hasPool2=true;
+          string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+          currentOperandOffset = getBits(a, 12);                             
+          hasPool2 = true;
           break;
         }
       }
     }
 
   }else{
-    cout << " USAO IDENT" << endl;
+
     for(auto pool:itPool->second){
       if(pool.isSymbol && pool.symbolName == name){
         string a = to_string(pool.symbolAddress - currentSectionSize - 4);
         currentOperandOffset = getBits(a, 12);
-        hasPool2=true;
+        hasPool2 = true;
         break;
       }
     }
+
   }
 }
 
