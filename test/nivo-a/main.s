@@ -64,7 +64,7 @@ my_start:
 
 .section my_data
 value1:
-.word 0 # ako je manje od 12b ok, ako je vece onda u bazen literala
+.word 0
 value2:
 .word 0
 value3:

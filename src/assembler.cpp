@@ -261,13 +261,22 @@ void Assembler::instructionPass(string name){
   }else if(name == "iret"){
     currentSectionSize += 12;
     fileOffset += 12;
+  }else if(currentInstruction == ".word "){
+    currentSectionSize += 0;
+    fileOffset += 0;
   }else{
     currentSectionSize += 4;
     fileOffset += 4;
   }
+  currentInstruction = "";
 }
 
 void Assembler::getLiteral(string name, string type){
+
+  if(currentInstruction == ".word "){
+    currentSectionSize += 4;
+    fileOffset += 4;
+  }
 
   PoolOfLiterals p;
 
