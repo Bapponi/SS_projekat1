@@ -2,7 +2,7 @@
 
 .extern handler, mathAdd, mathSub, mathMul, mathDiv
 
-.global my_start #u tabelu simbola u prvom prelazu, ali se nista ne zna
+.global my_start
 
 .global value1, value2, value3, value4, value5, value6, value7
 
@@ -57,6 +57,8 @@ my_start:
     ld value5, %r5
     ld value6, %r6
     ld value7, %r7
+
+    # .skip 19
 
     halt
 

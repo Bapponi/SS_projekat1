@@ -16,7 +16,7 @@ extern int yyparse();
 extern FILE *yyin, *yyout;
 
 bool Assembler::secondPass;
-map<string, RealocationEntry> Assembler::relocations;
+map<string, vector<RealocationEntry>> Assembler::relocations;
 map<string, Symbol> Assembler::symbols;
 map<string, vector<PoolOfLiterals>> Assembler::pools;
 map<string, Section> Assembler::sections;
@@ -31,9 +31,11 @@ string Assembler::currentInstruction;
 int Assembler::fileOffset;
 bool Assembler::hasPool;
 int Assembler::poolOffset;
+long long Assembler::skipWordNum;
 
 string Assembler::currentOperandOffset;
 bool Assembler::hasPool2;
+int Assembler::skipNum;
 
 void Assembler::init(){
   secondPass = false;
@@ -51,9 +53,11 @@ void Assembler::init(){
   fileOffset = 0;
   hasPool = false;
   poolOffset = 0;
+  skipWordNum = -1;
 
   currentOperandOffset = " OFFSET ";
   hasPool2 = false;
+  skipNum = -1;
 }
 
 void Assembler::passFile(string fileName, int fileNum, int passNum){
@@ -244,17 +248,23 @@ void Assembler::labelStart(string name){
       s.offset = currentSectionSize;
       s.isLocal = true;
       s.isSection = false;
-      // s.isDefined = true;
-      // s.isExtern = false;
 
       symbols[name] = s;
   }
 }
 
 void Assembler::instructionPass(string name){
-  currentInstruction = name;
-  currentSectionSize += 4;
-  fileOffset += 4;
+  if(name == ".skip "){
+    currentSectionSize += skipWordNum;
+    fileOffset += skipWordNum;
+    skipWordNum = -1;
+  }else if(name == "iret"){
+    currentSectionSize += 12;
+    fileOffset += 12;
+  }else{
+    currentSectionSize += 4;
+    fileOffset += 4;
+  }
 }
 
 void Assembler::getLiteral(string name, string type){
@@ -263,6 +273,7 @@ void Assembler::getLiteral(string name, string type){
 
   if(type.compare("dec") == 0){
     int num = stoi(name);
+    skipWordNum = num;
     if(num > 2047 || num < -2048){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
@@ -277,7 +288,7 @@ void Assembler::getLiteral(string name, string type){
   }else if(type.compare("hex") == 0){
     name.erase(0, 2);
     long long num = stoll(name, nullptr, 16);
-
+    skipWordNum = num;
     if(num > 4095){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
@@ -348,6 +359,7 @@ void Assembler::getOperand(string name, string type){
 
     name.erase(0, 1);
 
+    // ZA IZBACIVANJE DUPLIKATA
     // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
     // cout << " USAO BANANA " << itPool->second.size() << endl;
     // for (int i = 0; i < itPool->second.size(); i++) {
@@ -374,6 +386,7 @@ void Assembler::getOperand(string name, string type){
     poolOffset += 4;
 
   }else{
+    // ZA IZBACIVANJE DUPLIKATA
     // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
     // cout << " USAO BANANA " << itPool->second.size() << endl;
     // for (int i = 0; i < itPool->second.size(); i++) {
@@ -384,6 +397,12 @@ void Assembler::getOperand(string name, string type){
     //     return;
     //   };
     // }
+
+    if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
+      cout << "Current instruction: " << currentInstruction << endl;
+      fileOffset += 4;
+      currentSectionSize += 4;
+    }
 
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
@@ -418,6 +437,10 @@ void Assembler::getParrensBody(string name, string type){
   }else{} //deo sa registrom 
 
 }
+
+void Assembler::instructionName(string name){
+  currentInstruction = name;
+}
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +457,53 @@ void Assembler::programEnd2(){
   currentSectionName = "";
   currentSectionSize = 0;
   fileOffset = 0;
+
+  for (auto itSec = symbols.begin(); itSec != symbols.end(); ++itSec) {
+    string secName = itSec->first;
+    vector<RealocationEntry> vre;
+    relocations.insert(make_pair(secName, vre));
+  }
+
+// Tabela relokacija se radi na osnovu bazena literal tako što se za svaki simbol pamti gde se 
+// koristi (offset = adresa iz bazena literal) 
+//  ako je globalni onda je to ono sto se tu cuva, a ako je lokalni, onda se čuva simbol njegove sekcije
+//  Ako je globalni addend je 0, ako je lokalni addend je offset tog simbola od početka sekcije
+  for (auto itPool = pools.begin(); itPool != pools.end(); ++itPool) {
+    cout << "Key: " << itPool->first << endl;
+    
+    vector<PoolOfLiterals> v = itPool->second;
+
+    for (size_t i = 0; i < v.size(); i++) {
+      if(v[i].isSymbol == true){
+        auto itSym = symbols.find(v[i].symbolName);
+        Symbol s = itSym->second;
+        RealocationEntry re;
+        re.section = itPool->first;
+        re.offset = v[i].symbolAddress;
+        if(s.isLocal){
+          re.symbol = itPool->first;
+          re.addent = s.offset;
+        }else{
+          re.symbol = s.name;
+          re.addent = 0;
+        }
+
+        auto itRel = relocations.find(itPool->first);
+        itRel->second.push_back(re);
+      }
+
+    }
+    
+    
+    // Symbol s = itSym->second;
+    // if(s.isSection) continue;
+
+    // if(s.isLocal == 0){
+
+    // }else{
+
+    // }
+  }
 }
 
 void Assembler::instructionPass2(string name, string op1, string op2){
@@ -766,8 +836,15 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     sec->second.data.push_back(code);
 
   }else if(name.compare(".skip ") == 0){
-    string code = "2";
+
+    currentSectionSize = currentSectionSize + skipNum - 4;
+    string code = "";
+    for(int i = 0; i < skipNum; i++){
+      code += "0000";
+    }
     sec->second.data.push_back(code);
+
+    skipNum = -1;
 
   }else if(name == ".word "){ //ovde je problem da kaze da ima problem sa string-om .word_
     string code = "3";
@@ -861,6 +938,9 @@ void Assembler::getLiteral2(string name, string type){
     if(num <= 2047 && num >= -2048){
       currentOperandOffset = getBits(name, 12); //potencijalno problem
       hasPool2 = false;
+      if(currentInstruction == ".skip "){
+        skipNum = num;
+      }
     }else{
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
@@ -1009,18 +1089,33 @@ void Assembler::displayPoolTable(const map<string, vector<PoolOfLiterals>>& symb
   cout << "\n" << endl;
 }
 
-void Assembler::displayRelocationTable(const map<string, RealocationEntry>& symbolMap){
+void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap){
   
-  cout << "       -------------------------RELOCATIONS-----------------------" << endl;
+  // cout << "       -------------------------RELOCATIONS-----------------------" << endl;
+  // cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
+  //      << setw(15) << "Addent" << endl;
+
+  // for (const auto& entry : relocations) {
+  //     const RealocationEntry& relocations = entry.second;
+
+  //     // Print table row
+  //     cout << setw(15) << relocations.section << setw(15) << relocations.offset
+  //          << setw(15) << relocations.symbol << setw(15) << relocations.addent << endl;
+  // }
+
+  // cout << "\n" << endl;
+
+  cout << "    -------------------------RELOCATIONS-----------------------" << std::endl;
   cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
        << setw(15) << "Addent" << endl;
 
-  for (const auto& entry : relocations) {
-      const RealocationEntry& relocations = entry.second;
+  for (const auto& entry : symbolMap) {
+      const vector<RealocationEntry>& relocations = entry.second;
 
-      // Print table row
-      cout << setw(15) << relocations.section << setw(15) << relocations.offset
-           << setw(15) << relocations.symbol << setw(15) << relocations.addent << endl;
+      for (const auto& relocation : relocations) {
+        cout << setw(15) << relocation.section << setw(15) << relocation.offset
+             << setw(15) << relocation.symbol << setw(15) << relocation.addent << endl;
+      }
   }
 
   cout << "\n" << endl;

@@ -72,11 +72,11 @@ instruction: ONE_WORD_INST                                      {if(!Assembler::
            | CALL_JUMP literal                                  {if(!Assembler::secondPass) Assembler::instructionPass($1); 
                                                                       else Assembler::instructionPass2($1, "", "");
                                                                 }
-           | LD operand COMMA GPR_REG                           {if(!Assembler::secondPass) Assembler::instructionPass($1); 
-                                                                      else Assembler::instructionPass2($1, $4, "");
+           | ld LD operand COMMA GPR_REG                           {if(!Assembler::secondPass) Assembler::instructionPass($2); 
+                                                                      else Assembler::instructionPass2($2, $5, "");
                                                                 }
-           | ST GPR_REG COMMA operand                           {if(!Assembler::secondPass) Assembler::instructionPass($1); 
-                                                                      else Assembler::instructionPass2($1, $2, "");
+           | st ST GPR_REG COMMA operand                           {if(!Assembler::secondPass) Assembler::instructionPass($2); 
+                                                                      else Assembler::instructionPass2($2, $3, "");
                                                                 }
            | CSRRD CSR_REG COMMA GPR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); 
                                                                       else Assembler::instructionPass2($1, $2, $4);
@@ -84,12 +84,20 @@ instruction: ONE_WORD_INST                                      {if(!Assembler::
            | CSRWR GPR_REG COMMA CSR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass($1); 
                                                                       else Assembler::instructionPass2($1, $2, $4);
                                                                 }
-           | WORD symbolLiteralList                             {if(!Assembler::secondPass) Assembler::instructionPass($1); 
-                                                                      else Assembler::instructionPass2($1, "", "");
+           | word WORD symbolLiteralList                             {if(!Assembler::secondPass) Assembler::instructionPass($2); 
+                                                                      else Assembler::instructionPass2($2, "", "");
                                                                 }
-           | SKIP literal                                       {if(!Assembler::secondPass) Assembler::instructionPass($1); 
-                                                                      else Assembler::instructionPass2($1, "", "");
+           | skip SKIP literal                                       {if(!Assembler::secondPass) Assembler::instructionPass($2); 
+                                                                      else Assembler::instructionPass2($2, "", "");
                                                                 }
+
+ld: {Assembler::instructionName("ld ");}
+
+st: {Assembler::instructionName("st ");}
+
+word: {Assembler::instructionName(".word ");}
+
+skip: {Assembler::instructionName(".skip ");}
 
 operand: OPR_DEC    {if(!Assembler::secondPass) Assembler::getOperand($1, "opr_dec"); 
                      else Assembler::getOperand2($1, "opr_dec");

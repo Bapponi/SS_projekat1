@@ -490,16 +490,16 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  16
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   64
+#define YYLAST   68
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  35
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  22
+#define YYNNTS  26
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  48
+#define YYNRULES  52
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  83
+#define YYNSTATES  87
 
 #define YYUNDEFTOK  2
 #define YYMAXUTOK   289
@@ -552,8 +552,9 @@ static const yytype_uint8 yyrline[] =
        0,    28,    28,    30,    32,    33,    35,    36,    37,    38,
       40,    41,    43,    45,    47,    49,    51,    53,    55,    57,
       58,    60,    63,    66,    69,    72,    75,    78,    81,    84,
-      87,    90,    94,    97,   100,   103,   106,   108,   110,   111,
-     113,   116,   120,   121,   123,   124,   126,   129,   132
+      87,    90,    94,    96,    98,   100,   102,   105,   108,   111,
+     114,   116,   118,   119,   121,   124,   128,   129,   131,   132,
+     134,   137,   140
 };
 #endif
 
@@ -570,9 +571,9 @@ static const char *const yytname[] =
   "OPR_DEC", "DEC", "$accept", "program", "end", "programList",
   "programElem", "symbolList", "extern", "externStart", "global",
   "globalStart", "section", "labelSection", "labelStart",
-  "instructionList", "instruction", "operand", "parrens",
-  "parrensBodyList", "parrensBody", "plusMinus", "symbolLiteralList",
-  "literal", YY_NULLPTR
+  "instructionList", "instruction", "ld", "st", "word", "skip", "operand",
+  "parrens", "parrensBodyList", "parrensBody", "plusMinus",
+  "symbolLiteralList", "literal", YY_NULLPTR
 };
 #endif
 
@@ -588,12 +589,12 @@ static const yytype_int16 yytoknum[] =
 };
 # endif
 
-#define YYPACT_NINF (-61)
+#define YYPACT_NINF (-58)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-1)
+#define YYTABLE_NINF (-36)
 
 #define yytable_value_is_error(Yyn) \
   0
@@ -602,15 +603,15 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       2,   -61,   -61,   -61,    -2,     9,    -4,   -61,   -61,     4,
-     -61,     4,   -61,   -61,   -61,   -61,   -61,   -61,   -61,   -61,
-     -61,    -8,    -8,    28,    15,   -61,    25,    27,    29,    -5,
-      -5,    -5,    -7,    30,    10,    31,   -61,   -61,   -61,    -1,
-      18,   -61,   -61,   -61,   -61,    23,   -61,   -61,   -61,   -61,
-      -9,   -61,   -61,    24,   -61,    26,    32,    33,    41,    43,
-      -5,   -61,   -61,    12,   -61,    44,    -7,    45,    47,   -61,
-      34,   -61,   -61,   -61,   -61,    -9,   -61,   -61,   -61,   -61,
-      -7,   -61,   -61
+       0,   -58,   -58,   -58,    -3,    17,    -6,   -58,   -58,     2,
+     -58,     2,   -58,   -58,   -58,   -58,   -58,   -58,   -58,   -58,
+     -58,    -8,    -8,    28,    15,   -58,     9,    16,    25,    -4,
+      29,    27,   -58,    22,    23,    26,    34,   -58,   -58,    18,
+      24,   -58,   -58,   -58,   -58,    30,    31,    -7,    41,    -4,
+      -4,    42,    43,    44,    46,   -58,   -58,    -9,   -58,   -58,
+      32,   -58,    33,    35,   -58,   -58,   -58,    36,   -58,   -58,
+     -58,   -58,    12,   -58,    50,    -7,    -4,    -7,   -58,   -58,
+     -58,    -9,   -58,   -58,   -58,   -58,   -58
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -621,28 +622,28 @@ static const yytype_int8 yydefact[] =
        0,    18,    15,    13,     0,     0,     0,     5,     6,     0,
        7,     0,     8,     9,    20,    16,     1,     3,     2,     4,
       11,    12,    14,    17,     0,    21,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,    19,    10,    22,     0,
-       0,    48,    47,    46,    25,    30,    45,    31,    34,    35,
-       0,    33,    32,     0,    36,     0,     0,     0,     0,     0,
-       0,    40,    41,     0,    39,     0,     0,     0,     0,    23,
-       0,    44,    42,    43,    37,     0,    26,    27,    28,    29,
-       0,    38,    24
+       0,     0,    19,     0,     0,     0,     0,    10,    22,     0,
+       0,    52,    51,    50,    25,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,    38,    39,     0,    37,    36,
+       0,    40,     0,    30,    49,    31,    23,     0,    28,    29,
+      44,    45,     0,    43,     0,     0,     0,     0,    46,    47,
+      41,     0,    26,    27,    48,    24,    42
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -61,   -61,   -61,   -61,    35,    49,   -61,   -61,   -61,   -61,
-     -61,   -61,   -61,   -61,   -61,   -60,   -61,   -61,   -11,   -61,
-     -61,   -30
+     -58,   -58,   -58,   -58,    60,    56,   -58,   -58,   -58,   -58,
+     -58,   -58,   -58,   -58,   -58,   -58,   -58,   -58,   -58,   -57,
+     -58,   -58,   -13,   -58,   -58,   -49
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
       -1,     5,    18,     6,     7,    21,     8,     9,    10,    11,
-      12,    13,    14,    23,    36,    53,    54,    63,    64,    75,
-      45,    44
+      12,    13,    14,    23,    32,    33,    34,    35,    36,    60,
+      61,    72,    73,    81,    63,    44
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -650,24 +651,24 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      46,    47,    48,    49,    61,    41,    77,     1,    15,    16,
-       2,     3,     4,     1,    20,    17,     2,     3,     4,    50,
-      82,    24,    56,    62,    51,    37,    52,    42,    58,    43,
-      71,    25,    26,    27,    28,    29,    72,    73,    38,    74,
-      39,    19,    40,    55,    57,    30,    31,    59,    32,    33,
-      34,    35,    60,    65,    69,    66,    70,    76,    78,    79,
-      22,    67,    68,    80,    81
+      64,    65,    55,    56,    70,     1,    41,    15,     2,     3,
+       4,     1,    20,    17,     2,     3,     4,    16,    83,    57,
+      85,    24,    38,    71,    58,    37,    59,    84,    42,    39,
+      43,    25,    26,    27,    28,    29,    78,    79,    40,    80,
+      46,    45,    47,    49,    48,   -34,   -35,    51,   -32,   -33,
+      30,    31,    50,    52,    62,    66,    67,    68,    69,    53,
+      54,    74,    75,    82,    76,    77,    19,    22,    86
 };
 
 static const yytype_int8 yycheck[] =
 {
-      30,    31,     9,    10,    13,    10,    66,    11,    10,     0,
-      14,    15,    16,    11,    10,    19,    14,    15,    16,    26,
-      80,    29,    12,    32,    31,    10,    33,    32,    29,    34,
-      60,     3,     4,     5,     6,     7,    24,    25,    13,    27,
-      13,     6,    13,    13,    13,    17,    18,    29,    20,    21,
-      22,    23,    29,    29,    13,    29,    13,    13,    13,    12,
-      11,    29,    29,    29,    75
+      49,    50,     9,    10,    13,    11,    10,    10,    14,    15,
+      16,    11,    10,    19,    14,    15,    16,     0,    75,    26,
+      77,    29,    13,    32,    31,    10,    33,    76,    32,    13,
+      34,     3,     4,     5,     6,     7,    24,    25,    13,    27,
+      13,    12,    20,    17,    21,    17,    18,    29,    20,    21,
+      22,    23,    18,    29,    13,    13,    13,    13,    12,    29,
+      29,    29,    29,    13,    29,    29,     6,    11,    81
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -677,12 +678,12 @@ static const yytype_int8 yystos[] =
        0,    11,    14,    15,    16,    36,    38,    39,    41,    42,
       43,    44,    45,    46,    47,    10,     0,    19,    37,    39,
       10,    40,    40,    48,    29,     3,     4,     5,     6,     7,
-      17,    18,    20,    21,    22,    23,    49,    10,    13,    13,
-      13,    10,    32,    34,    56,    55,    56,    56,     9,    10,
-      26,    31,    33,    50,    51,    13,    12,    13,    29,    29,
-      29,    13,    32,    52,    53,    29,    29,    29,    29,    13,
-      13,    56,    24,    25,    27,    54,    13,    50,    13,    12,
-      29,    53,    50
+      22,    23,    49,    50,    51,    52,    53,    10,    13,    13,
+      13,    10,    32,    34,    60,    12,    13,    20,    21,    17,
+      18,    29,    29,    29,    29,     9,    10,    26,    31,    33,
+      54,    55,    13,    59,    60,    60,    13,    13,    13,    12,
+      13,    32,    56,    57,    29,    29,    29,    29,    24,    25,
+      27,    58,    13,    54,    60,    54,    57
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -691,8 +692,9 @@ static const yytype_int8 yyr1[] =
        0,    35,    36,    37,    38,    38,    39,    39,    39,    39,
       40,    40,    41,    42,    43,    44,    45,    46,    47,    48,
       48,    49,    49,    49,    49,    49,    49,    49,    49,    49,
-      49,    49,    50,    50,    50,    50,    50,    51,    52,    52,
-      53,    53,    54,    54,    55,    55,    56,    56,    56
+      49,    49,    50,    51,    52,    53,    54,    54,    54,    54,
+      54,    55,    56,    56,    57,    57,    58,    58,    59,    59,
+      60,    60,    60
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
@@ -700,9 +702,10 @@ static const yytype_int8 yyr2[] =
 {
        0,     2,     2,     1,     2,     1,     1,     1,     1,     1,
        3,     1,     2,     1,     2,     1,     2,     2,     1,     2,
-       0,     1,     2,     4,     6,     2,     4,     4,     4,     4,
-       2,     2,     1,     1,     1,     1,     1,     3,     3,     1,
-       1,     1,     1,     1,     3,     1,     1,     1,     1
+       0,     1,     2,     4,     6,     2,     5,     5,     4,     4,
+       3,     3,     0,     0,     0,     0,     1,     1,     1,     1,
+       1,     3,     3,     1,     1,     1,     1,     1,     3,     1,
+       1,     1,     1
 };
 
 
@@ -1400,55 +1403,55 @@ yyreduce:
   case 3:
 #line 30 "spec/parser.y"
          {if(!Assembler::secondPass) Assembler::programEnd(); else Assembler::programEnd2();}
-#line 1404 "parser.tab.c"
+#line 1407 "parser.tab.c"
     break;
 
   case 10:
 #line 40 "spec/parser.y"
                                    {if(!Assembler::secondPass) Assembler::getIdent((yyvsp[0].string), true);}
-#line 1410 "parser.tab.c"
+#line 1413 "parser.tab.c"
     break;
 
   case 11:
 #line 41 "spec/parser.y"
                   {if(!Assembler::secondPass) Assembler::getIdent((yyvsp[0].string), true);}
-#line 1416 "parser.tab.c"
+#line 1419 "parser.tab.c"
     break;
 
   case 12:
 #line 43 "spec/parser.y"
                                {if(!Assembler::secondPass) Assembler::directiveEnd();}
-#line 1422 "parser.tab.c"
+#line 1425 "parser.tab.c"
     break;
 
   case 13:
 #line 45 "spec/parser.y"
                     {if(!Assembler::secondPass) Assembler::directiveStart("extern");}
-#line 1428 "parser.tab.c"
+#line 1431 "parser.tab.c"
     break;
 
   case 14:
 #line 47 "spec/parser.y"
                                {if(!Assembler::secondPass) Assembler::directiveEnd();}
-#line 1434 "parser.tab.c"
+#line 1437 "parser.tab.c"
     break;
 
   case 15:
 #line 49 "spec/parser.y"
                     {if(!Assembler::secondPass) Assembler::directiveStart("global");}
-#line 1440 "parser.tab.c"
+#line 1443 "parser.tab.c"
     break;
 
   case 16:
 #line 51 "spec/parser.y"
                        {if(!Assembler::secondPass) Assembler::startSection((yyvsp[0].string)); else Assembler::startSection2((yyvsp[0].string));}
-#line 1446 "parser.tab.c"
+#line 1449 "parser.tab.c"
     break;
 
   case 18:
 #line 55 "spec/parser.y"
                   {if(!Assembler::secondPass) Assembler::labelStart((yyvsp[0].string));}
-#line 1452 "parser.tab.c"
+#line 1455 "parser.tab.c"
     break;
 
   case 21:
@@ -1456,7 +1459,7 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[0].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[0].string), "", "");
                                                                 }
-#line 1460 "parser.tab.c"
+#line 1463 "parser.tab.c"
     break;
 
   case 22:
@@ -1464,7 +1467,7 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-1].string), (yyvsp[0].string), "");
                                                                 }
-#line 1468 "parser.tab.c"
+#line 1471 "parser.tab.c"
     break;
 
   case 23:
@@ -1472,7 +1475,7 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));
                                                                 }
-#line 1476 "parser.tab.c"
+#line 1479 "parser.tab.c"
     break;
 
   case 24:
@@ -1480,7 +1483,7 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-5].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-5].string), (yyvsp[-4].string), (yyvsp[-2].string));
                                                                 }
-#line 1484 "parser.tab.c"
+#line 1487 "parser.tab.c"
     break;
 
   case 25:
@@ -1488,23 +1491,23 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-1].string), "", "");
                                                                 }
-#line 1492 "parser.tab.c"
+#line 1495 "parser.tab.c"
     break;
 
   case 26:
 #line 75 "spec/parser.y"
-                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
+                                                                   {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[0].string), "");
                                                                 }
-#line 1500 "parser.tab.c"
+#line 1503 "parser.tab.c"
     break;
 
   case 27:
 #line 78 "spec/parser.y"
-                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
+                                                                   {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), "");
                                                                 }
-#line 1508 "parser.tab.c"
+#line 1511 "parser.tab.c"
     break;
 
   case 28:
@@ -1512,7 +1515,7 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));
                                                                 }
-#line 1516 "parser.tab.c"
+#line 1519 "parser.tab.c"
     break;
 
   case 29:
@@ -1520,99 +1523,123 @@ yyreduce:
                                                                 {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-3].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));
                                                                 }
-#line 1524 "parser.tab.c"
+#line 1527 "parser.tab.c"
     break;
 
   case 30:
 #line 87 "spec/parser.y"
-                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string)); 
+                                                                     {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-1].string), "", "");
                                                                 }
-#line 1532 "parser.tab.c"
+#line 1535 "parser.tab.c"
     break;
 
   case 31:
 #line 90 "spec/parser.y"
-                                                                {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string)); 
+                                                                     {if(!Assembler::secondPass) Assembler::instructionPass((yyvsp[-1].string)); 
                                                                       else Assembler::instructionPass2((yyvsp[-1].string), "", "");
                                                                 }
-#line 1540 "parser.tab.c"
+#line 1543 "parser.tab.c"
     break;
 
   case 32:
 #line 94 "spec/parser.y"
-                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_dec"); 
-                     else Assembler::getOperand2((yyvsp[0].string), "opr_dec");
-                    }
-#line 1548 "parser.tab.c"
+    {Assembler::instructionName("ld ");}
+#line 1549 "parser.tab.c"
     break;
 
   case 33:
-#line 97 "spec/parser.y"
-                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_hex"); 
-                     else Assembler::getOperand2((yyvsp[0].string), "opr_hex");
-                    }
-#line 1556 "parser.tab.c"
+#line 96 "spec/parser.y"
+    {Assembler::instructionName("st ");}
+#line 1555 "parser.tab.c"
     break;
 
   case 34:
-#line 100 "spec/parser.y"
-                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_string"); 
-                     else Assembler::getOperand2((yyvsp[0].string), "opr_string");
-                    }
-#line 1564 "parser.tab.c"
+#line 98 "spec/parser.y"
+      {Assembler::instructionName(".word ");}
+#line 1561 "parser.tab.c"
     break;
 
   case 35:
-#line 103 "spec/parser.y"
+#line 100 "spec/parser.y"
+      {Assembler::instructionName(".skip ");}
+#line 1567 "parser.tab.c"
+    break;
+
+  case 36:
+#line 102 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_dec"); 
+                     else Assembler::getOperand2((yyvsp[0].string), "opr_dec");
+                    }
+#line 1575 "parser.tab.c"
+    break;
+
+  case 37:
+#line 105 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_hex"); 
+                     else Assembler::getOperand2((yyvsp[0].string), "opr_hex");
+                    }
+#line 1583 "parser.tab.c"
+    break;
+
+  case 38:
+#line 108 "spec/parser.y"
+                    {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "opr_string"); 
+                     else Assembler::getOperand2((yyvsp[0].string), "opr_string");
+                    }
+#line 1591 "parser.tab.c"
+    break;
+
+  case 39:
+#line 111 "spec/parser.y"
                     {if(!Assembler::secondPass) Assembler::getOperand((yyvsp[0].string), "ident"); 
                      else Assembler::getOperand2((yyvsp[0].string), "ident");
                     }
-#line 1572 "parser.tab.c"
+#line 1599 "parser.tab.c"
     break;
 
-  case 40:
-#line 113 "spec/parser.y"
+  case 44:
+#line 121 "spec/parser.y"
                         {if(!Assembler::secondPass) Assembler::getParrensBody((yyvsp[0].string), "gpr_reg"); 
                             else Assembler::getParrensBody2((yyvsp[0].string), "gpr_reg");
                         }
-#line 1580 "parser.tab.c"
+#line 1607 "parser.tab.c"
     break;
 
-  case 41:
-#line 116 "spec/parser.y"
+  case 45:
+#line 124 "spec/parser.y"
                         {if(!Assembler::secondPass) Assembler::getParrensBody((yyvsp[0].string), "hex");
                             else Assembler::getParrensBody2((yyvsp[0].string), "hex");
                         }
-#line 1588 "parser.tab.c"
+#line 1615 "parser.tab.c"
     break;
 
-  case 46:
-#line 126 "spec/parser.y"
+  case 50:
+#line 134 "spec/parser.y"
                 {if(!Assembler::secondPass) Assembler::getLiteral((yyvsp[0].string), "dec");
                      else Assembler::getLiteral2((yyvsp[0].string), "dec");
                 }
-#line 1596 "parser.tab.c"
+#line 1623 "parser.tab.c"
     break;
 
-  case 47:
-#line 129 "spec/parser.y"
+  case 51:
+#line 137 "spec/parser.y"
                 {if(!Assembler::secondPass) Assembler::getLiteral((yyvsp[0].string), "hex");
                      Assembler::getLiteral2((yyvsp[0].string), "hex");
                 }
-#line 1604 "parser.tab.c"
+#line 1631 "parser.tab.c"
     break;
 
-  case 48:
-#line 132 "spec/parser.y"
+  case 52:
+#line 140 "spec/parser.y"
                 {if(!Assembler::secondPass) Assembler::getLiteral((yyvsp[0].string), "ident");
                      Assembler::getLiteral2((yyvsp[0].string), "ident");
                 }
-#line 1612 "parser.tab.c"
+#line 1639 "parser.tab.c"
     break;
 
 
-#line 1616 "parser.tab.c"
+#line 1643 "parser.tab.c"
 
       default: break;
     }
@@ -1844,5 +1871,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 136 "spec/parser.y"
+#line 144 "spec/parser.y"
 

@@ -83,7 +83,7 @@ struct Section {
 class Assembler{
 
 private:
-  static map<string, RealocationEntry> relocations;
+  static map<string, vector<RealocationEntry>> relocations;
   static map<string, Symbol> symbols;
   static map<string, vector<PoolOfLiterals>> pools;
   static map<string, Section> sections;
@@ -99,9 +99,11 @@ private:
   static int fileOffset;
   static bool hasPool;
   static int poolOffset;
+  static long long skipWordNum;
 
   static string currentOperandOffset;
   static bool hasPool2;
+  static int skipNum;
 
 
 public:
@@ -120,6 +122,7 @@ public:
   static void getLiteral(string name, string type);
   static void getOperand(string name, string type);
   static void getParrensBody(string name, string type);
+  static void instructionName(string name);
 
   static void instructionPass2(string name, string op1, string op2);
   static void startSection2(string name);
@@ -135,7 +138,7 @@ public:
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);
-  static void displayRelocationTable(const map<string, RealocationEntry>& symbolMap);
+  static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
 
 };
 
