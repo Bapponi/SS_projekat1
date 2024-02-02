@@ -22,6 +22,8 @@ map<string, vector<PoolOfLiterals>> Assembler::pools;
 map<string, Section> Assembler::sections;
 vector<PoolOfLiterals> Assembler::poolVector;
 
+map<string, vector<RealocationEntry>> Assembler::relocationsNew;
+
 string Assembler::fileOutput;
 string Assembler::currentSectionName;
 int Assembler::instructionNum;
@@ -50,6 +52,8 @@ void Assembler::init(){
   pools.clear();
   sections.clear();
   poolVector.clear();
+
+  relocationsNew.clear();
 
   fileOutput = "";
   currentSectionName = "";
@@ -101,6 +105,11 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
   displaySectionTable(sections);
   displayPoolTable(pools);
   displayRelocationTable(relocations);
+  displayRelocationTable(relocationsNew);
+
+  if(passNum == 2){
+    createOutputFile();
+  }
 
   fclose(file);
 
@@ -517,16 +526,6 @@ void Assembler::programEnd2(){
       }
 
     }
-    
-    
-    // Symbol s = itSym->second;
-    // if(s.isSection) continue;
-
-    // if(s.isLocal == 0){
-
-    // }else{
-
-    // }
   }
 }
 
@@ -1250,6 +1249,101 @@ void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry
   }
 
   cout << "\n" << endl;
+}
+
+void Assembler::createOutputFile(){
+
+  ofstream file(fileOutput, ios::out | ios::binary);
+
+  int symbolsSize = symbols.size();
+  file.write((char*)&symbolsSize, sizeof(symbolsSize));
+
+  for (map<string, Symbol>::iterator itSym = symbols.begin(); itSym != symbols.end(); itSym++){
+
+      string name = itSym->first;
+      Symbol s = itSym->second;
+      
+      int nameSize = name.length();
+      file.write((char*)(&nameSize), sizeof(nameSize));
+      file.write(name.c_str(), name.length());
+
+      file.write((char*)(&s.serialNum), sizeof(s.serialNum));
+      file.write((char*)(&s.value), sizeof(s.value));
+      file.write((char*)(&s.name), sizeof(s.name));
+      file.write((char*)(&s.section), sizeof(s.section));
+      file.write((char*)(&s.isSection), sizeof(s.isSection));
+      file.write((char*)(&s.offset), sizeof(s.offset));
+
+      nameSize = s.name.length();
+      file.write((char *)(&nameSize), sizeof(nameSize));
+      file.write(s.name.c_str(), s.name.length());
+
+      nameSize = s.section.length();
+      file.write((char*)(&nameSize), sizeof(nameSize));
+      file.write(s.section.c_str(), s.section.length());
+  }
+
+  int sectionsSize = sections.size();
+  file.write((char*)&sectionsSize, sizeof(sectionsSize));
+
+  for (map<string, Section>::iterator itSec = sections.begin(); itSec != sections.end(); itSec++){
+  
+    string name = itSec->first;
+    Section sec = itSec->second;
+
+    int nameSize = name.length();
+    file.write((char*)(&nameSize), sizeof(nameSize));
+    file.write(name.c_str(), name.length());
+  
+    file.write((char *)(&sec.size), sizeof(sec.size));
+    file.write((char *)(&sec.serialNum), sizeof(sec.serialNum));
+    file.write((char *)(&sec.name), sizeof(sec.name));
+    file.write((char *)(&sec.hasPool), sizeof(sec.hasPool));
+    file.write((char *)(&sec.poolSize), sizeof(sec.poolSize));
+
+    nameSize = sec.name.length();
+    file.write((char *)(&nameSize), sizeof(nameSize));
+    file.write(sec.name.c_str(), sec.name.length());
+
+    int relSize = relocations[name].size();
+    file.write((char *)&relSize, sizeof(relSize));
+    for (RealocationEntry reloc : relocations[name]){
+
+      file.write((char*)(&reloc.section),sizeof(reloc.section));
+      file.write((char*)(&reloc.offset), sizeof(reloc.offset));
+      file.write((char*)(&reloc.symbol), sizeof(reloc.symbol));
+      file.write((char*)(&reloc.addent), sizeof(reloc.addent));
+     
+      int nameSize = reloc.section.length();
+      file.write((char *)(&nameSize), sizeof(nameSize));
+      file.write(reloc.section.c_str(), reloc.section.length());
+
+      nameSize = reloc.symbol.length();
+      file.write((char *)(&nameSize), sizeof(nameSize));
+      file.write(reloc.symbol.c_str(), reloc.symbol.length());
+  
+    }
+
+    int dataNum = sec.data.size();
+    file.write((char*)&dataNum, sizeof(dataNum));
+
+    int numD = 0;
+    for (string data : sec.data){
+        file.write((char*)&data, sizeof(data));
+        numD++;
+    }
+
+    int offsetsNum = sec.offsets.size();
+    file.write((char*)&offsetsNum, sizeof(offsetsNum));
+
+    int numO = 0;
+    for (long long offset : sec.offsets){
+        file.write((char*)&offset, sizeof(offset));
+        numO++;
+    }
+  }
+
+  file.close();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -89,6 +89,8 @@ private:
   static map<string, Section> sections;
   static vector<PoolOfLiterals> poolVector;
   
+  static map<string, vector<RealocationEntry>> relocationsNew;
+
   static string fileOutput;
   static string currentSectionName;
   static int instructionNum;
@@ -143,7 +145,7 @@ public:
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
-
+  static void createOutputFile();
 };
 
 #endif
