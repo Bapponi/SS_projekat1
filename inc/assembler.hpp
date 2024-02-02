@@ -89,8 +89,6 @@ private:
   static map<string, Section> sections;
   static vector<PoolOfLiterals> poolVector;
   
-  static map<string, vector<RealocationEntry>> relocationsNew;
-
   static string fileOutput;
   static string currentSectionName;
   static int instructionNum;

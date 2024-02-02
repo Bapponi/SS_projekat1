@@ -22,8 +22,6 @@ map<string, vector<PoolOfLiterals>> Assembler::pools;
 map<string, Section> Assembler::sections;
 vector<PoolOfLiterals> Assembler::poolVector;
 
-map<string, vector<RealocationEntry>> Assembler::relocationsNew;
-
 string Assembler::fileOutput;
 string Assembler::currentSectionName;
 int Assembler::instructionNum;
@@ -52,8 +50,6 @@ void Assembler::init(){
   pools.clear();
   sections.clear();
   poolVector.clear();
-
-  relocationsNew.clear();
 
   fileOutput = "";
   currentSectionName = "";
@@ -105,7 +101,6 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
   displaySectionTable(sections);
   displayPoolTable(pools);
   displayRelocationTable(relocations);
-  displayRelocationTable(relocationsNew);
 
   if(passNum == 2){
     createOutputFile();
@@ -1295,11 +1290,11 @@ void Assembler::createOutputFile(){
     file.write((char*)(&nameSize), sizeof(nameSize));
     file.write(name.c_str(), name.length());
   
-    file.write((char *)(&sec.size), sizeof(sec.size));
-    file.write((char *)(&sec.serialNum), sizeof(sec.serialNum));
-    file.write((char *)(&sec.name), sizeof(sec.name));
-    file.write((char *)(&sec.hasPool), sizeof(sec.hasPool));
-    file.write((char *)(&sec.poolSize), sizeof(sec.poolSize));
+    file.write((char*)(&sec.size), sizeof(sec.size));
+    file.write((char*)(&sec.serialNum), sizeof(sec.serialNum));
+    file.write((char*)(&sec.name), sizeof(sec.name));
+    file.write((char*)(&sec.hasPool), sizeof(sec.hasPool));
+    file.write((char*)(&sec.poolSize), sizeof(sec.poolSize));
 
     nameSize = sec.name.length();
     file.write((char *)(&nameSize), sizeof(nameSize));
@@ -1392,7 +1387,7 @@ int main(int argc, char* argv[]){
   
   Assembler::passFile(srcFolder + argv[3], argv[2], 2);
 
-  printf("Prosao ceo fajl bez greske\n");
+  printf("Prosao ceo asembler bez greske\n");
 
   return 1;
 }
