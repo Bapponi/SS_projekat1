@@ -89,6 +89,7 @@ private:
   static map<string, Section> sections;
   static vector<PoolOfLiterals> poolVector;
   
+  static string fileOutput;
   static string currentSectionName;
   static int instructionNum;
   static int currentSectionSize;
@@ -113,7 +114,7 @@ public:
 
   static bool secondPass;
   static void init();
-  static void passFile(string fileName, int fileNum, int passNum);
+  static void passFile(string fileName, string fileOut, int passNum);
 
   static void getIdent(string name, bool isGlobal);
   static void startSection(string name);

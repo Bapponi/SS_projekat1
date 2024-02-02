@@ -21,6 +21,8 @@ map<string, Symbol> Assembler::symbols;
 map<string, vector<PoolOfLiterals>> Assembler::pools;
 map<string, Section> Assembler::sections;
 vector<PoolOfLiterals> Assembler::poolVector;
+
+string Assembler::fileOutput;
 string Assembler::currentSectionName;
 int Assembler::instructionNum;
 int Assembler::currentSectionSize;
@@ -48,6 +50,8 @@ void Assembler::init(){
   pools.clear();
   sections.clear();
   poolVector.clear();
+
+  fileOutput = "";
   currentSectionName = "";
   currentSectionSize = 0;
   currentDirective = "";
@@ -68,7 +72,10 @@ void Assembler::init(){
   inOprString = false;
 }
 
-void Assembler::passFile(string fileName, int fileNum, int passNum){
+void Assembler::passFile(string fileName, string fileOut, int passNum){
+
+  fileOutput = fileOut;
+
   const char * filePath = fileName.c_str();
   FILE *file = fopen(filePath, "r");
 
@@ -79,7 +86,7 @@ void Assembler::passFile(string fileName, int fileNum, int passNum){
   
   yyin = file;
 
-  if(passNum == 1 && fileNum == 0 && !secondPass)
+  if(passNum == 1 &&  !secondPass)
     Assembler::init();
 
   if(passNum == 2)
@@ -1249,15 +1256,6 @@ void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-array<string,1> inputFiles{ 
-  // "handler.s", 
-  // "isr_software.s", 
-  // "isr_terminal.s",
-  // "isr_timer.s",
-  "main.s",
-  // "math.s"
-};
-
 string srcFolder = "./test/nivo-a/";
 
 int main(int argc, char* argv[]){
@@ -1296,9 +1294,9 @@ int main(int argc, char* argv[]){
     exit(1);
   }
   
-  Assembler::passFile(srcFolder + argv[3], 0, 1);
+  Assembler::passFile(srcFolder + argv[3], argv[2], 1);
   
-  Assembler::passFile(srcFolder + argv[3], 0, 2);
+  Assembler::passFile(srcFolder + argv[3], argv[2], 2);
 
   printf("Prosao ceo fajl bez greske\n");
 
