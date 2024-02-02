@@ -19,7 +19,7 @@ my_start:
     ld $1, %r1
     push %r1
     call 0xF0000000
-    st %r1, value2
+    st %r1, [%r2 + 0xFF]
 
     ld $2, %r1
     push %r1

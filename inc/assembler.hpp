@@ -104,7 +104,10 @@ private:
   static string currentOperandOffset;
   static bool hasPool2;
   static int skipNum;
-
+  static bool inParrens;
+  static string parrensReg;
+  static string parrensHex;
+  static bool inOprString;
 
 public:
 

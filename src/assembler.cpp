@@ -36,6 +36,10 @@ long long Assembler::skipWordNum;
 string Assembler::currentOperandOffset;
 bool Assembler::hasPool2;
 int Assembler::skipNum;
+bool Assembler::inParrens;
+string Assembler::parrensReg;
+string Assembler::parrensHex;
+bool Assembler::inOprString;
 
 void Assembler::init(){
   secondPass = false;
@@ -58,6 +62,10 @@ void Assembler::init(){
   currentOperandOffset = " OFFSET ";
   hasPool2 = false;
   skipNum = -1;
+  inParrens = false;
+  parrensReg = "";
+  parrensHex = "";
+  inOprString = false;
 }
 
 void Assembler::passFile(string fileName, int fileNum, int passNum){
@@ -529,7 +537,9 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   if(op2 == "%sp") op2 = "%r14";
   if(op2 == "%pc") op2 = "%r15";
 
-  sec->second.offsets.push_back(currentSectionSize);
+  if(name != ".word "){
+    sec->second.offsets.push_back(currentSectionSize);
+  }
 
   map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
   map<string,Section>::iterator itSection = sections.find(currentSectionName);
@@ -816,33 +826,88 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   }else if(name.compare("ld ") == 0){
 
     string code = "1001";
-    //promeniti
+    
+    if(inParrens){
 
-    //modifikator
+      code += "0010"; //modifikator
+      op1 = op1.substr(2);
+      code += getBits(op1, 4); // A - r1
+      code += parrensReg; //B - r2
+      code += "0000"; //C - r0 - da li moraju vrednosti odavde ili samo brojevi
+      if(parrensHex != ""){
+        code += parrensHex; // D
+      }else{
+        code += "000000000000";
+      }     
+      sec->second.data.push_back(code);
 
-    op1 = op1.substr(2);
-    code += getBits(op1, 4);
+    }else if(hasPool2){
 
-    //BBBB
-    //CCCC
+      code += "0010"; //modifikator
+      op1 = op1.substr(2);
+      code += getBits(op1, 4); // A - r1
+      code += "1111"; //B - pc
+      code += "0000"; //C - r0 - da li moraju vrednosti odavde ili samo brojevi
+      code += currentOperandOffset; //pomeraj
+      sec->second.data.push_back(code);
 
-    //promeniti
-    code += currentOperandOffset;
-    sec->second.data.push_back(code);
+      if(!inOprString){
+        currentSectionSize += 4;
+        sec->second.offsets.push_back(currentSectionSize);
+        code = "1001";
+        code += "0011"; //modifikator
+        code += getBits(op1, 4); //A - da li moraju vrednosti odavde ili samo brojevi
+        code += getBits(op1, 4); //B - da li moraju vrednosti odavde ili samo brojevi
+        code += "0000"; //C
+        code += "000000000000"; //D - pomeraj je 0
+        sec->second.data.push_back(code);
+      }
+
+    }else{ //unutar 12b
+      code += "0001"; //modifikator
+      op1 = op1.substr(2);
+      code += getBits(op1, 4); // A - r1
+      code += "PROV"; //B - proveriti jos jednom
+      code += "0000"; //C - r0 - da li moraju vrednosti odavde ili samo brojevi
+      code += "PROVERI!!!!!"; //pomeraj - proveriti jos jednom
+      sec->second.data.push_back(code);
+    }
 
   }else if(name.compare("st ") == 0){
     string code = "1000";
     //promeniti
+    if(inParrens){
+      code += "0000"; //modifikator
+      code += parrensReg; //A - r2
+      code += "0000"; //B - r0 - da li moraju vrednosti odavde ili samo brojevi
+      op1 = op1.substr(2);
+      code += getBits(op1, 4); //C - r1 - da li moraju vrednosti odavde ili samo brojevi
+      if(parrensHex != ""){
+        code += parrensHex; // D
+      }else{
+        code += "000000000000";
+      }
+      sec->second.data.push_back(code);
 
-    //modifikator
-    //AAAA
-    //BBBB
-
-    //promeniti
-    op1 = op1.substr(2);
-    code += getBits(op1, 4);
-    code += currentOperandOffset;
-    sec->second.data.push_back(code);
+    }else{
+      code += "0000"; //modifikator
+      code += "1111"; //A - pc - da li moraju vrednosti odavde ili samo brojevi
+      code += "0000"; //B - r0 - da li moraju vrednosti odavde ili samo brojevi
+      op1 = op1.substr(2);
+      code += getBits(op1, 4);      //C
+      code += currentOperandOffset; //D
+      sec->second.data.push_back(code);
+      //druga instrukcija
+      currentSectionSize += 4;
+      sec->second.offsets.push_back(currentSectionSize);
+      code = "1000";
+      code += "0001"; //modifikator
+      code += getBits(op1, 4); //A - da li moraju vrednosti odavde ili samo brojevi
+      code += "0000"; //B - r0 - da li moraju vrednosti odavde ili samo brojevi
+      code += getBits(op1, 4); //C
+      code += "000000000000"; //D - pomeraj je 0
+      sec->second.data.push_back(code);
+    }
 
   }else if(name.compare(".skip ") == 0){
 
@@ -856,15 +921,22 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     skipNum = -1;
 
   }else if(name == ".word "){ //ovde je problem da kaze da ima problem sa string-om .word_
-    string code = "3";
-    sec->second.data.push_back(code);
+    // string code = currentOperandOffset;
+    // sec->second.data.push_back(code);
   }else{
     cout << "Netacna operacija!!!" << endl;
   }
 
-  currentSectionSize += 4;
-  fileOffset += 4;
+  if(name != ".word "){
+    currentSectionSize += 4;
+    fileOffset += 4;
+  }
+  
   currentOperandOffset = " OFFSET "; //da se vidi greska
+  inParrens = false;
+  parrensReg = "";
+  parrensHex = "";
+  inOprString = false;
 }
 
 void Assembler::getOperand2(string name, string type){
@@ -891,10 +963,15 @@ void Assembler::getOperand2(string name, string type){
   }else if(type == "opr_hex"){
     
     name.erase(0, 3);
+    string zeros;
+    for(int i = 0; i < 8 - name.size(); i++){
+      zeros += "0";
+    }
+    name = zeros + name;
     long long num = stoll(name, nullptr, 16);
 
     if(num <= 4095){
-      currentOperandOffset = getBits(name, 12); //potencijalno problem
+      currentOperandOffset = getBits(to_string(num), 12); //potencijalno problem
       hasPool2 = false;
     }else{
       for(auto pool:itPool->second){
@@ -920,6 +997,8 @@ void Assembler::getOperand2(string name, string type){
       }
     }
 
+    inOprString = true;
+
   }else{
     
     for(auto pool:itPool->second){
@@ -934,13 +1013,10 @@ void Assembler::getOperand2(string name, string type){
 
 }
 
-void Assembler::getParrensBody2(string name, string type){
-
-}
-
 void Assembler::getLiteral2(string name, string type){
 
   map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
+  map<string,Section>::iterator sec = sections.find(currentSectionName);
   if(type == "dec"){
 
     int num = stoi(name);
@@ -949,6 +1025,13 @@ void Assembler::getLiteral2(string name, string type){
       hasPool2 = false;
       if(currentInstruction == ".skip "){
         skipNum = num;
+      } else
+      if(currentInstruction == ".word "){
+        sec->second.offsets.push_back(currentSectionSize);
+        string data = "00000000000000000000" + currentOperandOffset;
+        sec->second.data.push_back(data);
+        currentSectionSize += 4;
+        fileOffset += 4;
       }
     }else{
       for(auto pool:itPool->second){
@@ -964,11 +1047,26 @@ void Assembler::getLiteral2(string name, string type){
   }else if(type == "hex"){
 
     name.erase(0, 2);
+    string zeros;
+    for(int i = 0; i < 8 - name.size(); i++){
+      zeros += "0";
+    }
+    name = zeros + name;
     long long num = stoll(name, nullptr, 16);
 
     if(num <= 4095){
-      currentOperandOffset = getBits(name, 12); //potencijalno problem
+      currentOperandOffset = getBits(to_string(num), 12); //potencijalno problem
       hasPool2 = false;
+      if(currentInstruction == ".skip "){
+        skipNum = num;
+      } else
+      if(currentInstruction == ".word "){
+        sec->second.offsets.push_back(currentSectionSize);
+        string data = "00000000000000000000" + currentOperandOffset;
+        sec->second.data.push_back(data);
+        currentSectionSize += 4;
+        fileOffset += 4;
+      }
     }else{
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
@@ -994,6 +1092,37 @@ void Assembler::getLiteral2(string name, string type){
   }
 }
 
+void Assembler::getParrensBody2(string name, string type){
+
+  inParrens = true;
+
+  if(type == "gpr_reg"){
+    
+    if(name == "%sp") name = "%r14";
+    if(name == "%pc") name = "%r15";
+    name = name.substr(2);
+    parrensReg = getBits(name, 4);
+
+  }else if(type == "hex"){
+    
+    name.erase(0, 2);
+    string zeros;
+
+    for(int i = 0; i < 8 - name.size(); i++){
+      zeros += "0";
+    }
+
+    name = zeros + name;
+    long long num = stoll(name, nullptr, 16);
+
+    if(num <= 4095){
+      parrensHex = getBits(to_string(num), 12);
+    }else{
+      cout << "ERROR: HEX num out of limit!!!" << endl;
+    }
+  }
+}
+
 //////////////////POMOCNE FUNKCIJE////////////////////////////////////////////////////////////////////////////////////////
 //////////////////POMOCNE FUNKCIJE////////////////////////////////////////////////////////////////////////////////////////
 //////////////////POMOCNE FUNKCIJE////////////////////////////////////////////////////////////////////////////////////////
@@ -1014,7 +1143,7 @@ bool Assembler::inTable(string name){
 string Assembler::getBits(const string& stringInt, int nBits) {
     // Convert string to integer
     int intValue = stoi(stringInt);
-
+    
     // Ensure the integer value can be represented in nBits
     if (intValue >= (1 << nBits)) {
         cout << "Error: Integer value exceeds " << nBits << " bits representation." << endl;
