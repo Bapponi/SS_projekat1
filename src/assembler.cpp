@@ -1228,20 +1228,6 @@ void Assembler::displayPoolTable(const map<string, vector<PoolOfLiterals>>& symb
 }
 
 void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap){
-  
-  // cout << "       -------------------------RELOCATIONS-----------------------" << endl;
-  // cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
-  //      << setw(15) << "Addent" << endl;
-
-  // for (const auto& entry : relocations) {
-  //     const RealocationEntry& relocations = entry.second;
-
-  //     // Print table row
-  //     cout << setw(15) << relocations.section << setw(15) << relocations.offset
-  //          << setw(15) << relocations.symbol << setw(15) << relocations.addent << endl;
-  // }
-
-  // cout << "\n" << endl;
 
   cout << "    -------------------------RELOCATIONS-----------------------" << std::endl;
   cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
@@ -1259,9 +1245,9 @@ void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry
   cout << "\n" << endl;
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 array<string,1> inputFiles{ 
   // "handler.s", 
@@ -1276,15 +1262,43 @@ string srcFolder = "./test/nivo-a/";
 
 int main(int argc, char* argv[]){
 
-  //prvi prolaz
-  for(int i = 0; i < inputFiles.size(); i++){
-    Assembler::passFile(srcFolder + inputFiles[i], i, 1);
+  if(argc != 4){
+    cout << "INPUT ERROR: Nedovaoljan broj argumenata za asembliranje!!!";
+    exit(1);
+  }
+  
+  if(strcmp(argv[1], "-o")){
+    cout << "INPUT ERROR: lose formatirana funkcija!!!";
+    exit(1);
+  }
+  size_t lengthOutput = strlen(argv[2]);
+  size_t lengthInput = strlen(argv[3]);
+
+  char lastTwoOutput[3];
+  char lastTwoInput[3];
+  if (lengthOutput >= 2 && lengthInput >= 2) {
+    strncpy(lastTwoOutput, argv[2] + lengthOutput - 2, 2);
+    lastTwoOutput[2] = '\0';
+    strncpy(lastTwoInput, argv[3] + lengthInput - 2, 2);
+    lastTwoInput[2] = '\0';
+  }else{
+    cout << "INPUT ERROR: lose formatirani fajlovi duzina!!!";
+    exit(1);
   }
 
-  //drugi prolaz
-  for(int i = 0; i < inputFiles.size(); i++){
-    Assembler::passFile(srcFolder + inputFiles[i], i, 2);
+  if(strcmp(lastTwoOutput, ".o")){
+    cout << "INPUT ERROR: lose formatirani fajl izgled output!!!";
+    exit(1);
   }
+
+  if(strcmp(lastTwoInput, ".s")){
+    cout << "INPUT ERROR: lose formatirani fajl izgled input!!!";
+    exit(1);
+  }
+  
+  Assembler::passFile(srcFolder + argv[3], 0, 1);
+  
+  Assembler::passFile(srcFolder + argv[3], 0, 2);
 
   printf("Prosao ceo fajl bez greske\n");
 

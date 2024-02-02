@@ -15,16 +15,10 @@ parser: spec/lexer.l spec/parser.y inc/assembler.hpp
 preas: lexer parser
 
 test: src/assembler.cpp src/parser.tab.c src/lex.yy.c
-	rm -rf *.o my_test
-	g++ -o my_test src/assembler.cpp src/parser.tab.c src/lex.yy.c 
-	./my_test
-
-test2:
-	rm -rf *.o test2
-	g++ -o test2 src/assemblerNoFlex.cpp
-	./test2
-
-asmTest: clean preas test
+	rm -rf *.o assembler
+	g++ -o assembler src/assembler.cpp src/parser.tab.c src/lex.yy.c 
+	
+asmStart: clean preas test
 
 assembler: $(SRCA) inc/assembler.hpp
 	$(CC) $(SRCA) -g -o assembler
