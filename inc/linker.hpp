@@ -52,12 +52,16 @@ private:
   static map<string, Symbol> symbols;
   static map<string, vector<PoolOfLiterals>> pools;
   static map<string, Section> sections;
-  static vector<PoolOfLiterals> poolVector;
+  static vector<RealocationEntry> relVector;
+
+  static map<string, map<string, Symbol>> symbolMaps;
+  static map<string, map<string, vector<RealocationEntry>>> relocationMaps;
+  static map<string, map<string, Section>> sectionMaps;
 
 public:
 
   static void init();
-  static void getData();
+  static void getData(string fileName);
   
 };
 
