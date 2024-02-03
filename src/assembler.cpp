@@ -203,7 +203,8 @@ void Assembler::programEnd(){
     Symbol s;
     s.name = currentSectionName;
     s.section = "UND";
-    s.offset = fileOffset - currentSectionSize;
+    // s.offset = fileOffset - currentSectionSize;
+    s.offset = 0;
     s.isLocal = true;
     s.isSection = true;
     s.serialNum = symSerialNum++;
@@ -240,23 +241,20 @@ void Assembler::labelStart(string name){
       cout << "ERROR: Label " << name << " must be defined inside of section!" << endl;
       exit(1);
   }
-  map<string,Symbol>::iterator it = symbols.find(name);
-  if(it!=symbols.end()){
-      // if(entry->second.isDefined){
-      //     cout<<"Label "<< name <<" defined on line "<<lineNumber<<" is aldready defined"<<endl;
-      //     exit(1);
-      // }
-      if(!it->second.isLocal){
-          cout<<"ERROR: Label "<< name <<" is extern/not local"<<endl;
+  map<string,Symbol>::iterator itSym = symbols.find(name);
+  if(itSym!=symbols.end()){
+
+      if(!itSym->second.isLocal){
+          cout<<"ERROR: Label "<< name <<" is extern variable!!!"<<endl;
           exit(1);
       }
-      if(it->second.isSection){
-          cout << "ERROR: Label "<< name << " is a section" << endl;
+      if(itSym->second.isSection){
+          cout << "ERROR: Label "<< name << " is a section!!!" << endl;
           exit(1);
       }
-      // entry->second.isDefined=true;
-      it->second.value = currentSectionSize;
-      it->second.section=currentSectionName;
+
+      itSym->second.value = currentSectionSize;
+      itSym->second.section = currentSectionName;
   }
   else{
       Symbol s;
@@ -264,7 +262,8 @@ void Assembler::labelStart(string name){
       s.serialNum = symSerialNum++;
       s.section = currentSectionName;
       s.value = 0;
-      s.offset = currentSectionSize;
+      // s.offset = currentSectionSize;
+      s.offset = 0;
       s.isLocal = true;
       s.isSection = false;
 
@@ -366,6 +365,12 @@ void Assembler::getOperand(string name, string type){
       poolVector.push_back(p);
       hasPool = true;
       poolOffset += 4;
+
+      if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
+        cout << "Current instruction: " << currentInstruction << endl;
+        fileOffset += 4;
+        currentSectionSize += 4;
+      }
     }
 
   }else if(type.compare("opr_hex") == 0){
@@ -381,6 +386,12 @@ void Assembler::getOperand(string name, string type){
       poolVector.push_back(p);
       hasPool = true;
       poolOffset += 4;
+
+      if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
+        cout << "Current instruction: " << currentInstruction << endl;
+        fileOffset += 4;
+        currentSectionSize += 4;
+      }
     }
 
   }else if(type.compare("opr_string") == 0){
@@ -868,9 +879,9 @@ void Assembler::instructionPass2(string name, string op1, string op2){
       code += "0001"; //modifikator
       op1 = op1.substr(2);
       code += getBits(op1, 4); // A - r1
-      code += "PROV"; //B - proveriti jos jednom
+      code += "0000"; //B - proveriti jos jednom
       code += "0000"; //C - r0 - da li moraju vrednosti odavde ili samo brojevi
-      code += "PROVERI!!!!!"; //pomeraj - proveriti jos jednom
+      code += currentOperandOffset; //pomeraj - proveriti jos jednom
       sec->second.data.push_back(code);
     }
 
@@ -1258,7 +1269,7 @@ void Assembler::createOutputFile(){
       string name = itSym->first;
       Symbol s = itSym->second;
       
-      int nameSize = name.length();
+      unsigned int nameSize = name.length();
       file.write((char*)(&nameSize), sizeof(nameSize));
       file.write(name.c_str(), name.length());
 
@@ -1270,7 +1281,7 @@ void Assembler::createOutputFile(){
       file.write((char*)(&s.offset), sizeof(s.offset));
 
       nameSize = s.name.length();
-      file.write((char *)(&nameSize), sizeof(nameSize));
+      file.write((char*)(&nameSize), sizeof(nameSize));
       file.write(s.name.c_str(), s.name.length());
 
       nameSize = s.section.length();
@@ -1286,7 +1297,7 @@ void Assembler::createOutputFile(){
     string name = itSec->first;
     Section sec = itSec->second;
 
-    int nameSize = name.length();
+    unsigned int nameSize = name.length();
     file.write((char*)(&nameSize), sizeof(nameSize));
     file.write(name.c_str(), name.length());
   
@@ -1309,7 +1320,7 @@ void Assembler::createOutputFile(){
       file.write((char*)(&reloc.symbol), sizeof(reloc.symbol));
       file.write((char*)(&reloc.addent), sizeof(reloc.addent));
      
-      int nameSize = reloc.section.length();
+      unsigned int nameSize = reloc.section.length();
       file.write((char *)(&nameSize), sizeof(nameSize));
       file.write(reloc.section.c_str(), reloc.section.length());
 

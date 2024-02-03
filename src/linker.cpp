@@ -44,35 +44,59 @@ void Linker::getData(string fileName){
   cout << "USAO nakon proverie ispravnosti fajle"<< endl;
 
   int numOfSymbols = 0;
-  input.read((char *)&numOfSymbols, sizeof(numOfSymbols));
+  input.read((char*)&numOfSymbols, sizeof(numOfSymbols));
     
   cout << "USAO pre for petlje za simbole, njihov broj: " << numOfSymbols << endl;
   
   for (int i = 0; i < numOfSymbols; i++){
+
+    cout << "Pocetak for petlje" << endl;
     Symbol s;
     string name;        
-    int stringLength;
-    input.read((char *)(&stringLength), sizeof(stringLength));
-    name.resize(stringLength);
-    input.read((char*)name.c_str(), stringLength);
+    unsigned int nameSize;
+    input.read((char*)(&nameSize), sizeof(nameSize));
+    cout << "NameSize: " << nameSize << endl;
+
+    name.resize(nameSize);
+    cout << "NameSize: " << nameSize << endl;
+
+    input.read((char*)name.c_str(), nameSize);
+    cout << "Name.c_str: " << name.c_str() << endl;
+
     input.read((char*)(&s.serialNum), sizeof(s.serialNum));
+    cout << "SerialNum: " << s.serialNum << endl;
+
     input.read((char*)(&s.value), sizeof(s.value));
+    cout << "Value: " << s.value << endl;
+
     input.read((char*)(&s.name), sizeof(s.name));
+    cout << "Name: " << s.name << endl;
+    
     input.read((char*)(&s.section), sizeof(s.section));
+    cout << "Section: " << s.section << endl;
+
     input.read((char*)(&s.isSection), sizeof(s.isSection));
+    cout << "IsSection: " << s.isSection << endl;
+    
     input.read((char*)(&s.offset), sizeof(s.offset));
+    cout << "Offset: " << s.offset << endl;
 
-    stringLength;
-    input.read((char *)(&stringLength), sizeof(stringLength));
-    s.name.resize(stringLength);
-    input.read((char*)s.name.c_str(), stringLength);
+    // cout << "Upis u simbol: " << s.name << endl;
+    cout << "Upis u simbol" << endl;
 
-    stringLength;
-    input.read((char *)(&stringLength), sizeof(stringLength));
-    s.section.resize(stringLength);
-    input.read((char*)s.section.c_str(), stringLength);
+    nameSize;
+    input.read((char*)(&nameSize), sizeof(nameSize));
+    s.name.resize(nameSize);
+    input.read((char*)s.name.c_str(), nameSize);
+
+    nameSize;
+    input.read((char *)(&nameSize), sizeof(nameSize));
+    s.section.resize(nameSize);
+    input.read((char*)s.section.c_str(), nameSize);
 
     symbols[name]=s;
+
+    cout << "Kraj for petlje" << endl;
   }
 
   cout << "USAO nakon petlje za simbole" << endl;
@@ -86,7 +110,7 @@ void Linker::getData(string fileName){
   {
       Section sec;
       string name;
-      int stringLength;
+      unsigned stringLength;
       input.read((char *)(&stringLength), sizeof(stringLength));
       name.resize(stringLength);
       input.read((char*)name.c_str(), stringLength);
