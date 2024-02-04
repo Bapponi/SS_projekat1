@@ -61,14 +61,17 @@ private:
 public:
 
   static void init();
-  static void getData(string fileName);
   static void getTextFile(string fileName);
+  static void linkerStart();
 
   static vector<string> splitString(const string& input, char delimiter);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
-  
+  static void displayRelocationMapTable(const map<string, map<string, vector<RealocationEntry>>>& symbolMap); 
+  static void displaySymbolMapTable(const map<string, map<string, Symbol>>& symbolMap);
+  static void displaySectionMapTable(const map<string, map<string, Section>>& symbolMap);
+
 };
 
 #endif

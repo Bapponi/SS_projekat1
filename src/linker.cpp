@@ -36,156 +36,6 @@ void Linker::init(){
   sectionMaps.clear();
 }
 
-void Linker::getData(string fileName){
-
-  ifstream input(fileName, ios::binary);
-
-  if (input.fail()){
-      cout<<"ERROR: There is problem with opening file: "<< fileName <<endl;
-      exit(1);
-  }
-
-  cout << "USAO nakon proverie ispravnosti fajle"<< endl;
-
-  int numOfSymbols = 0;
-  input.read((char*)&numOfSymbols, sizeof(numOfSymbols));
-    
-  cout << "USAO pre for petlje za simbole, njihov broj: " << numOfSymbols << endl;
-  
-  for (int i = 0; i < numOfSymbols; i++){
-
-    cout << "Pocetak for petlje" << endl;
-    Symbol s;
-    string name;        
-    unsigned int nameSize;
-    input.read((char*)(&nameSize), sizeof(nameSize));
-    cout << "NameSize: " << nameSize << endl;
-
-    name.resize(nameSize);
-    cout << "NameSize: " << nameSize << endl;
-
-    input.read((char*)name.c_str(), nameSize);
-    cout << "Name.c_str: " << name.c_str() << endl;
-
-    input.read((char*)(&s.serialNum), sizeof(s.serialNum));
-    cout << "SerialNum: " << s.serialNum << endl;
-
-    input.read((char*)(&s.value), sizeof(s.value));
-    cout << "Value: " << s.value << endl;
-
-    input.read((char*)(&s.name), sizeof(s.name));
-    cout << "Name: " << s.name << endl;
-    
-    input.read((char*)(&s.section), sizeof(s.section));
-    cout << "Section: " << s.section << endl;
-
-    input.read((char*)(&s.isSection), sizeof(s.isSection));
-    cout << "IsSection: " << s.isSection << endl;
-    
-    input.read((char*)(&s.offset), sizeof(s.offset));
-    cout << "Offset: " << s.offset << endl;
-
-    // cout << "Upis u simbol: " << s.name << endl;
-    cout << "Upis u simbol" << endl;
-
-    nameSize; //za reset vrednosti
-    input.read((char*)(&nameSize), sizeof(nameSize));
-    s.name.resize(nameSize);
-    input.read((char*)s.name.c_str(), nameSize);
-
-    nameSize;
-    input.read((char *)(&nameSize), sizeof(nameSize));
-    s.section.resize(nameSize);
-    input.read((char*)s.section.c_str(), nameSize);
-
-    symbols[name]=s;
-
-    cout << "Kraj for petlje" << endl;
-  }
-
-  cout << "USAO nakon petlje za simbole" << endl;
-  
-  symbolMaps[fileName]=symbols;
-
-  int numOfSections = 0;
-  input.read((char *)&numOfSections, sizeof(numOfSections));
-
-  for (int i=0;i<numOfSections;i++)
-  {
-      Section sec;
-      string name;
-      unsigned stringLength;
-      input.read((char *)(&stringLength), sizeof(stringLength));
-      name.resize(stringLength);
-      input.read((char*)name.c_str(), stringLength);
-  
-      input.read((char*)(&sec.size), sizeof(sec.size));
-      input.read((char*)(&sec.serialNum), sizeof(sec.serialNum));
-      input.read((char*)(&sec.name), sizeof(sec.name));
-      input.read((char*)(&sec.hasPool), sizeof(sec.hasPool));
-      input.read((char*)(&sec.poolSize), sizeof(sec.poolSize));
-
-      stringLength;
-      input.read((char*)(&stringLength), sizeof(stringLength));
-      sec.name.resize(stringLength);
-      input.read((char*)sec.name.c_str(), stringLength);
-      int numOfRelocations;
-
-      input.read((char *)&numOfRelocations, sizeof(numOfRelocations));
-
-      for (int j=0;j<numOfRelocations;j++){
-
-        RealocationEntry reloc;
-
-        input.read((char*)(&reloc.section),sizeof(reloc.section));
-        input.read((char*)(&reloc.offset), sizeof(reloc.offset));
-        input.read((char*)(&reloc.symbol), sizeof(reloc.symbol));
-        input.read((char*)(&reloc.addent), sizeof(reloc.addent));
-
-        unsigned int stringLength; 
-        input.read((char *)(&stringLength), sizeof(stringLength));
-        reloc.section.resize(stringLength);
-        input.read((char*)reloc.section.c_str(), stringLength);
-
-        stringLength;
-        input.read((char *)(&stringLength), sizeof(stringLength));
-        reloc.symbol.resize(stringLength);
-        input.read((char*)reloc.symbol.c_str(), stringLength);
-        relVector.push_back(reloc);
-      }
-  
-      relocationMaps[sec.name][fileName] = relVector;
-      int dataSize;
-      input.read((char *)&dataSize, sizeof(dataSize));
-
-    
-      for (int k = 0; k < dataSize; k++){
-          string data;
-          input.read((char *)(&data), sizeof(data));
-          sec.data.push_back(data);
-      }
-
-      int offsetSize; 
-      input.read((char*)(&offsetSize), sizeof(offsetSize));
-  
-      for (int l=0; l < offsetSize; l++){
-          long long offset;
-          input.read((char *)(&offset), sizeof(offset));
-          sec.offsets.push_back(offset);
-      }
-      sections[name]=sec;
-  }
-
-  sectionMaps[fileName]=sections;
-
-  relVector.clear();
-  symbols.clear();
-  sections.clear();
-
-  input.close();
-
-}
-
 void Linker::getTextFile(string fileName){
 
   ifstream file(fileName);
@@ -221,7 +71,7 @@ void Linker::getTextFile(string fileName){
 
     relocations.insert(make_pair(section, relVector));
     relocationMaps.insert(make_pair(fileName, relocations));
-    displayRelocationTable(relocations);
+    // displayRelocationTable(relocations);
     relocations.clear();
   }
 
@@ -262,7 +112,7 @@ void Linker::getTextFile(string fileName){
   }
 
   sectionMaps.insert(make_pair(fileName, sections));
-  displaySectionTable(sections);
+  // displaySectionTable(sections);
   sections.clear();
 
   //simboli
@@ -292,8 +142,14 @@ void Linker::getTextFile(string fileName){
   }
 
   symbolMaps.insert(make_pair(fileName, symbols));
-  displaySymbolTable(symbols);
+  // displaySymbolTable(symbols);
   symbols.clear();
+}
+
+void Linker::linkerStart(){
+  displayRelocationMapTable(relocationMaps);
+  displaySymbolMapTable(symbolMaps);
+  displaySectionMapTable(sectionMaps);
 }
 
 //POMOCNE FUNKCIJE//////////////////////////////////
@@ -380,6 +236,96 @@ void Linker::displaySymbolTable(const map<string, Symbol>& symbolMap){
   cout << "\n" << endl;
 }
 
+void Linker::displaySymbolMapTable(const map<string, map<string, Symbol>>& symbolMap) {
+  cout << setw(100) << "-------------------------------------SYMBOLS---------------------------------------------" << endl;
+  cout << setw(20) << "FILE" << setw(20) << "Name" << setw(10) << "SerialNum" << setw(10) << "Value"
+       << setw(10) << "IsLocal" << setw(15) << "Section" << setw(10) << "IsSection"
+       << setw(10) << "Offset" << endl;
+
+  for (const auto& outerEntry : symbolMap) {
+      const string& sectionName = outerEntry.first;
+      const map<string, Symbol>& innerMap = outerEntry.second;
+
+      for (const auto& innerEntry : innerMap) {
+          const Symbol& symbol = innerEntry.second;
+          cout << setw(20) << sectionName << setw(20) << symbol.name << setw(10) << symbol.serialNum
+               << setw(10) << symbol.value << setw(10) << symbol.isLocal
+               << setw(15) << sectionName << setw(10) << symbol.isSection
+               << setw(10) << symbol.offset << endl;
+      }
+      cout  << setw(100) <<"------------------------------------------------------------------------------------------" << endl;
+  }
+
+  cout << "\n" << endl;
+}
+
+void Linker::displayRelocationMapTable(const map<string, map<string, vector<RealocationEntry>>>& symbolMap) {
+    cout << setw(80) << "-----------------------------RELOCATIONS-------------------------------" << endl;
+    cout << setw(20) << "FILE" << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
+         << setw(15) << "Addent" << endl;
+
+    for (const auto& outerEntry : symbolMap) {
+        const string& fileName = outerEntry.first;
+        const map<string, vector<RealocationEntry>>& innerMap = outerEntry.second;
+
+        for (const auto& innerEntry : innerMap) {
+            const string& symbolName = innerEntry.first;
+            const vector<RealocationEntry>& relocations = innerEntry.second;
+
+            for (const auto& relocation : relocations) {
+                cout << setw(20)<< fileName << setw(15) << relocation.section << setw(15) << relocation.offset
+                     << setw(15) << symbolName << setw(15) << relocation.addent << endl;
+            }
+        }
+        cout  << setw(80) <<"-------------------------------------------------------------------" << endl;
+    }
+
+    cout << "\n" << endl;
+}
+
+void Linker::displaySectionMapTable(const map<string, map<string, Section>>& symbolMap){
+  cout << setw(80) <<"----------------------------------SECTIONS----------------------------------" << endl;
+  cout << setw(20) << "FILE" <<setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Size"
+       << setw(10) << "HasPool" << setw(15) << "PoolSize" << endl;
+
+  for (const auto& outerEntry : symbolMap) {
+    const string& sectionName = outerEntry.first;
+    const map<string, Section>& innerMap = outerEntry.second;
+
+    for (const auto& innerEntry : innerMap) {
+      const Section& section = innerEntry.second;
+      cout << setw(20) << sectionName << setw(15) << section.name << setw(10) << section.serialNum
+           << setw(10) << section.size << setw(10) << section.hasPool
+           << setw(15) << section.poolSize << endl;
+    }
+
+    cout  << setw(80) << "----------------------------------------------------------------------------" << endl;
+  }
+
+  cout << "\n" << endl;
+
+  cout << setw(20) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+
+  for (const auto& outerEntry : symbolMap) {
+    const string& sectionName = outerEntry.first;
+    const map<string, Section>& innerMap = outerEntry.second;
+
+    for (const auto& innerEntry : innerMap) {
+      const Section& section = innerEntry.second;
+      const vector<long long>& offsetsVector = section.offsets;
+      const vector<string>& dataVector = section.data;
+
+      for (int i = 0; i < offsetsVector.size(); i++) {
+          cout << setw(20) << sectionName << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+      }
+    }
+
+    cout  << setw(76) <<"------------------------------------------------------------------------" << endl;
+  }
+
+  cout << "\n" << endl;
+}
+
 int main(int argc, char* argv[]){
 
   if(argc != 3){
@@ -409,26 +355,28 @@ int main(int argc, char* argv[]){
 
   Linker::init();
 
-  const char* currentPath = "."; // Specify the current directory
+  const char* currentPath = "."; 
 
   DIR* dir = opendir(currentPath);
   if (dir != nullptr) {
 
-      struct dirent* entry;
-      while ((entry = readdir(dir)) != nullptr) {
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != nullptr) {
 
-          if (entry->d_type == DT_REG && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && std::strstr(entry->d_name, ".txt") != nullptr) {
-              cout << "Ime fajla: " << entry->d_name << endl;
-              Linker::getTextFile(entry->d_name);
-          }
-
+      if (entry->d_type == DT_REG && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && std::strstr(entry->d_name, ".txt") != nullptr) {
+        cout << "Ime fajla: " << entry->d_name << endl;
+        Linker::getTextFile(entry->d_name);
       }
-      closedir(dir);
+
+    }
+    closedir(dir);
 
   } else {
       cout << "ERROR opening directories!!!" << endl;
       exit(1);
   }
+
+  Linker::linkerStart();
 
   printf("Prosao linker bez greske :)\n");
 
