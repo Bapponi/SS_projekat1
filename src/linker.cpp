@@ -6,6 +6,10 @@
 #include <vector> 
 #include <iomanip> 
 
+//za fajl sistem
+#include <cstring>
+#include <dirent.h>
+
 #include "../inc/linker.hpp"
 
 using namespace std;
@@ -184,9 +188,7 @@ void Linker::getData(string fileName){
 
 void Linker::getTextFile(string fileName){
 
-  fileName.erase(fileName.size() - 2);
-
-  ifstream file(fileName + ".txt");
+  ifstream file(fileName);
   
   string line;
 
@@ -202,7 +204,6 @@ void Linker::getTextFile(string fileName){
     for(int i = 0; i < num; i++ ){
 
       getline(file, line);
-      cout << line << endl;
 
       vector<string> vektor = splitString(line, ',');
 
@@ -266,7 +267,6 @@ void Linker::getTextFile(string fileName){
 
   //simboli
   getline(file, line);
-  cout << "LINE: " << line << endl;
   int num = stoi(line);
 
   for(int i = 0; i < num; i++){
@@ -408,11 +408,29 @@ int main(int argc, char* argv[]){
   }
 
   Linker::init();
-  cout << "USAO pre getData"<< endl;
-  // Linker::getData(argv[2]);
-  Linker::getTextFile(argv[2]);
 
-  printf("Prosao linker bez greske\n");
+  const char* currentPath = "."; // Specify the current directory
+
+  DIR* dir = opendir(currentPath);
+  if (dir != nullptr) {
+
+      struct dirent* entry;
+      while ((entry = readdir(dir)) != nullptr) {
+
+          if (entry->d_type == DT_REG && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && std::strstr(entry->d_name, ".txt") != nullptr) {
+              cout << "Ime fajla: " << entry->d_name << endl;
+              Linker::getTextFile(entry->d_name);
+          }
+
+      }
+      closedir(dir);
+
+  } else {
+      cout << "ERROR opening directories!!!" << endl;
+      exit(1);
+  }
+
+  printf("Prosao linker bez greske :)\n");
 
   return 1;
 }
