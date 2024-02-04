@@ -20,5 +20,5 @@ emulator: src/emulator.cpp inc/emulator.hpp
 	g++ src/emulator.cpp -g -o emulator
 
 clean:
-		rm -rf *.o src/lex.yy.c src/parser.tab.c src/parser.tab.h assembler linker emulator
+		rm -rf *.o src/lex.yy.c src/parser.tab.c src/parser.tab.h assembler linker emulator izlaz.*
 

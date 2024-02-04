@@ -7,7 +7,6 @@
 #include <iomanip> //za setw
 
 #include "parser.tab.h"
-// #include "lex.yy.c"
 #include "../inc/assembler.hpp"
 
 using namespace std;
@@ -95,7 +94,6 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
   while(yyparse());
 
   string boolString = to_string(secondPass);
-  cout << "SecondPass: " << boolString << endl;
 
   displaySymbolTable(symbols);
   displaySectionTable(sections);
@@ -110,9 +108,8 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
 
 }
 
-//global ne obradjujemo u prvom prolazu, ali zato to radimo sa extern-om
 void Assembler::getIdent(string name, bool isGlobal){
-  if(currentDirective.compare("extern") == 0){ // on je extern i prvi je prolaz
+  if(currentDirective.compare("extern") == 0){ 
     
     if (inTable(name)) {
         cout << "ERROR:Label already in table " << name << endl;
@@ -129,8 +126,6 @@ void Assembler::getIdent(string name, bool isGlobal){
     s.serialNum = symSerialNum++;
     
     symbols.insert(make_pair(name, s));
-    //sledece ispisi sve ove simbole negde
-    //tabelaSimbola.push_back(new Simbol(s, "und", -1, "global"));
   }
 }
 
@@ -232,7 +227,6 @@ void Assembler::directiveEnd(){
   currentDirective = "";
 }
 
-//promeniti deo za labele
 void Assembler::labelStart(string name){
 
   name.erase(name.size()-1);
@@ -304,7 +298,7 @@ void Assembler::getLiteral(string name, string type){
     if(num > 2047 || num < -2048){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
-      p.symbolName = "dec"; //ne znam sta za ime, da li samo redni broj
+      p.symbolName = "dec"; 
       p.symbolValue = num;
 
       poolVector.push_back(p);
@@ -319,7 +313,7 @@ void Assembler::getLiteral(string name, string type){
     if(num > 4095){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
-      p.symbolName = "hex"; //ne znam sta za ime, da li samo redni broj
+      p.symbolName = "hex"; 
       p.symbolValue = num;
 
       poolVector.push_back(p);
@@ -359,7 +353,7 @@ void Assembler::getOperand(string name, string type){
     if(num > 2047 || num < -2048){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
-      p.symbolName = "opr_dec"; //ne znam sta za ime, da li samo redni broj
+      p.symbolName = "opr_dec";
       p.symbolValue = num;
 
       poolVector.push_back(p);
@@ -367,7 +361,6 @@ void Assembler::getOperand(string name, string type){
       poolOffset += 4;
 
       if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
-        cout << "Current instruction: " << currentInstruction << endl;
         fileOffset += 4;
         currentSectionSize += 4;
       }
@@ -380,7 +373,7 @@ void Assembler::getOperand(string name, string type){
     if(num > 4095){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
-      p.symbolName = "opr_hex"; //ne znam sta za ime, da li samo redni broj
+      p.symbolName = "opr_hex";
       p.symbolValue = num;
 
       poolVector.push_back(p);
@@ -388,7 +381,6 @@ void Assembler::getOperand(string name, string type){
       poolOffset += 4;
 
       if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
-        cout << "Current instruction: " << currentInstruction << endl;
         fileOffset += 4;
         currentSectionSize += 4;
       }
@@ -409,11 +401,6 @@ void Assembler::getOperand(string name, string type){
     //     return;
     //   };
     // }
-
-    map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    for (int i = 0; i < itPool->second.size(); i++) {
-      cout << " IME SIMBOLA: " << itPool->second[i].symbolName << endl;
-    }
     
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
@@ -437,8 +424,7 @@ void Assembler::getOperand(string name, string type){
     //   };
     // }
 
-    if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
-      cout << "Current instruction: " << currentInstruction << endl;
+    if(currentInstruction == "ld " || currentInstruction == "st "){
       fileOffset += 4;
       currentSectionSize += 4;
     }
@@ -465,7 +451,7 @@ void Assembler::getParrensBody(string name, string type){
     if(num > 4095){
       p.isSymbol = false;
       p.symbolAddress = poolOffset;
-      p.symbolName = "hex"; //ne znam sta za ime, da li samo redni broj
+      p.symbolName = "hex";
       p.symbolValue = num;
 
       poolVector.push_back(p);
@@ -503,12 +489,7 @@ void Assembler::programEnd2(){
     relocations.insert(make_pair(secName, vre));
   }
 
-// Tabela relokacija se radi na osnovu bazena literal tako što se za svaki simbol pamti gde se 
-// koristi (offset = adresa iz bazena literal) 
-//  ako je globalni onda je to ono sto se tu cuva, a ako je lokalni, onda se čuva simbol njegove sekcije
-//  Ako je globalni addend je 0, ako je lokalni addend je offset tog simbola od početka sekcije
   for (auto itPool = pools.begin(); itPool != pools.end(); ++itPool) {
-    cout << "Key: " << itPool->first << endl;
     
     vector<PoolOfLiterals> v = itPool->second;
 
@@ -540,7 +521,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   auto sec = sections.find(currentSectionName);
 
   if (sec == sections.end()) {
-      cout << "\nKey: " << currentSectionName << " not found" << endl;
+      cout << "\nERROR: Key: " << currentSectionName << " was't found!!!" << endl;
       exit(1);
   }
 
@@ -741,6 +722,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
       code += "0010";
     }else{
       cout << " ERROR: invalid CSR register: " << op1 << endl;
+      exit(1);
     }
 
     code += "0000000000000000";
@@ -759,6 +741,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
       code += "0010";
     }else{
       cout << " ERROR: invalid CSR register: " << op2 << endl;
+      exit(1);
     }
 
     code += getBits(op1, 4);
@@ -932,11 +915,13 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
     skipNum = -1;
 
-  }else if(name == ".word "){ //ovde je problem da kaze da ima problem sa string-om .word_
+  }else if(name == ".word "){
+    //ovo ipak ne obradjujem ovde 
     // string code = currentOperandOffset;
     // sec->second.data.push_back(code);
   }else{
-    cout << "Netacna operacija!!!" << endl;
+    cout << "ERROR: Non instruction: " << name << endl;
+    exit(1);
   }
 
   if(name != ".word "){
@@ -1131,6 +1116,7 @@ void Assembler::getParrensBody2(string name, string type){
       parrensHex = getBits(to_string(num), 12);
     }else{
       cout << "ERROR: HEX num out of limit!!!" << endl;
+      exit(1);
     }
   }
 }
@@ -1153,20 +1139,16 @@ bool Assembler::inTable(string name){
 }
 
 string Assembler::getBits(const string& stringInt, int nBits) {
-    // Convert string to integer
     int intValue = stoi(stringInt);
     
-    // Ensure the integer value can be represented in nBits
     if (intValue >= (1 << nBits)) {
-        cout << "Error: Integer value exceeds " << nBits << " bits representation." << endl;
-        return "-1";
+        cout << "ERROR: Integer value exceeds " << nBits << " bits representation." << endl;
+        exit(1);
     }
 
-    // Convert integer to binary representation
     bitset<32> bits(intValue);
     string bitString = bits.to_string();
 
-    // Extract the last nBits characters
     return bitString.substr(32 - nBits);
 }
 
@@ -1350,6 +1332,66 @@ void Assembler::createOutputFile(){
   }
 
   file.close();
+
+  createTextFile();
+}
+
+void Assembler::createTextFile(){
+
+  fileOutput.erase(fileOutput.size() - 2);
+
+  ofstream file(fileOutput + ".txt");
+
+  for (const auto& entry : relocations) {
+
+    if( entry.second.size() > 0)
+      file << entry.second.size() << '\n';
+
+    for (const auto& realocation : entry.second) {
+      file << entry.first << "," << realocation.offset << ',' << realocation.symbol << ',' << realocation.addent << '\n';
+    }
+
+  }
+
+  file << "===\n"; // kraj relokacija
+
+  // file << sections.size() << "\n";
+  for (const auto& entry : sections) {
+
+    const Section& section = entry.second;
+
+    file << section.name << "," << section.size << ",";
+    file << section.serialNum << "," << section.hasPool << ",";
+    file << section.poolSize << "\n";
+    
+    file << section.offsets.size() << "\n";
+    for (long long offset : section.offsets) {
+        file << offset << " ";
+    }
+    file << "\n";
+
+    for (const std::string& data : section.data) {
+        file << data << " ";
+    }
+    file << "\n";
+  }
+
+  file << "===\n"; // kraj sekcija
+
+  file << symbols.size() << "\n";
+  for (const auto& entry : symbols) {
+
+    const Symbol& symbol = entry.second;
+
+    file << symbol.name << "," << symbol.serialNum << ",";
+    file << symbol.value << "," << symbol.isLocal << ",";
+    file << symbol.section << "," << symbol.isSection << ",";
+    file << symbol.offset << "\n";
+  
+  }  
+
+  file.close();
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1398,7 +1440,7 @@ int main(int argc, char* argv[]){
   
   Assembler::passFile(srcFolder + argv[3], argv[2], 2);
 
-  printf("Prosao ceo asembler bez greske\n");
+  printf("Prosao ceo asembler bez greske :)\n");
 
   return 1;
 }

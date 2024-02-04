@@ -62,6 +62,12 @@ public:
 
   static void init();
   static void getData(string fileName);
+  static void getTextFile(string fileName);
+
+  static vector<string> splitString(const string& input, char delimiter);
+  static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
+  static void displaySectionTable(const map<string, Section>& symbolMap);
+  static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   
 };
 

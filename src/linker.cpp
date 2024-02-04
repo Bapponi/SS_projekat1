@@ -84,7 +84,7 @@ void Linker::getData(string fileName){
     // cout << "Upis u simbol: " << s.name << endl;
     cout << "Upis u simbol" << endl;
 
-    nameSize;
+    nameSize; //za reset vrednosti
     input.read((char*)(&nameSize), sizeof(nameSize));
     s.name.resize(nameSize);
     input.read((char*)s.name.c_str(), nameSize);
@@ -182,6 +182,204 @@ void Linker::getData(string fileName){
 
 }
 
+void Linker::getTextFile(string fileName){
+
+  fileName.erase(fileName.size() - 2);
+
+  ifstream file(fileName + ".txt");
+  
+  string line;
+
+  while(getline(file, line)){
+
+    if (line == "===") {
+      break; 
+    }
+
+    int num = stoi(line);
+    RealocationEntry entry;
+    string section;
+    for(int i = 0; i < num; i++ ){
+
+      getline(file, line);
+      cout << line << endl;
+
+      vector<string> vektor = splitString(line, ',');
+
+      entry.section = vektor.at(0);
+      string offset = vektor.at(1);
+      entry.offset = stoi(offset);
+      entry.symbol = vektor.at(2);
+      string addent = vektor.at(3);
+      entry.addent = stoi(addent);
+      
+      section = entry.section;
+      relVector.push_back(entry);
+
+    }
+
+    relocations.insert(make_pair(section, relVector));
+    relocationMaps.insert(make_pair(fileName, relocations));
+    displayRelocationTable(relocations);
+    relocations.clear();
+  }
+
+  while(getline(file, line)){
+    
+    if (line == "===") {
+      break; 
+    }
+
+    Section sec;
+    string sectionName;
+    vector<string> vektor = splitString(line, ',');
+    sec.name = vektor.at(0);
+    string size = vektor.at(1);
+    sec.size = stoi(size);
+    string serialNum = vektor.at(2);
+    sec.serialNum = stoi(serialNum);
+    string hasPool = vektor.at(3);
+    sec.hasPool = stoi(hasPool);
+    string poolSize = vektor.at(4);
+    sec.poolSize = stoi(poolSize);
+
+    getline(file, line);
+    int num = stoi(line);
+
+    getline(file, line);
+    vector<string> offsets = splitString(line, ' ');
+    for(int i = 0; i < num; i++){
+      sec.offsets.push_back(stoi(offsets.at(i)));
+    }
+    
+    getline(file, line);
+    vector<string> data = splitString(line, ' ');
+    sec.data = data;
+
+    sections.insert(make_pair(sec.name, sec));
+
+  }
+
+  sectionMaps.insert(make_pair(fileName, sections));
+  displaySectionTable(sections);
+  sections.clear();
+
+  //simboli
+  getline(file, line);
+  cout << "LINE: " << line << endl;
+  int num = stoi(line);
+
+  for(int i = 0; i < num; i++){
+    
+    Symbol s;
+    getline(file, line);
+    vector<string> vektor = splitString(line, ',');
+
+    s.name = vektor.at(0);
+    string serialNum = vektor.at(1);
+    s.serialNum = stoi(serialNum);
+    string value = vektor.at(2);
+    s.value = stoi(value);
+    string isLocal = vektor.at(3);
+    s.isLocal = stoi(isLocal);
+    s.section = vektor.at(4);
+    string isSection = vektor.at(5);
+    s.isSection = stoi(isSection);
+    string offset = vektor.at(6);
+    s.offset = stoi(offset);
+
+    symbols.insert(make_pair(s.name, s));
+  }
+
+  symbolMaps.insert(make_pair(fileName, symbols));
+  displaySymbolTable(symbols);
+  symbols.clear();
+}
+
+//POMOCNE FUNKCIJE//////////////////////////////////
+
+vector<string> Linker::splitString(const string& input, char delimiter) {
+  
+  vector<string> result;
+  size_t start = 0;
+  size_t end = input.find(delimiter);
+
+  while (end != string::npos) {
+      result.push_back(input.substr(start, end - start));
+      start = end + 1;
+      end = input.find(delimiter, start);
+  }
+
+  result.push_back(input.substr(start));
+
+  return result;
+
+}
+
+void Linker::displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap){
+
+  cout << "    -------------------------RELOCATIONS-----------------------" << std::endl;
+  cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
+       << setw(15) << "Addent" << endl;
+
+  for (const auto& entry : symbolMap) {
+      const vector<RealocationEntry>& relocations = entry.second;
+
+      for (const auto& relocation : relocations) {
+        cout << setw(15) << relocation.section << setw(15) << relocation.offset
+             << setw(15) << relocation.symbol << setw(15) << relocation.addent << endl;
+      }
+  }
+
+  cout << "\n" << endl;
+}
+
+void Linker::displaySectionTable(const map<string, Section>& symbolMap){
+  cout << "       ------------------------------------------SECTIONS-------------------------------------------" << endl;
+  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Size"
+       << setw(10) << "HasPool" << setw(15) << "PoolSize" << endl;
+
+  for (const auto& entry : sections) {
+      const Section& section = entry.second;
+
+      cout << setw(15) << section.name << setw(10) << section.serialNum
+                << setw(10) << section.size << setw(10) << section.hasPool
+                << setw(15) << section.poolSize << endl;
+  }
+
+  cout << "\n" << endl;
+
+  cout << setw(15) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+
+  for (const auto& entry : symbolMap) {
+      const vector<long long>& offsetsVector = entry.second.offsets;
+      const vector<string>& dataVector = entry.second.data;
+
+      for (int i = 0; i < offsetsVector.size(); i++) {
+          cout << setw(15) << entry.first << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+      }
+  }
+
+  cout << "\n" << endl;
+}
+
+void Linker::displaySymbolTable(const map<string, Symbol>& symbolMap){
+  cout << "       -------------------------------SYMBOLS-----------------------------------" << endl;
+  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Value"
+       << setw(10) << "IsLocal" << setw(15) << "Section" << setw(10) << "IsSection"
+       << setw(10) << "Offset" << endl;
+  
+  for (const auto& entry : symbolMap) {
+      const Symbol& symbol = entry.second;
+      cout << setw(15) << symbol.name << setw(10) << symbol.serialNum
+           << setw(10) << symbol.value << setw(10) << symbol.isLocal
+           << setw(15) << symbol.section << setw(10) << symbol.isSection
+           << setw(10) << symbol.offset << endl;
+  }
+
+  cout << "\n" << endl;
+}
+
 int main(int argc, char* argv[]){
 
   if(argc != 3){
@@ -211,7 +409,8 @@ int main(int argc, char* argv[]){
 
   Linker::init();
   cout << "USAO pre getData"<< endl;
-  Linker::getData(argv[2]);
+  // Linker::getData(argv[2]);
+  Linker::getTextFile(argv[2]);
 
   printf("Prosao linker bez greske\n");
 
