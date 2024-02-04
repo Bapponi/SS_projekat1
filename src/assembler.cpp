@@ -555,7 +555,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
     currentSectionSize += 8;
 
-  }else if(name.compare("ret ") == 0){
+  }else if(name.compare("ret") == 0){
 
     sec->second.data.push_back("10010011111111100000000000000100");
 
@@ -920,7 +920,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
     // string code = currentOperandOffset;
     // sec->second.data.push_back(code);
   }else{
-    cout << "ERROR: Non instruction: " << name << endl;
+    cout << "ERROR: Non instruction:" << name << "I" << endl;
     exit(1);
   }
 
