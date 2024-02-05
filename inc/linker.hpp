@@ -27,13 +27,6 @@ struct Symbol {
   int offset;
 };
 
-struct PoolOfLiterals{
-  bool isSymbol;
-  int symbolAddress;
-  long long symbolValue;
-  string symbolName;
-};
-
 struct Section {
   int size;
   int serialNum;
@@ -44,25 +37,36 @@ struct Section {
   vector <string> data;
 };
 
+struct ConnectedSection{
+  string file;
+  string name;
+  int size;
+  int addressStart;
+};
+
 /////////////////KLASA/////////////////
 class Linker{
 
 private:
   static map<string, vector<RealocationEntry>> relocations;
   static map<string, Symbol> symbols;
-  static map<string, vector<PoolOfLiterals>> pools;
   static map<string, Section> sections;
+  static map<string, ConnectedSection> connectedSections;
   static vector<RealocationEntry> relVector;
 
   static map<string, map<string, Symbol>> symbolMaps;
   static map<string, map<string, vector<RealocationEntry>>> relocationMaps;
   static map<string, map<string, Section>> sectionMaps;
 
+  static map<string, int> sectionEnds;
+
 public:
 
   static void init();
   static void getTextFile(string fileName);
   static void linkerStart();
+  static void sectionConnect();
+  static void makeOutputFile(string fileName);
 
   static vector<string> splitString(const string& input, char delimiter);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);

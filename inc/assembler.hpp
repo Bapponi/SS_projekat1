@@ -108,7 +108,7 @@ public:
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
-  static void createOutputFile();
+  static void makeOutputFile();
   static void createTextFile();
 };
 

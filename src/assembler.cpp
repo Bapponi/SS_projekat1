@@ -101,7 +101,7 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
   displayRelocationTable(relocations);
 
   if(passNum == 2){
-    createOutputFile();
+    makeOutputFile();
   }
 
   fclose(file);
@@ -1239,7 +1239,7 @@ void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry
   cout << "\n" << endl;
 }
 
-void Assembler::createOutputFile(){
+void Assembler::makeOutputFile(){
 
   ofstream file(fileOutput, ios::out | ios::binary);
 

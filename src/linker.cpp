@@ -16,24 +16,28 @@ using namespace std;
 
 map<string, vector<RealocationEntry>> Linker::relocations;
 map<string, Symbol> Linker::symbols;
-map<string, vector<PoolOfLiterals>> Linker::pools;
 map<string, Section> Linker::sections;
+map<string, ConnectedSection> Linker::connectedSections;
 vector<RealocationEntry> Linker::relVector;
 
 map<string, map<string, Symbol>> Linker::symbolMaps;
 map<string, map<string, vector<RealocationEntry>>> Linker::relocationMaps;
 map<string, map<string, Section>> Linker::sectionMaps;
 
+map<string, int> Linker::sectionEnds;
+
 void Linker::init(){
   relocations.clear();
   symbols.clear();
-  pools.clear();
   sections.clear();
+  connectedSections.clear();
   relVector.clear();
 
   relocationMaps.clear();
   symbolMaps.clear();
   sectionMaps.clear();
+
+  sectionEnds.clear();
 }
 
 void Linker::getTextFile(string fileName){
@@ -112,7 +116,6 @@ void Linker::getTextFile(string fileName){
   }
 
   sectionMaps.insert(make_pair(fileName, sections));
-  // displaySectionTable(sections);
   sections.clear();
 
   //simboli
@@ -142,7 +145,6 @@ void Linker::getTextFile(string fileName){
   }
 
   symbolMaps.insert(make_pair(fileName, symbols));
-  // displaySymbolTable(symbols);
   symbols.clear();
 }
 
@@ -150,6 +152,89 @@ void Linker::linkerStart(){
   displayRelocationMapTable(relocationMaps);
   displaySymbolMapTable(symbolMaps);
   displaySectionMapTable(sectionMaps);
+
+  for (const auto& outerMap : sectionMaps) {
+    const string& fileName = outerMap.first;
+    const map<string, Section>& secMap = outerMap.second;
+
+    for (const auto& innerMap : secMap) {
+
+      const string& secName = innerMap.first;
+      const Section& section = innerMap.second;
+
+      sectionEnds[section.name] = 0;
+    }
+  }
+
+  sectionConnect();
+}
+
+void Linker::sectionConnect(){
+
+  int num = 1;
+
+  for(const auto& outerMap : sectionMaps) {
+    const std::string& fileName = outerMap.first;
+    const std::map<string, Section>& secMap = outerMap.second;
+
+    cout << "FileName: " << fileName << endl;
+
+    for (const auto& innerMap : secMap) {
+
+      const string& secName = innerMap.first;
+      const Section& section = innerMap.second;
+
+      if(secName != "ABS" && secName != "UND"){
+
+        ConnectedSection cs;
+
+        cs.file = fileName;
+        cs.name = secName;
+        cs.addressStart = sectionEnds[secName];
+
+        if(section.hasPool){
+          cs.size = section.offsets.at(section.offsets.size() - 1) + 4;
+        }else{
+          cs.size = section.size;
+        }
+
+        sectionEnds[secName] += section.size;
+        connectedSections[secName] = cs; //gledati da li da se i filenameovi racunaju
+      }
+    }
+  }
+
+  for(const auto& secEnd : sectionEnds){
+
+    string sectionName = secEnd.first;
+    int sectionEnd = secEnd.second;
+
+    Section sec;
+    sec.name = sectionName;
+    sec.size = sectionEnd;
+    sec.hasPool = false; //voditi racuna o ovome
+    sec.poolSize = 0;    //voditi racuna o ovome
+
+    if (sectionName == "ABS")
+      sec.serialNum = -1;
+    else if (sectionName == "UND")
+      sec.serialNum = 0;
+    else
+      sec.serialNum = num;
+
+    sections[sectionName] = sec;
+
+    num++;
+
+  }
+
+  displaySectionTable(sections);
+
+}
+
+void Linker::makeOutputFile(string fileName){
+  ofstream file(fileName, ios::out | ios::binary);
+  file.close();
 }
 
 //POMOCNE FUNKCIJE//////////////////////////////////
@@ -377,6 +462,8 @@ int main(int argc, char* argv[]){
   }
 
   Linker::linkerStart();
+
+  Linker::makeOutputFile(argv[2]);
 
   printf("Prosao linker bez greske :)\n");
 
