@@ -554,10 +554,11 @@ void Linker::displaySectionMapTable(const map<string, map<string, Section>>& sym
 }
 
 int main(int argc, char* argv[]){
-  
+
   string fileOutput;
   map<string,long long> sectionStart;
   regex inputReg("\\.o$");
+  regex startReg("^-place=([a-zA-Z_][a-zA-Z_0-9]*)@(0[xX][0-9a-fA-F]+)$");
   bool isHex = false;
   vector<string> files;
 
@@ -569,6 +570,14 @@ int main(int argc, char* argv[]){
       isHex = true;
     }else if(argv[i] == "-o"){
       fileOutput = argv[i + 1];
+    }else if(regex_search(argv[i], startReg)){
+      string all = argv[i];
+      vector<string> vektor = Linker::splitString(all, '@');
+      long long hex = stoll(vektor.at(1));
+
+      vektor = Linker::splitString(all, '=');
+      string section = vektor.at(1);
+      sectionStart[section] = hex;
     }
 
   }
