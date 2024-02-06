@@ -72,7 +72,7 @@ public:
 
   static void init();
   static void getTextFile(string fileName);
-  static void linkerStart();
+  static void linkerStart(vector<string>);
   static void sectionConnect();
   static void makeOutputFile(string fileName);
 

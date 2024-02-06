@@ -83,6 +83,7 @@ void Linker::getTextFile(string fileName){
     relocationMaps.insert(make_pair(fileName, relocations));
     // displayRelocationTable(relocations);
     relocations.clear();
+    relVector.clear();
   }
 
   while(getline(file, line)){
@@ -154,10 +155,12 @@ void Linker::getTextFile(string fileName){
   symbols.clear();
 }
 
-void Linker::linkerStart(){
+void Linker::linkerStart(vector<string> files){
   displayRelocationMapTable(relocationMaps);
   displaySymbolMapTable(symbolMaps);
   displaySectionMapTable(sectionMaps);
+
+  inputFiles = files;
 
   for (const auto& outerMap : sectionMaps) {
     const string& fileName = outerMap.first;
@@ -191,15 +194,14 @@ void Linker::linkerStart(){
   }
 
   sectionConnect();
-  symbolConnect();
   relocationConnect();
+  symbolConnect();
 }
 
 void Linker::sectionConnect(){
 
-  for(const auto& outerMap : sectionMaps) {
-    const string& fileName = outerMap.first;
-    const map<string, Section>& secMap = outerMap.second;
+  for(string fileName : inputFiles){
+    const map<string, Section>& secMap = sectionMaps[fileName];
 
     for (const auto& innerMap : secMap) {
 
@@ -215,8 +217,9 @@ void Linker::sectionConnect(){
         connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size);
         connectedSections[secName].data.push_back(section.data.at(i));
       }
-
+ 
       connectedSections[secName].size += sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
+
     }
   }
 
@@ -233,6 +236,7 @@ void Linker::sectionConnect(){
     sec.hasPool = false;
     sec.poolSize = 0;   
     sec.data = cs.data;
+    sec.sectionStart = currentSectionSize;
 
     for(int i = 0; i < cs.offsets.size(); i++){
       sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
@@ -252,74 +256,93 @@ void Linker::sectionConnect(){
 
 }
 
-void Linker::symbolConnect(){
-
-  // for(const auto& section : sections) {
-
-  //   string secName = section.first;
-  //   Section sec = section.second;
-
-  //   Symbol s;
-  //   s.serialNum = currentSymbolNum;
-  //   s.value = 0;
-  //   s.isLocal = true;
-  //   s.name = sec.name;
-  //   s.section = secName;
-  //   s.isSection = true;
-  //   s.offset = -1; //vidieti kako ovo - mappedAddress
-
-  //   symbols[secName] = s;
-  //   currentSymbolNum++;
-  // }
-
-  // for(const auto& outerMap : symbolMaps) {
-  //   string fileName = outerMap.first;
-  //   map<string, Symbol> symMap = outerMap.second;
-
-  //   for(const auto& innerMap : symMap) {
-  //     string fileName = innerMap.first;
-  //     Symbol s = innerMap.second;
-
-  //     if(!s.isLocal && !s.isSection){
-  //       map<string,Symbol>::iterator itSym=symbols.find(s.name);
-
-  //       if(itSym == symbols.end()){
-  //         Symbol s2;
-  //         s2.serialNum = currentSymbolNum++;
-  //         s2.value = 0;
-  //         s2.isLocal = s.isLocal;
-  //         s2.name = s.name;
-  //         s2.section = "UND";
-  //         s2.isSection = false;
-  //         s2.offset = 0;
-
-  //         symbols[s2.name] = s2;
-  //       }
-  //     }
-  //   }
-  // }
-
-  // displaySymbolTable(symbols);
-
-}
-
-
 void Linker::relocationConnect(){
 
-  for(const auto& outerMap : relocationMaps) {
-    const string& fileName = outerMap.first;
-    const map<string, vector<RealocationEntry>>& relMap = outerMap.second;
+  for(string fileName : inputFiles){
+    const map<string, vector<RealocationEntry>>& relMap = relocationMaps[fileName];
 
     for (const auto& innerMap : relMap) {
       const string& secName = innerMap.first;
       const vector<RealocationEntry>& relVector = innerMap.second;
 
-      relocations[secName] = relVector;
-    }
+      for(int i = 0; i < relVector.size(); i++){
 
+        RealocationEntry re = relVector.at(i);
+        re.offset += sections[secName].sectionStart;
+        relocations[secName].push_back(re);
+
+      }
+    }
   }
 
   displayRelocationTable(relocations);
+}
+
+void Linker::symbolConnect(){
+
+  // for(string fileName : inputFiles){
+
+  //   const map<string, Symbol>& symb = symbolMaps[fileName];
+
+  //   for (const auto& innerMap : symb) {
+  //     const string& symName = innerMap.first;
+  //     const Symbol s = innerMap.second;
+
+  //     if(!s.isLocal && !s.isSection){
+  //       symbols[s.name] = s;
+  //     }
+  //   }
+  // }
+
+/////////////////////////////////////////////////////////////////////////
+
+  for(const auto& section : sections) {
+
+    string secName = section.first;
+    Section sec = section.second;
+
+    Symbol s;
+    s.serialNum = currentSymbolNum;
+    s.value = 0;
+    s.isLocal = true;
+    s.name = sec.name;
+    s.section = secName;
+    s.isSection = true;
+    s.offset = -1; //vidieti kako ovo - mappedAddress
+
+    symbols[secName] = s;
+    currentSymbolNum++;
+  }
+
+  for(const auto& outerMap : symbolMaps) {
+    string fileName = outerMap.first;
+    map<string, Symbol> symMap = outerMap.second;
+
+    for(const auto& innerMap : symMap) {
+      string fileName = innerMap.first;
+      Symbol s = innerMap.second;
+
+      if(!s.isLocal && !s.isSection){
+        map<string,Symbol>::iterator itSym=symbols.find(s.name);
+
+        if(itSym == symbols.end()){
+          Symbol s2;
+          s2.serialNum = currentSymbolNum++;
+          s2.value = 0;
+          s2.isLocal = s.isLocal;
+          s2.name = s.name;
+          s2.section = "UND";
+          s2.isSection = false;
+          s2.offset = 0;
+
+          symbols[s2.name] = s2;
+        }
+      }
+    }
+  }
+
+  displaySymbolTable(symbols);
+
 }
 
 void Linker::makeOutputFile(string fileName){
@@ -477,7 +500,7 @@ void Linker::displayRelocationMapTable(const map<string, map<string, vector<Real
 
             for (const auto& relocation : relocations) {
                 cout << setw(20)<< fileName << setw(15) << relocation.section << setw(15) << relocation.offset
-                     << setw(15) << symbolName << setw(15) << relocation.addent << endl;
+                     << setw(15) << relocation.symbol << setw(15) << relocation.addent << endl;
             }
         }
         cout  << setw(80) <<"-------------------------------------------------------------------" << endl;
@@ -579,7 +602,9 @@ int main(int argc, char* argv[]){
       exit(1);
   }
 
-  Linker::linkerStart();
+  vector<string> files = {"main.txt", "isr_software.txt", "isr_terminal.txt", "isr_timer.txt", "math.txt", "handler.txt"};
+
+  Linker::linkerStart(files);
 
   Linker::makeOutputFile(argv[2]);
 
