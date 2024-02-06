@@ -5,6 +5,7 @@
 #include <array>
 #include <vector> 
 #include <iomanip> 
+#include <regex>
 
 //za fajl sistem
 #include <cstring>
@@ -553,56 +554,33 @@ void Linker::displaySectionMapTable(const map<string, map<string, Section>>& sym
 }
 
 int main(int argc, char* argv[]){
-
-  if(argc != 3){
-    cout << "INPUT ERROR: Nedovaoljan broj argumenata za asembliranje!!!";
-    exit(1);
-  }
   
-  if(strcmp(argv[1], "-o")){
-    cout << "INPUT ERROR: lose formatirana funkcija!!!";
-    exit(1);
-  }
-  size_t lengthOutput = strlen(argv[2]);
+  string fileOutput;
+  map<string,long long> sectionStart;
+  regex inputReg("\\.o$");
+  bool isHex = false;
+  vector<string> files;
 
-  char lastTwoOutput[3];
-  if (lengthOutput >= 2) {
-    strncpy(lastTwoOutput, argv[2] + lengthOutput - 2, 2);
-    lastTwoOutput[2] = '\0';
-  }else{
-    cout << "INPUT ERROR: lose formatirani fajlovi duzina!!!";
-    exit(1);
-  }
+  for (int i = 1; i < argc; i++){
+    
+    if(regex_search(argv[i], inputReg)){
+      files.push_back(argv[i]);
+    }else if(argv[i] == "-hex"){
+      isHex = true;
+    }else if(argv[i] == "-o"){
+      fileOutput = argv[i + 1];
+    }
 
-  if(strcmp(lastTwoOutput, ".o")){
-    cout << "INPUT ERROR: lose formatirani fajl izgled output!!!";
-    exit(1);
   }
 
   Linker::init();
-
-  const char* currentPath = "."; 
-
-  DIR* dir = opendir(currentPath);
-  if (dir != nullptr) {
-
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
-
-      if (entry->d_type == DT_REG && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0 && std::strstr(entry->d_name, ".txt") != nullptr) {
-        cout << "Ime fajla: " << entry->d_name << endl;
-        Linker::getTextFile(entry->d_name);
-      }
-
-    }
-    closedir(dir);
-
-  } else {
-      cout << "ERROR opening directories!!!" << endl;
-      exit(1);
+  
+  for(int i = 0; i < files.size(); i++){
+    cout << files.at(i) << endl;
+    files.at(i).erase(files.at(i).end() - 2, files.at(i).end());
+    files.at(i) +=  ".txt";
+    Linker::getTextFile(files.at(i));
   }
-
-  vector<string> files = {"main.txt", "isr_software.txt", "isr_terminal.txt", "isr_timer.txt", "math.txt", "handler.txt"};
 
   Linker::linkerStart(files);
 
