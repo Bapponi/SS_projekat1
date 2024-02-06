@@ -99,6 +99,7 @@ public:
   static void getOperand2(string name, string type);
   static void getParrensBody2(string name, string type);
   static void getLiteral2(string name, string type);
+  static void addPoolToSec();
 
   static bool inTable(string name);
   static string getBits(const string& stringInt, int nBits);

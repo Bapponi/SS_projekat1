@@ -6,4 +6,4 @@ isr,4,0,0,0
 ===
 2
 isr,1,0,1,UND,1,0
-isr_terminal,0,0,1,isr,0,0
+isr_terminal,0,0,0,isr,0,0

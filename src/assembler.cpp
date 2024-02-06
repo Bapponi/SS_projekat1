@@ -95,12 +95,12 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
 
   string boolString = to_string(secondPass);
 
-  displaySymbolTable(symbols);
-  displaySectionTable(sections);
-  displayPoolTable(pools);
-  displayRelocationTable(relocations);
-
   if(passNum == 2){
+    addPoolToSec();
+    displaySymbolTable(symbols);
+    displaySectionTable(sections);
+    displayPoolTable(pools);
+    displayRelocationTable(relocations);
     makeOutputFile();
   }
 
@@ -109,24 +109,28 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
 }
 
 void Assembler::getIdent(string name, bool isGlobal){
-  if(currentDirective.compare("extern") == 0){ 
-    
-    if (inTable(name)) {
-        cout << "ERROR:Label already in table " << name << endl;
-        exit(1);
-    }
 
-    Symbol s;
-    s.name = name;
-    s.section = "UND";
-    // s.offset = -1;
-    s.offset = 0;
-    s.isLocal = !isGlobal;
-    s.isSection = false;
-    s.serialNum = symSerialNum++;
-    
-    symbols.insert(make_pair(name, s));
+  if (inTable(name)) {
+    cout << "ERROR:Label already in table " << name << endl;
+    exit(1);
   }
+
+  Symbol s;
+  s.name = name;
+  // s.offset = -1;
+  s.offset = 0;
+  s.isLocal = !isGlobal;
+  s.isSection = false;
+  s.serialNum = symSerialNum++;
+
+  if(currentDirective.compare("extern") == 0){
+    s.section = "UND";
+  }else{
+    s.section = "GLOB";
+  }
+  
+  symbols.insert(make_pair(name, s));
+
 }
 
 void Assembler::startSection(string name){
@@ -240,13 +244,15 @@ void Assembler::labelStart(string name){
   map<string,Symbol>::iterator itSym = symbols.find(name);
   if(itSym!=symbols.end()){
 
-      if(!itSym->second.isLocal){
-          cout<<"ERROR: Label "<< name <<" is extern variable!!!"<<endl;
-          exit(1);
+      if(!itSym->second.isLocal && itSym->second.section == "UND"){
+
+        cout<<"ERROR: Label "<< name <<" is extern variable!!!"<<endl;
+        // exit(1);
+        return;
       }
       if(itSym->second.isSection){
-          cout << "ERROR: Label "<< name << " is a section!!!" << endl;
-          exit(1);
+        cout << "ERROR: Label "<< name << " is a section!!!" << endl;
+        exit(1);
       }
 
       itSym->second.value = currentSectionSize;
@@ -1126,6 +1132,34 @@ void Assembler::getParrensBody2(string name, string type){
       cout << "ERROR: HEX num out of limit!!!" << endl;
       exit(1);
     }
+  }
+}
+
+void Assembler::addPoolToSec(){
+
+  for(const auto& section : sections) {
+    string secName = section.first;
+    Section sec = section.second;
+
+    for(int i = 0; i < pools[secName].size(); i++){
+      cout << "MAJMUNE" << endl;
+      sec.offsets.push_back(pools[secName].at(i).symbolAddress);
+      // string strValue = to_string(pools[secName].at(i).symbolValue);
+      // cout << strValue << endl;
+      // strValue = getBits(strValue, 33);
+      string strValue = bitset<32>(pools[secName].at(i).symbolValue).to_string();
+      sec.data.push_back(strValue);
+    }
+
+    for(int i = 0; i < sec.offsets.size(); i++){
+      cout << "OFFSETS: " << sec.offsets.at(i) << " DATA: " << sec.data.at(i) << endl;
+    }
+
+    cout << "------------------" << endl;
+
+    sections[secName].offsets = sec.offsets;
+    sections[secName].data = sec.data;
+
   }
 }
 

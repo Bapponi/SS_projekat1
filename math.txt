@@ -6,7 +6,7 @@ math,96,0,0,0
 ===
 5
 math,4,0,1,UND,1,0
-mathAdd,0,0,1,math,0,0
-mathDiv,3,0,1,math,0,0
-mathMul,2,0,1,math,0,0
-mathSub,1,0,1,math,0,0
+mathAdd,0,0,0,math,0,0
+mathDiv,3,72,0,math,0,0
+mathMul,2,48,0,math,0,0
+mathSub,1,24,0,math,0,0

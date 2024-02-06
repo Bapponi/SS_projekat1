@@ -323,7 +323,7 @@ void Linker::symbolConnect(){
       string fileName = innerMap.first;
       Symbol s = innerMap.second;
 
-      if(!s.isLocal && !s.isSection){
+      if(!s.isLocal && !s.isSection && s.section != "UND"){
         map<string,Symbol>::iterator itSym=symbols.find(s.name);
 
         if(itSym == symbols.end()){
@@ -332,7 +332,7 @@ void Linker::symbolConnect(){
           s2.value = 0;
           s2.isLocal = s.isLocal;
           s2.name = s.name;
-          s2.section = "UND";
+          s2.section = "GLOB";
           s2.isSection = false;
           s2.offset = 0;
 
@@ -349,6 +349,30 @@ void Linker::symbolConnect(){
 void Linker::makeOutputFile(string fileName){
   ofstream file(fileName, ios::out | ios::binary);
   file.close();
+
+  makeTextFile(fileName);
+}
+
+void Linker::makeTextFile(string fileName){
+
+  fileName.erase(fileName.size() - 4);
+
+  ofstream file(fileName + ".txt");
+
+  for (const auto& entry : sections) {
+    string secName = entry.first;
+    Section sec = entry.second;
+
+    for(int i = 0; i < sec.offsets.size(); i++){
+      file << sec.offsets.at(i) << "," << sec.data.at(i) << '\n';
+    }
+
+  }
+
+  file << "===\n";
+
+  file.close();
+
 }
 
 //POMOCNE FUNKCIJE//////////////////////////////////

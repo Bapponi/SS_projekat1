@@ -75,6 +75,7 @@ public:
   static void linkerStart(vector<string>);
   static void sectionConnect();
   static void makeOutputFile(string fileName);
+  static void makeTextFile(string fileName);
 
   static vector<string> splitString(const string& input, char delimiter);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
