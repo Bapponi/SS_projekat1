@@ -20,11 +20,15 @@ map<string, Section> Linker::sections;
 map<string, ConnectedSection> Linker::connectedSections;
 vector<RealocationEntry> Linker::relVector;
 
+vector<string> Linker::inputFiles;
+
 map<string, map<string, Symbol>> Linker::symbolMaps;
 map<string, map<string, vector<RealocationEntry>>> Linker::relocationMaps;
 map<string, map<string, Section>> Linker::sectionMaps;
 
-map<string, int> Linker::sectionEnds;
+int Linker::currentSectionNum;
+int Linker::currentSymbolNum;
+int Linker::currentSectionSize;
 
 void Linker::init(){
   relocations.clear();
@@ -37,7 +41,9 @@ void Linker::init(){
   symbolMaps.clear();
   sectionMaps.clear();
 
-  sectionEnds.clear();
+  currentSectionNum = 1;
+  currentSymbolNum = 1;
+  currentSectionSize = 0;
 }
 
 void Linker::getTextFile(string fileName){
@@ -162,74 +168,158 @@ void Linker::linkerStart(){
       const string& secName = innerMap.first;
       const Section& section = innerMap.second;
 
-      sectionEnds[section.name] = 0;
+      ConnectedSection cs;
+      cs.size = 0;
+
+      connectedSections[section.name] = cs;
     }
   }
 
-  sectionConnect();
-}
-
-void Linker::sectionConnect(){
-
-  int num = 1;
-
-  for(const auto& outerMap : sectionMaps) {
-    const std::string& fileName = outerMap.first;
-    const std::map<string, Section>& secMap = outerMap.second;
-
-    cout << "FileName: " << fileName << endl;
+  for (const auto& outerMap : sectionMaps) {
+    const string& fileName = outerMap.first;
+    const map<string, Section>& secMap = outerMap.second;
 
     for (const auto& innerMap : secMap) {
 
       const string& secName = innerMap.first;
       const Section& section = innerMap.second;
 
-      if(secName != "ABS" && secName != "UND"){
+      vector<RealocationEntry> vr;
 
-        ConnectedSection cs;
-
-        cs.file = fileName;
-        cs.name = secName;
-        cs.addressStart = sectionEnds[secName];
-
-        if(section.hasPool){
-          cs.size = section.offsets.at(section.offsets.size() - 1) + 4;
-        }else{
-          cs.size = section.size;
-        }
-
-        sectionEnds[secName] += section.size;
-        connectedSections[secName] = cs; //gledati da li da se i filenameovi racunaju
-      }
+      relocations[section.name] = vr;
     }
   }
 
-  for(const auto& secEnd : sectionEnds){
+  sectionConnect();
+  symbolConnect();
+  relocationConnect();
+}
 
-    string sectionName = secEnd.first;
-    int sectionEnd = secEnd.second;
+void Linker::sectionConnect(){
+
+  for(const auto& outerMap : sectionMaps) {
+    const string& fileName = outerMap.first;
+    const map<string, Section>& secMap = outerMap.second;
+
+    for (const auto& innerMap : secMap) {
+
+      const string& secName = innerMap.first;
+      const Section& section = innerMap.second;
+
+      connectedSections[secName].name = secName;
+      connectedSections[secName].file = fileName;
+      connectedSections[secName].addressStart = sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
+      
+
+      for(int i = 0; i < section.offsets.size(); i++){ 
+        connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size);
+        connectedSections[secName].data.push_back(section.data.at(i));
+      }
+
+      connectedSections[secName].size += sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
+    }
+  }
+
+  displayConnectedSectionTable(connectedSections);
+
+  for(const auto& conSec : connectedSections){
+
+    string sectionName = conSec.first;
+    ConnectedSection cs = conSec.second;
 
     Section sec;
     sec.name = sectionName;
-    sec.size = sectionEnd;
-    sec.hasPool = false; //voditi racuna o ovome
-    sec.poolSize = 0;    //voditi racuna o ovome
+    sec.size = cs.size;
+    sec.hasPool = false;
+    sec.poolSize = 0;   
+    sec.data = cs.data;
 
-    if (sectionName == "ABS")
-      sec.serialNum = -1;
-    else if (sectionName == "UND")
+    for(int i = 0; i < cs.offsets.size(); i++){
+      sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
+    }
+
+    if (sectionName == "UND")
       sec.serialNum = 0;
     else
-      sec.serialNum = num;
+      sec.serialNum = currentSectionNum++;
 
     sections[sectionName] = sec;
-
-    num++;
+    currentSectionSize += cs.size;
 
   }
 
   displaySectionTable(sections);
 
+}
+
+void Linker::symbolConnect(){
+
+  // for(const auto& section : sections) {
+
+  //   string secName = section.first;
+  //   Section sec = section.second;
+
+  //   Symbol s;
+  //   s.serialNum = currentSymbolNum;
+  //   s.value = 0;
+  //   s.isLocal = true;
+  //   s.name = sec.name;
+  //   s.section = secName;
+  //   s.isSection = true;
+  //   s.offset = -1; //vidieti kako ovo - mappedAddress
+
+  //   symbols[secName] = s;
+  //   currentSymbolNum++;
+  // }
+
+  // for(const auto& outerMap : symbolMaps) {
+  //   string fileName = outerMap.first;
+  //   map<string, Symbol> symMap = outerMap.second;
+
+  //   for(const auto& innerMap : symMap) {
+  //     string fileName = innerMap.first;
+  //     Symbol s = innerMap.second;
+
+  //     if(!s.isLocal && !s.isSection){
+  //       map<string,Symbol>::iterator itSym=symbols.find(s.name);
+
+  //       if(itSym == symbols.end()){
+  //         Symbol s2;
+  //         s2.serialNum = currentSymbolNum++;
+  //         s2.value = 0;
+  //         s2.isLocal = s.isLocal;
+  //         s2.name = s.name;
+  //         s2.section = "UND";
+  //         s2.isSection = false;
+  //         s2.offset = 0;
+
+  //         symbols[s2.name] = s2;
+  //       }
+  //     }
+  //   }
+  // }
+
+  // displaySymbolTable(symbols);
+
+}
+
+
+void Linker::relocationConnect(){
+
+  for(const auto& outerMap : relocationMaps) {
+    const string& fileName = outerMap.first;
+    const map<string, vector<RealocationEntry>>& relMap = outerMap.second;
+
+    for (const auto& innerMap : relMap) {
+      const string& secName = innerMap.first;
+      const vector<RealocationEntry>& relVector = innerMap.second;
+
+      relocations[secName] = relVector;
+    }
+
+  }
+
+  displayRelocationTable(relocations);
 }
 
 void Linker::makeOutputFile(string fileName){
@@ -277,15 +367,43 @@ void Linker::displayRelocationTable(const map<string, vector<RealocationEntry>>&
 
 void Linker::displaySectionTable(const map<string, Section>& symbolMap){
   cout << "       ------------------------------------------SECTIONS-------------------------------------------" << endl;
-  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Size"
-       << setw(10) << "HasPool" << setw(15) << "PoolSize" << endl;
+  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "SizeAll"
+       << setw(10) << "HasPool" << setw(15) << "PoolSize" << setw(20) << "SectionStart" << endl;
 
   for (const auto& entry : sections) {
       const Section& section = entry.second;
 
       cout << setw(15) << section.name << setw(10) << section.serialNum
                 << setw(10) << section.size << setw(10) << section.hasPool
-                << setw(15) << section.poolSize << endl;
+                << setw(15) << section.poolSize << setw(20) << section.sectionStart <<endl;
+  }
+
+  cout << "\n" << endl;
+
+  cout << setw(15) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+
+  for (const auto& entry : symbolMap) {
+      const vector<long long>& offsetsVector = entry.second.offsets;
+      const vector<string>& dataVector = entry.second.data;
+
+      for (int i = 0; i < offsetsVector.size(); i++) {
+          cout << setw(15) << entry.first << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+      }
+  }
+
+  cout << "\n" << endl;
+}
+
+void Linker::displayConnectedSectionTable(const map<string, ConnectedSection>& symbolMap){
+  cout << "       -------------------------------------CONNECTED SECTIONS--------------------------------------" << endl;
+  cout << setw(20) << "FILE" << setw(15) << "NAME" << setw(10) << "SIZE"
+       << setw(10) << "AddressStart" << endl;
+
+  for (const auto& entry : connectedSections) {
+      const ConnectedSection& section = entry.second;
+
+      cout << setw(20) << section.file << setw(15) << section.name
+                << setw(10) << section.size << setw(10) << section.addressStart << endl;
   }
 
   cout << "\n" << endl;
@@ -328,14 +446,14 @@ void Linker::displaySymbolMapTable(const map<string, map<string, Symbol>>& symbo
        << setw(10) << "Offset" << endl;
 
   for (const auto& outerEntry : symbolMap) {
-      const string& sectionName = outerEntry.first;
+      const string& fileName = outerEntry.first;
       const map<string, Symbol>& innerMap = outerEntry.second;
 
       for (const auto& innerEntry : innerMap) {
           const Symbol& symbol = innerEntry.second;
-          cout << setw(20) << sectionName << setw(20) << symbol.name << setw(10) << symbol.serialNum
+          cout << setw(20) << fileName << setw(20) << symbol.name << setw(10) << symbol.serialNum
                << setw(10) << symbol.value << setw(10) << symbol.isLocal
-               << setw(15) << sectionName << setw(10) << symbol.isSection
+               << setw(15) << symbol.section << setw(10) << symbol.isSection
                << setw(10) << symbol.offset << endl;
       }
       cout  << setw(100) <<"------------------------------------------------------------------------------------------" << endl;

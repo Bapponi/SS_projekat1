@@ -33,6 +33,7 @@ struct Section {
   string name;
   bool hasPool;
   int poolSize;
+  int sectionStart;
   vector <long long> offsets;
   vector <string> data;
 };
@@ -42,6 +43,8 @@ struct ConnectedSection{
   string name;
   int size;
   int addressStart;
+  vector <long long> offsets;
+  vector <string> data;
 };
 
 /////////////////KLASA/////////////////
@@ -54,11 +57,16 @@ private:
   static map<string, ConnectedSection> connectedSections;
   static vector<RealocationEntry> relVector;
 
+  static vector<string> inputFiles;
+
+
   static map<string, map<string, Symbol>> symbolMaps;
   static map<string, map<string, vector<RealocationEntry>>> relocationMaps;
   static map<string, map<string, Section>> sectionMaps;
 
-  static map<string, int> sectionEnds;
+  static int currentSectionNum;
+  static int currentSymbolNum;
+  static int currentSectionSize;
 
 public:
 
@@ -71,10 +79,13 @@ public:
   static vector<string> splitString(const string& input, char delimiter);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
+  static void displayConnectedSectionTable(const map<string, ConnectedSection>& symbolMap);
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   static void displayRelocationMapTable(const map<string, map<string, vector<RealocationEntry>>>& symbolMap); 
   static void displaySymbolMapTable(const map<string, map<string, Symbol>>& symbolMap);
   static void displaySectionMapTable(const map<string, map<string, Section>>& symbolMap);
+  static void symbolConnect();
+  static void relocationConnect();
 
 };
 

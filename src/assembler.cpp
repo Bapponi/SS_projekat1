@@ -137,7 +137,8 @@ void Assembler::startSection(string name){
     sec.serialNum = secSerialNum++;
     sec.size = currentSectionSize;
     sec.hasPool = hasPool;
-    sec.poolSize = 0;
+    // sec.poolSize = 0;
+    sec.poolSize = poolOffset;
 
     sections.insert(make_pair(currentSectionName, sec));
 
@@ -181,7 +182,8 @@ void Assembler::programEnd(){
     sec.serialNum = secSerialNum++;
     sec.size = currentSectionSize;
     sec.hasPool = hasPool;
-    sec.poolSize = 0;
+    // sec.poolSize = 0;
+    sec.poolSize = poolOffset;
 
     sections.insert(make_pair(currentSectionName, sec));
 
@@ -547,11 +549,17 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
   }else if(name.compare("iret") == 0){
 
-    sec->second.data.push_back("10010001111011100000000000001000");
-    sec->second.offsets.push_back(-1);
-    sec->second.data.push_back("10010110000011100000111111111100");
-    sec->second.offsets.push_back(-1);
-    sec->second.data.push_back("10010001111011100000000000001000");
+    string code = "10010001111011100000000000001000";
+    code += "10010110000011100000111111111100";
+    code += "10010001111011100000000000001000";
+
+    sec->second.data.push_back(code);
+
+    // sec->second.data.push_back("10010001111011100000000000001000");
+    // sec->second.offsets.push_back(-1);
+    // sec->second.data.push_back("10010110000011100000111111111100");
+    // sec->second.offsets.push_back(-1);
+    // sec->second.data.push_back("10010001111011100000000000001000");
 
     currentSectionSize += 8;
 
