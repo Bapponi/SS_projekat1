@@ -17,13 +17,16 @@ map<int, string> Emulator::bytes;
 vector<int> Emulator::regs;
 vector<int> Emulator::csr; 
 
-int Emulator::regM;
+unsigned int Emulator::regM;
+int Emulator::startAddress;
 int Emulator::pc;
 int Emulator::sp;
 int Emulator::status;
 int Emulator::handler;
 int Emulator::cause;
 bool Emulator::executing;
+bool Emulator::timerOn;
+int Emulator::timerDuration;
 bool Emulator::error;
 string Emulator::inst1;
 string Emulator::instM;
@@ -34,6 +37,7 @@ string Emulator::instD;
 string Emulator::variation;
 
 void Emulator::init(string fileName){
+  cout << "In init" << endl;
   codes.clear();
   inputFile = fileName;
   currentInstruction = "";
@@ -41,15 +45,27 @@ void Emulator::init(string fileName){
   regs.clear();
   csr.clear();
 
-  regM = 0xFFFF0000;
-  pc = 15;
-  sp = 14;
-  regs[pc] = 0;
-  regs[sp] = 0xFFFF0000;
+  for(int i = 0; i < 16; i++)
+    regs.push_back(0);
+
+  for(int i = 0; i < 3; i++)
+    csr.push_back(0);
+
   status = 0;
   handler = 1;
   cause = 2;
+
+  regM = 0xFFFF0000;
+  startAddress = 0;
+  pc = 15;
+  sp = 14;
+
+  regs[pc] = startAddress;
+  regs[sp] = regM;
+  csr[handler] = regM;
   executing = true;
+  timerOn = true;
+  timerDuration = 0;
   error = false;
   inst1 = "";
   instM = "";
@@ -58,13 +74,14 @@ void Emulator::init(string fileName){
   instC = "";
   instD = "";
   variation = "";
+  cout << "Out of init" << endl;
 }
 
 void Emulator::startEmulator(){
   getTextFile(inputFile);
+  displayCode(codes);
   setupBytes();
   programExecute();  
-  displayCode(codes);
 }
 
 void Emulator::getTextFile(string fileName){
@@ -108,6 +125,8 @@ void Emulator::setupBytes(){
 
 void Emulator::programExecute(){
 
+  timerDuration = setTimer(0); 
+  
   int exeNum = 0;
   while(executing){
 
@@ -373,6 +392,8 @@ void Emulator::instructionStart(){
     error = true;
   }
 
+  showCurrentState();
+
   if(error){
     cout << "ERROR: something bad with instruction: " << currentInstruction << endl;
     exit(1);
@@ -500,6 +521,20 @@ void Emulator::displayCode(const vector<Code>& codeVector){
   }
 
   cout << "\n" << endl;
+}
+
+void Emulator::showCurrentState(){
+
+  cout << "\nTrenutna instrukcija: " << currentInstruction << endl;
+
+  cout << "Izgled: "<< bytes[regs[15]] + bytes[regs[15] + 1] + bytes[regs[15] + 2] + bytes[regs[15] + 3] << endl;
+
+  for(int i = 0; i < regs.size() - 2; i++){
+    cout << "REG" << i << ": " << regs[i] << " ";
+  }
+  cout << "\nSP: "<< regs[14] << " PC: " << regs[15] << endl;
+  cout << "Status: " << csr[0] << " Handler: " << csr[1] << " Cause: " << csr[2] << endl;
+
 }
 
 int main(int argc, char* argv[]){

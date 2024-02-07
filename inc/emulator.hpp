@@ -39,13 +39,16 @@ private:
   static vector<int> regs;
   static vector<int> csr;
 
-  static int regM;
+  static int startAddress;
+  static unsigned int regM;
   static int pc;
   static int sp;
   static int status;
   static int handler;
   static int cause;
   static bool executing;
+  static bool timerOn;
+  static int timerDuration;
   static bool error;
   static string inst1;
   static string instM;
@@ -77,6 +80,7 @@ public:
   static string decimalToHex(int decimalValue);
   static vector<string> splitString(const string& input, char delimiter);
   static void displayCode(const vector<Code>& codeVector);
+  static void showCurrentState();
 
 };
 
