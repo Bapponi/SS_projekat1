@@ -14,9 +14,15 @@ vector<Code> Emulator::codes;
 string Emulator::inputFile;
 string Emulator::currentInstruction;
 map<int, string> Emulator::bytes;
+vector<int> Emulator::regs;
+vector<int> Emulator::csr; 
 
+int Emulator::regM;
 int Emulator::pc;
 int Emulator::sp;
+int Emulator::status;
+int Emulator::handler;
+int Emulator::cause;
 bool Emulator::executing;
 bool Emulator::error;
 string Emulator::inst1;
@@ -32,9 +38,17 @@ void Emulator::init(string fileName){
   inputFile = fileName;
   currentInstruction = "";
   bytes.clear();
+  regs.clear();
+  csr.clear();
 
-  pc = 0;
-  sp = 0xFFFF0000;
+  regM = 0xFFFF0000;
+  pc = 15;
+  sp = 14;
+  regs[pc] = 0;
+  regs[sp] = 0xFFFF0000;
+  status = 0;
+  handler = 1;
+  cause = 2;
   executing = true;
   error = false;
   inst1 = "";
@@ -99,7 +113,7 @@ void Emulator::programExecute(){
 
     if(exeNum++ >= 50) break;
     instructionStart();
-    pc += 4;
+    regs[pc] += 4;
   }
 }
 
@@ -113,6 +127,7 @@ void Emulator::instructionStart(){
     if(instM != "0" || instA != "0" || instB != "0" || instC != "0" || instD != "000"){
       error = true;
     }
+    executing = false;
   
   }else if(inst1 == "1"){
 
@@ -120,13 +135,18 @@ void Emulator::instructionStart(){
     if(instM != "0" || instA != "0" || instB != "0" || instC != "0" || instD != "000"){
       error = true;
     }
+    startInterrupt();
   
   }else if(inst1 == "2"){
 
     currentInstruction = "call";
 
-    if(instM == "0") variation = "noPool";        
-    else if(instM == "1") variation = "yesPool";
+    if(instM == "0"){
+      regs[pc] = regs[stoi(instA)] + regs[stoi(instB)] + stoi(instD);
+    }        
+    else if(instM == "1"){
+      regs[pc] = getValueFromAddress(regs[stoi(instA)] + regs[stoi(instB)] + stoi(instD));
+    }
     else error = true;    
 
     if(instC != "0") error = true;  
@@ -135,55 +155,96 @@ void Emulator::instructionStart(){
     
     if(instM == "0"){
       currentInstruction = "jmp";
-      variation = "noPool";
+      
+      regs[pc] = regs[stoi(instA)] + stoi(instD);
 
       if(instB != "0" || instC != "0") error = true;         
     }
     else if(instM == "1"){
       currentInstruction = "beq";
-      variation = "noPool";
+      
+      if(regs[stoi(instB)] == regs[stoi(instC)])
+        regs[pc] = regs[stoi(instA)] + stoi(instD);
+
     }
     else if(instM == "2"){
       currentInstruction = "bne";
-      variation = "noPool";
+      
+      if(regs[stoi(instB)] != regs[stoi(instC)])
+        regs[pc] = regs[stoi(instA)] + stoi(instD);
+
     }
     else if(instM == "3"){
       currentInstruction = "bgt";
-      variation = "noPool";
+      
+      if(regs[stoi(instB)] > regs[stoi(instC)])
+        regs[pc] = regs[stoi(instA)] + stoi(instD);
+
     }
     else if(instM == "8"){
       currentInstruction = "jmp";
-      variation = "yesPool";
+      regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
 
       if(instB != "0" || instC != "0") error = true;         
     }
     else if(instM == "9"){
       currentInstruction = "beq";
-      variation = "yesPool";
+      
+      if(regs[stoi(instB)] == regs[stoi(instC)])
+        regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+
     }
     else if(instM == "a"){
       currentInstruction = "bne";
-      variation = "yesPool";
+      
+      if(regs[stoi(instB)] != regs[stoi(instC)])
+        regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+
     }
     else if(instM == "b"){
       currentInstruction = "bgt";
-      "yesPool";
+      
+      if(regs[stoi(instB)] > regs[stoi(instC)])
+        regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+
     }
     else error = true;
 
   }else if(inst1 == "4"){
 
     currentInstruction = "xchg";
+
+    int help = regs[stoi(instA)];
+    regs[stoi(instA)] = regs[stoi(instB)];
+    regs[stoi(instB)] = help;
+
     if(instM != "0" || instA != "0" || instD != "000"){
       error = true;
     }
 
   }else if(inst1 == "5"){
 
-    if(instM == "0") currentInstruction = "add";
-    else if(instM == "1") currentInstruction = "sub";
-    else if(instM == "2") currentInstruction = "mul";
-    else if(instM == "3") currentInstruction = "div";
+    if(instM == "0"){
+      currentInstruction = "add";
+      regs[stoi(instA)] = regs[stoi(instB)] + regs[stoi(instC)];
+    } 
+    else if(instM == "1"){
+      currentInstruction = "sub";
+      regs[stoi(instA)] = regs[stoi(instB)] - regs[stoi(instC)];
+    } 
+    else if(instM == "2"){
+      currentInstruction = "mul";
+      regs[stoi(instA)] = regs[stoi(instB)] * regs[stoi(instC)];
+    } 
+    else if(instM == "3"){
+      currentInstruction = "div";
+
+      if(instC != "0")
+        regs[stoi(instA)] = regs[stoi(instB)] / regs[stoi(instC)];
+      else
+        error = true;
+
+    } 
     else error = true;
 
     if(instD != "000") error = true;
@@ -191,107 +252,199 @@ void Emulator::instructionStart(){
   }else if(inst1 == "6"){
     if(instM == "0"){
       currentInstruction = "not";
+
+      regs[stoi(instA)] = !regs[stoi(instB)];
+
       if(instC != "0") error = true;
     } 
-    else if(instM == "1") currentInstruction = "and";
-    else if(instM == "2") currentInstruction = "or";
-    else if(instM == "3") currentInstruction = "xor";
+    else if(instM == "1"){
+      currentInstruction = "and";
+      regs[stoi(instA)] = regs[stoi(instB)] & regs[stoi(instC)];
+    }
+    else if(instM == "2"){
+      currentInstruction = "or";
+      regs[stoi(instA)] = regs[stoi(instB)] | regs[stoi(instC)];
+    }
+    else if(instM == "3"){
+      currentInstruction = "xor";
+      regs[stoi(instA)] = regs[stoi(instB)] ^ regs[stoi(instC)];
+    }
     else error = true;
 
     if(instD != "000") error = true;
 
   }else if(inst1 == "7"){
 
-    if(instM == "0") currentInstruction = "shl";
-    else if(instM == "1") currentInstruction = "shr";
+    if(instM == "0"){
+      currentInstruction = "shl";
+      regs[stoi(instA)] = regs[stoi(instB)] << regs[stoi(instC)];
+    }
+    else if(instM == "1"){
+      currentInstruction = "shr";
+      regs[stoi(instA)] = regs[stoi(instB)] >> regs[stoi(instC)];
+    }
     else error = true;
 
     if(instD != "000") error = true;
 
   }else if(inst1 == "8"){
 
-    //izmeniti
     currentInstruction = "st";
-    if(instM == "0") variation = "noPool";
-    else if(instM == "1") variation = "notKnow";
-    else if(instM == "2") variation = "yesPool";
+    if(instM == "0"){
+
+      int address = regs[stoi(instA)] + regs[stoi(instB)] + stoi(instD);
+      int value = regs[stoi(instC)];
+      setValueOnAddress(address, value);
+
+    }
+    else if(instM == "1"){
+
+      pushOnStack(regs[stoi(instC)]);
+
+    }else if(instM == "2"){
+
+      int address = getValueFromAddress(regs[stoi(instA) + regs[stoi(instB) + stoi(instB)]]);
+      int value = regs[stoi(instC)];
+      setValueOnAddress(address, value);
+
+    }
     else error = true;
 
   }else if(inst1 == "9"){
 
-    //izmeniti
     currentInstruction = "ld";
-    if(instM == "0") variation = "noPool";
-    else if(instM == "1") variation = "notKnow";
-    else if(instM == "2") variation = "yesPool";
-    else if(instM == "3") variation = "yesPool";
-    else if(instM == "4") variation = "yesPool";
-    else if(instM == "6") variation = "yesPool";
+
+    if(instM == "0"){
+      regs[stoi(instA)] = csr[stoi(instB)];
+    }
+    else if(instM == "1"){
+      if(instA == "e" && instB == "e" && instC == "0" && instD == "008"){
+        currentInstruction = "iret";
+        regs[pc] += 4;
+        string nextInstr = getStringFromAddress(regs[pc]);
+        if(nextInstr == "10010110000011100000111111111100"){
+          regs[pc] += 4;
+          string nextInstr = getStringFromAddress(regs[pc]);
+          if(nextInstr == "10010110000011100000111111111100"){
+
+          }else error = true;
+        }else error = true;
+      }else{
+        regs[stoi(instA)] = regs[stoi(instB)] + stoi(instB);
+      }
+    }
+    else if(instM == "2"){
+
+      int address = regs[stoi(instB)] + regs[stoi(instC)] + stoi(instD);
+      regs[stoi(instA)] = getValueFromAddress(address);
+
+    }
+    else if(instM == "3"){
+      if(instA == "f" && instB == "e" && instC == "0" && instD == "004"){
+        currentInstruction = "ret";
+        popFromStack();
+      }else{
+        regs[stoi(instA)] = popFromStack();
+      }
+    }
+    else if(instM == "4"){
+      csr[stoi(instA)] = regs[stoi(instB)];
+    }
+    else if(instM == "5"){
+      csr[stoi(instA)] = regs[stoi(instB)] | stoi(instD);
+    }
+    else if(instM == "6"){
+
+      int address = regs[stoi(instB)] + regs[stoi(instC)] + stoi(instD);
+      csr[stoi(instA)] = getValueFromAddress(address);
+
+    }
+    else if(instM == "7"){
+
+      int address = regs[stoi(instB)];
+      csr[stoi(instA)] = getValueFromAddress(address);
+      regs[stoi(instB)] = regs[stoi(instB)] + stoi(instD);
+
+    }
     else error = true;
 
   }else{
     cout << "\nERROR: Bad instruction" << endl;
     error = true;
   }
+
+  if(error){
+    cout << "ERROR: something bad with instruction: " << currentInstruction << endl;
+    exit(1);
+  }
 }
 
 void Emulator::setInstructionReg(){
-  inst1 = bytes[pc].at(0);
-  instM = bytes[pc].at(1);
-  instA = bytes[pc + 1].at(0);
-  instB = bytes[pc + 1].at(1);
-  instC = bytes[pc + 2].at(0);
-  instD = bytes[pc + 2].at(1) + bytes[pc + 3];
+  inst1 = bytes[regs[pc]].at(0);
+  instM = bytes[regs[pc]].at(1);
+  instA = bytes[regs[pc] + 1].at(0);
+  instB = bytes[regs[pc] + 1].at(1);
+  instC = bytes[regs[pc] + 2].at(0);
+  instD = bytes[regs[pc] + 2].at(1) + bytes[regs[pc] + 3];
 }
 
-void Emulator::executeInstruction(){
+int Emulator::getValueFromAddress(int address){
+  return stoi(bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3]); 
+}
 
-  string name = currentInstruction;
+string Emulator::getStringFromAddress(int address){
+  return bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3]; 
+}
 
-  if(name == "halt"){
+void Emulator::setValueOnAddress(int address, int value){
 
-  }else if(name == "iret"){
+  string pom = decimalToHex(value);
 
-  }else if(name == "ret"){
+  bytes[address] = pom.substr(0, 2);
+  bytes[address + 1] = pom.substr(2, 2);
+  bytes[address + 2] = pom.substr(4, 2);
+  bytes[address + 3] = pom.substr(6, 2);
 
-  }else if(name == "pop"){
+}
 
-  }else if(name == "xchg"){
+int Emulator::popFromStack(){
+  
+  int value = getValueFromAddress(regs[sp]);
+  regs[sp] = regs[sp] + 4;
+  
+  return value;
+}
 
-  }else if(name == "add"){
+void Emulator::pushOnStack(int value){
+  regs[sp] = regs[sp] - 4;
+  setValueOnAddress(regs[sp], value);
+}
 
-  }else if(name == "sub"){
+void Emulator::startInterrupt(){
+  
+  if(csr[handler] == regM)
+    return;
 
-  }else if(name == "mul"){
+    pushOnStack(csr[status]);
+    pushOnStack(regs[pc]);
 
-  }else if(name == "div"){
+    regs[pc] = csr[handler];
 
-  }else if(name == "and"){
+    csr[status] = I | TR | TL;
+}
 
-  }else if(name == "or"){
+long long int Emulator::setTimer(int id){
 
-  }else if(name == "xor"){
-
-  }else if(name == "shl"){
-
-  }else if(name  == "shr"){
-
-  }else if(name == "csrrd"){
-
-  }else if(name  == "csrwr"){
-
-  }else if(name == "beq"){
-
-  }else if(name == "bne"){
-
-  }else if(name == "bgt"){
-
-  }else if(name == "ld"){
-
-  }else if(name == "st"){
-    
-  }else{
-    cout << "ERROR: Non instruction: " << name <<  endl;
+  if(id == 0) return 500000;
+  else if(id == 1) return 1000000;  
+  else if(id == 1) return 1500000; 
+  else if(id == 1) return 2000000; 
+  else if(id == 1) return 5000000; 
+  else if(id == 1) return 7000000; 
+  else if(id == 1) return 30000000; 
+  else if(id == 1) return 60000000;
+  else{
+    cout << "\nERROR: Bad timer set!!!" << endl;
     exit(1);
   }
 }
@@ -330,7 +483,8 @@ string Emulator::binaryToHex(const string& binaryString, int size) {
 string Emulator::decimalToHex(int decimalValue) {
   
   stringstream ss;
-  ss << hex << decimalValue;
+  // ss << hex << decimalValue;
+  ss << hex << setw(8) << setfill('0') << decimalValue;
   return ss.str();
 
 }
