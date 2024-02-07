@@ -22,3 +22,4 @@ emulator: src/emulator.cpp inc/emulator.hpp
 clean:
 		rm -rf *.o src/lex.yy.c src/parser.tab.c src/parser.tab.h assembler linker emulator izlaz.*
 
+# ./linker -o banana.hex -hex main.o isr_software.o isr_terminal.o isr_timer.o math.o handler.o -place=banana@0xFF00FF00

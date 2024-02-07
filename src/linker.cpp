@@ -364,7 +364,7 @@ void Linker::makeTextFile(string fileName){
     Section sec = entry.second;
 
     for(int i = 0; i < sec.offsets.size(); i++){
-      file << sec.offsets.at(i) << "," << sec.data.at(i) << '\n';
+      file << sec.offsets.at(i) << "," << sec.data.at(i) << "," << sec.data.at(i).length() / 8 << '\n';
     }
 
   }
