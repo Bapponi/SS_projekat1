@@ -19,6 +19,7 @@ map<string, vector<RealocationEntry>> Linker::relocations;
 map<string, Symbol> Linker::symbols;
 map<string, Section> Linker::sections;
 map<string, ConnectedSection> Linker::connectedSections;
+map<string,long long> Linker::sectionStart;
 vector<RealocationEntry> Linker::relVector;
 
 vector<string> Linker::inputFiles;
@@ -31,7 +32,7 @@ int Linker::currentSectionNum;
 int Linker::currentSymbolNum;
 int Linker::currentSectionSize;
 
-void Linker::init(){
+void Linker::init(map<string,long long> secStart){
   relocations.clear();
   symbols.clear();
   sections.clear();
@@ -45,6 +46,8 @@ void Linker::init(){
   currentSectionNum = 1;
   currentSymbolNum = 1;
   currentSectionSize = 0;
+
+  sectionStart = secStart;
 }
 
 void Linker::getTextFile(string fileName){
@@ -197,9 +200,14 @@ void Linker::linkerStart(vector<string> files){
   sectionConnect();
   relocationConnect();
   symbolConnect();
+  changeCodeRelocations();
 }
 
 void Linker::sectionConnect(){
+
+  for (const auto& innerMap : sectionStart) {
+    cout << "Ime sekcije: " << innerMap.first << " vrednost: " << innerMap.second << endl;
+  }
 
   for(string fileName : inputFiles){
     const map<string, Section>& secMap = sectionMaps[fileName];
@@ -211,12 +219,31 @@ void Linker::sectionConnect(){
 
       connectedSections[secName].name = secName;
       connectedSections[secName].file = fileName;
-      connectedSections[secName].addressStart = sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
+
+      cout << "SecName:" << secName << " start: " << sectionStart[secName] << endl;
+
+      if(sectionStart[secName] > 0)
+        connectedSections[secName].addressStart = sectionStart[secName];
+      else 
+        connectedSections[secName].addressStart = 0;
+      // connectedSections[secName].addressStart = sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
       
 
       for(int i = 0; i < section.offsets.size(); i++){ 
-        connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size);
+        if(sectionStart[secName] > 0){
+          connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].addressStart);
+        }else
+          connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size); //pre je bilo .size
+        
         connectedSections[secName].data.push_back(section.data.at(i));
+      }
+
+      for(const auto& symbols : symbolMaps[fileName]){
+        Symbol s = symbols.second;
+        
+        if(!s.isLocal && !s.isSection){ // && s.section != "UND" - izbrisano zbog realokacija
+          connectedSections[secName].globalStart.insert(make_pair(s.name ,connectedSections[secName].size));
+        }
       }
  
       connectedSections[secName].size += sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
@@ -237,11 +264,17 @@ void Linker::sectionConnect(){
     sec.hasPool = false;
     sec.poolSize = 0;   
     sec.data = cs.data;
-    sec.sectionStart = currentSectionSize;
+    
+    if(sectionStart[sectionName] > 0){
+      sec.sectionStart = cs.addressStart;
+      sec.offsets = cs.offsets;
+    }else{
+      sec.sectionStart = currentSectionSize;
 
-    for(int i = 0; i < cs.offsets.size(); i++){
-      sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
+      for(int i = 0; i < cs.offsets.size(); i++)
+        sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
     }
+    
 
     if (sectionName == "UND")
       sec.serialNum = 0;
@@ -269,7 +302,8 @@ void Linker::relocationConnect(){
       for(int i = 0; i < relVector.size(); i++){
 
         RealocationEntry re = relVector.at(i);
-        re.offset += sections[secName].sectionStart;
+        //pocetak te sekcije + pocetak te instance sekcije
+        re.offset += sections[secName].sectionStart + connectedSections[secName].globalStart[relVector.at(i).symbol];
         relocations[secName].push_back(re);
 
       }
@@ -280,22 +314,6 @@ void Linker::relocationConnect(){
 }
 
 void Linker::symbolConnect(){
-
-  // for(string fileName : inputFiles){
-
-  //   const map<string, Symbol>& symb = symbolMaps[fileName];
-
-  //   for (const auto& innerMap : symb) {
-  //     const string& symName = innerMap.first;
-  //     const Symbol s = innerMap.second;
-
-  //     if(!s.isLocal && !s.isSection){
-  //       symbols[s.name] = s;
-  //     }
-  //   }
-  // }
-
-/////////////////////////////////////////////////////////////////////////
 
   for(const auto& section : sections) {
 
@@ -320,7 +338,7 @@ void Linker::symbolConnect(){
     map<string, Symbol> symMap = outerMap.second;
 
     for(const auto& innerMap : symMap) {
-      string fileName = innerMap.first;
+      string symName = innerMap.first;
       Symbol s = innerMap.second;
 
       if(!s.isLocal && !s.isSection && s.section != "UND"){
@@ -329,10 +347,11 @@ void Linker::symbolConnect(){
         if(itSym == symbols.end()){
           Symbol s2;
           s2.serialNum = currentSymbolNum++;
-          s2.value = 0;
+          //njegova stara vrednost + vrednost pocetka sekcije + pocetak te instance sekcije
+          s2.value = symbolMaps[fileName][symName].value + sections[s.section].sectionStart + connectedSections[s.section].globalStart[s.name];
           s2.isLocal = s.isLocal;
           s2.name = s.name;
-          s2.section = "GLOB";
+          s2.section = s.section;
           s2.isSection = false;
           s2.offset = 0;
 
@@ -344,6 +363,10 @@ void Linker::symbolConnect(){
 
   displaySymbolTable(symbols);
 
+}
+
+void Linker::changeCodeRelocations(){
+  // iskoristiti ovo - string a = to_string(pool.symbolAddress - currentSectionSize - 4);
 }
 
 void Linker::makeOutputFile(string fileName){
@@ -471,15 +494,15 @@ void Linker::displayConnectedSectionTable(const map<string, ConnectedSection>& s
 }
 
 void Linker::displaySymbolTable(const map<string, Symbol>& symbolMap){
-  cout << "       -------------------------------SYMBOLS-----------------------------------" << endl;
-  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Value"
+  cout << "         -------------------------------SYMBOLS-----------------------------------" << endl;
+  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(15) << "Value"
        << setw(10) << "IsLocal" << setw(15) << "Section" << setw(10) << "IsSection"
        << setw(10) << "Offset" << endl;
   
   for (const auto& entry : symbolMap) {
       const Symbol& symbol = entry.second;
       cout << setw(15) << symbol.name << setw(10) << symbol.serialNum
-           << setw(10) << symbol.value << setw(10) << symbol.isLocal
+           << setw(15) << symbol.value << setw(10) << symbol.isLocal
            << setw(15) << symbol.section << setw(10) << symbol.isSection
            << setw(10) << symbol.offset << endl;
   }
@@ -597,16 +620,16 @@ int main(int argc, char* argv[]){
     }else if(regex_search(argv[i], startReg)){
       string all = argv[i];
       vector<string> vektor = Linker::splitString(all, '@');
-      long long hex = stoll(vektor.at(1));
+      long long hex = stoll(vektor.at(1), nullptr, 16);
 
-      vektor = Linker::splitString(all, '=');
+      vektor = Linker::splitString(vektor.at(0), '=');
       string section = vektor.at(1);
       sectionStart[section] = hex;
     }
 
   }
 
-  Linker::init();
+  Linker::init(sectionStart);
   
   for(int i = 0; i < files.size(); i++){
     cout << files.at(i) << endl;

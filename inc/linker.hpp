@@ -45,6 +45,7 @@ struct ConnectedSection{
   int addressStart;
   vector <long long> offsets;
   vector <string> data;
+  map<string, int> globalStart;
 };
 
 /////////////////KLASA/////////////////
@@ -55,6 +56,7 @@ private:
   static map<string, Symbol> symbols;
   static map<string, Section> sections;
   static map<string, ConnectedSection> connectedSections;
+  static map<string,long long> sectionStart;
   static vector<RealocationEntry> relVector;
 
   static vector<string> inputFiles;
@@ -70,7 +72,7 @@ private:
 
 public:
 
-  static void init();
+  static void init(map<string,long long> secStart);
   static void getTextFile(string fileName);
   static void linkerStart(vector<string>);
   static void sectionConnect();
@@ -87,6 +89,7 @@ public:
   static void displaySectionMapTable(const map<string, map<string, Section>>& symbolMap);
   static void symbolConnect();
   static void relocationConnect();
+  static void changeCodeRelocations();
 
 };
 

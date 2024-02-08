@@ -54,7 +54,7 @@ void Emulator::init(string fileName){
   cause = 2;
 
   regM = 0xFFFF0000;
-  startAddress = 0;
+  startAddress = 0x00000500;
   pc = 15;
   sp = 14;
 
