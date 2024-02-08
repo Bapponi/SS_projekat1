@@ -420,8 +420,8 @@ vector<string> Linker::splitString(const string& input, char delimiter) {
 
 void Linker::displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap){
 
-  cout << "    -------------------------RELOCATIONS-----------------------" << std::endl;
-  cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
+  cout << "    --------------------------RELOCATIONS--------------------------" << std::endl;
+  cout << setw(15) << "Section" << setw(15) << "Offset" << setw(20) << "Symbol"
        << setw(15) << "Addent" << endl;
 
   for (const auto& entry : symbolMap) {
@@ -429,7 +429,7 @@ void Linker::displayRelocationTable(const map<string, vector<RealocationEntry>>&
 
       for (const auto& relocation : relocations) {
         cout << setw(15) << relocation.section << setw(15) << relocation.offset
-             << setw(15) << relocation.symbol << setw(15) << relocation.addent << endl;
+             << setw(20) << relocation.symbol << setw(15) << relocation.addent << endl;
       }
   }
 

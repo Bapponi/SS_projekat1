@@ -122,6 +122,7 @@ void Assembler::getIdent(string name, bool isGlobal){
   s.isLocal = !isGlobal;
   s.isSection = false;
   s.serialNum = symSerialNum++;
+  s.value = 0;
 
   if(currentDirective.compare("extern") == 0){
     s.section = "UND";
@@ -263,7 +264,8 @@ void Assembler::labelStart(string name){
       s.name = name;
       s.serialNum = symSerialNum++;
       s.section = currentSectionName;
-      s.value = 0;
+      s.value = currentSectionSize;
+      // s.value = 0;
       // s.offset = currentSectionSize;
       s.offset = 0;
       s.isLocal = true;
@@ -508,9 +510,10 @@ void Assembler::programEnd2(){
         RealocationEntry re;
         re.section = itPool->first;
         re.offset = v[i].symbolAddress;
-        if(s.isLocal){
+        // if(!s.isLocal && !s.isSection && s.section != "UND"){
+        if(s.isLocal && !s.isSection && s.section != "UND"){
           re.symbol = itPool->first;
-          re.addent = s.offset;
+          re.addent = s.value;
         }else{
           re.symbol = s.name;
           re.addent = 0;
@@ -1265,8 +1268,8 @@ void Assembler::displayPoolTable(const map<string, vector<PoolOfLiterals>>& symb
 
 void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap){
 
-  cout << "    -------------------------RELOCATIONS-----------------------" << std::endl;
-  cout << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
+  cout << "    --------------------------RELOCATIONS--------------------------" << std::endl;
+  cout << setw(15) << "Section" << setw(15) << "Offset" << setw(20) << "Symbol"
        << setw(15) << "Addent" << endl;
 
   for (const auto& entry : symbolMap) {
@@ -1274,7 +1277,7 @@ void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry
 
       for (const auto& relocation : relocations) {
         cout << setw(15) << relocation.section << setw(15) << relocation.offset
-             << setw(15) << relocation.symbol << setw(15) << relocation.addent << endl;
+             << setw(20) << relocation.symbol << setw(15) << relocation.addent << endl;
       }
   }
 
