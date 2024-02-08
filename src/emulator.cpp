@@ -25,8 +25,6 @@ int Emulator::status;
 int Emulator::handler;
 int Emulator::cause;
 bool Emulator::executing;
-bool Emulator::timerOn;
-int Emulator::timerDuration;
 bool Emulator::error;
 string Emulator::inst1;
 string Emulator::instM;
@@ -64,8 +62,6 @@ void Emulator::init(string fileName){
   regs[sp] = regM;
   csr[handler] = regM;
   executing = true;
-  timerOn = true;
-  timerDuration = 0;
   error = false;
   inst1 = "";
   instM = "";
@@ -124,8 +120,6 @@ void Emulator::setupBytes(){
 }
 
 void Emulator::programExecute(){
-
-  timerDuration = setTimer(0); 
   
   int exeNum = 0;
   while(executing){
@@ -452,22 +446,6 @@ void Emulator::startInterrupt(){
     regs[pc] = csr[handler];
 
     csr[status] = I | TR | TL;
-}
-
-long long int Emulator::setTimer(int id){
-
-  if(id == 0) return 500000;
-  else if(id == 1) return 1000000;  
-  else if(id == 1) return 1500000; 
-  else if(id == 1) return 2000000; 
-  else if(id == 1) return 5000000; 
-  else if(id == 1) return 7000000; 
-  else if(id == 1) return 30000000; 
-  else if(id == 1) return 60000000;
-  else{
-    cout << "\nERROR: Bad timer set!!!" << endl;
-    exit(1);
-  }
 }
 
 ////////////////////////POMOCNE FUNKCIJE/////////////////////////////

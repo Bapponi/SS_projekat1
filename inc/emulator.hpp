@@ -47,8 +47,6 @@ private:
   static int handler;
   static int cause;
   static bool executing;
-  static bool timerOn;
-  static int timerDuration;
   static bool error;
   static string inst1;
   static string instM;
@@ -74,7 +72,6 @@ public:
   static int popFromStack();
   static void pushOnStack(int value);
   static void startInterrupt();
-  static long long setTimer(int id);
   
   static string binaryToHex(const string& binaryString, int size);
   static string decimalToHex(int decimalValue);
