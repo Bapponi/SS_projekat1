@@ -35,7 +35,7 @@ private:
   static vector<Code> codes;
   static string inputFile;
   static string currentInstruction;
-  static map<int, string> bytes;
+  static map<long long, string> bytes;
   static vector<int> regs;
   static vector<int> csr;
 

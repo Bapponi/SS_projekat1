@@ -13,7 +13,7 @@ using namespace std;
 vector<Code> Emulator::codes;
 string Emulator::inputFile;
 string Emulator::currentInstruction;
-map<int, string> Emulator::bytes;
+map<long long, string> Emulator::bytes;
 vector<int> Emulator::regs;
 vector<int> Emulator::csr; 
 
@@ -113,7 +113,7 @@ void Emulator::setupBytes(){
     int size = codes.at(i).dataHex.length();
     
     for(int j = 0; j < size / 2; j++){
-      bytes.insert(make_pair(i*4 + j, codes.at(i).dataHex.substr(j*2, 2)));
+      bytes.insert(make_pair(codes.at(i).address + j, codes.at(i).dataHex.substr(j*2, 2)));
     }
   }
 
@@ -123,6 +123,8 @@ void Emulator::programExecute(){
   
   int exeNum = 0;
   while(executing){
+    
+    showCurrentState();
 
     if(exeNum++ >= 50) break;
     instructionStart();
@@ -326,7 +328,7 @@ void Emulator::instructionStart(){
   }else if(inst1 == "9"){
 
     currentInstruction = "ld";
-
+    cout << "BANANA" << endl;
     if(instM == "0"){
       regs[stoi(instA)] = csr[stoi(instB)];
     }
@@ -395,12 +397,14 @@ void Emulator::instructionStart(){
 }
 
 void Emulator::setInstructionReg(){
+
   inst1 = bytes[regs[pc]].at(0);
   instM = bytes[regs[pc]].at(1);
   instA = bytes[regs[pc] + 1].at(0);
   instB = bytes[regs[pc] + 1].at(1);
   instC = bytes[regs[pc] + 2].at(0);
   instD = bytes[regs[pc] + 2].at(1) + bytes[regs[pc] + 3];
+
 }
 
 int Emulator::getValueFromAddress(int address){
