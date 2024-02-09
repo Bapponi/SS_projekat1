@@ -12,14 +12,14 @@ using namespace std;
 
 struct RealocationEntry {
   string section;
-  int offset;
+  unsigned int offset;
   string symbol;
-  int addent;
+  unsigned int addent;
 };
 
 struct Symbol {
   int serialNum;
-  int value;
+  unsigned int value;
   bool isLocal;
   string name;
   string section;
@@ -33,7 +33,7 @@ struct Section {
   string name;
   bool hasPool;
   int poolSize;
-  int sectionStart;
+  unsigned int sectionStart;
   vector <long long> offsets;
   vector <string> data;
 };
@@ -42,7 +42,7 @@ struct ConnectedSection{
   string file;
   string name;
   int size;
-  int addressStart;
+  unsigned int addressStart;
   vector <long long> offsets;
   vector <string> data;
   map<string, int> globalStart;
@@ -56,11 +56,10 @@ private:
   static map<string, Symbol> symbols;
   static map<string, Section> sections;
   static map<string, ConnectedSection> connectedSections;
-  static map<string,long long> sectionStart;
+  static map<string, long long> sectionStart;
+  
   static vector<RealocationEntry> relVector;
-
   static vector<string> inputFiles;
-
 
   static map<string, map<string, Symbol>> symbolMaps;
   static map<string, map<string, vector<RealocationEntry>>> relocationMaps;
@@ -79,6 +78,7 @@ public:
   static void makeOutputFile(string fileName);
   static void makeTextFile(string fileName);
 
+  static string getBits(const string& stringInt, int nBits);
   static vector<string> splitString(const string& input, char delimiter);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);

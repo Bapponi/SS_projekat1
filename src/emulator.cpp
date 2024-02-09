@@ -18,7 +18,7 @@ vector<int> Emulator::regs;
 vector<int> Emulator::csr; 
 
 unsigned int Emulator::regM;
-int Emulator::startAddress;
+unsigned int Emulator::startAddress;
 int Emulator::pc;
 int Emulator::sp;
 int Emulator::status;
@@ -34,8 +34,11 @@ string Emulator::instC;
 string Emulator::instD;
 string Emulator::variation;
 
+int Emulator::TR;
+int Emulator::TL;
+int Emulator::I;
+
 void Emulator::init(string fileName){
-  cout << "In init" << endl;
   codes.clear();
   inputFile = fileName;
   currentInstruction = "";
@@ -53,8 +56,8 @@ void Emulator::init(string fileName){
   handler = 1;
   cause = 2;
 
-  regM = 0xFFFF0000;
-  startAddress = 0x00000500;
+  regM = 0xFFFFFF00;
+  startAddress = 0x40000000;
   pc = 15;
   sp = 14;
 
@@ -70,14 +73,10 @@ void Emulator::init(string fileName){
   instC = "";
   instD = "";
   variation = "";
-  cout << "Out of init" << endl;
-}
 
-void Emulator::startEmulator(){
-  getTextFile(inputFile);
-  displayCode(codes);
-  setupBytes();
-  programExecute();  
+  TR = 1;
+  TL = 2;
+  I = 4;
 }
 
 void Emulator::getTextFile(string fileName){
@@ -96,8 +95,8 @@ void Emulator::getTextFile(string fileName){
 
     vector<string> vektor = splitString(line, ',');
     Code c;
-    c.address = stoi(vektor.at(0));
-    c.addressHex = decimalToHex(stoi(vektor.at(0)));
+    c.address = stoll(vektor.at(0), nullptr, 16);
+    c.addressHex = decimalToHex(stoll(vektor.at(0), nullptr, 16));
     c.data = vektor.at(1);
     c.size = stoi(vektor.at(2));
     c.dataHex = binaryToHex(vektor.at(1), stoi(vektor.at(2)));
@@ -119,16 +118,24 @@ void Emulator::setupBytes(){
 
 }
 
+void Emulator::startEmulator(){
+  cout << "BANANA" << endl;
+  getTextFile(inputFile);
+  displayCode(codes);
+  setupBytes();
+  programExecute();
+
+  cout << "PROGRAM EXECUTION FINISHED WITH THIS STATE:" << endl;
+  showCurrentState();  
+}
+
 void Emulator::programExecute(){
   
-  int exeNum = 0;
   while(executing){
     
     showCurrentState();
-
-    if(exeNum++ >= 50) break;
     instructionStart();
-    regs[pc] += 4;
+
   }
 }
 
@@ -145,7 +152,8 @@ void Emulator::instructionStart(){
     executing = false;
   
   }else if(inst1 == "1"){
-
+    
+    //nesmes da radis int ako su prekidi maskirani - ovo je bitno za tajmer
     currentInstruction = "int";
     if(instM != "0" || instA != "0" || instB != "0" || instC != "0" || instD != "000"){
       error = true;
@@ -333,20 +341,26 @@ void Emulator::instructionStart(){
       regs[stoi(instA)] = csr[stoi(instB)];
     }
     else if(instM == "1"){
-      if(instA == "e" && instB == "e" && instC == "0" && instD == "008"){
-        currentInstruction = "iret";
-        regs[pc] += 4;
-        string nextInstr = getStringFromAddress(regs[pc]);
-        if(nextInstr == "10010110000011100000111111111100"){
-          regs[pc] += 4;
-          string nextInstr = getStringFromAddress(regs[pc]);
-          if(nextInstr == "10010110000011100000111111111100"){
 
-          }else error = true;
-        }else error = true;
-      }else{
+      // na prvo nailazenje postaviti neki flag
+      // pa onda postaviti instA,B,C...
+      // i onda izvrsiti ponovo
+      // if(instA == "e" && instB == "e" && instC == "0" && instD == "008"){
+      //   currentInstruction = "iret";
+        
+      //   string nextInstr = getStringFromAddress(regs[pc]);
+      //   regs[pc] += 4;
+      //   if(nextInstr == "10010110000011100000111111111100"){
+          
+      //     string nextInstr = getStringFromAddress(regs[pc]);
+      //     regs[pc] += 4;
+      //     if(nextInstr == "10010110000011100000111111111100"){
+
+      //     }else error = true;
+      //   }else error = true;
+      // }else{
         regs[stoi(instA)] = regs[stoi(instB)] + stoi(instB);
-      }
+      // }
     }
     else if(instM == "2"){
 
@@ -355,18 +369,18 @@ void Emulator::instructionStart(){
 
     }
     else if(instM == "3"){
-      if(instA == "f" && instB == "e" && instC == "0" && instD == "004"){
-        currentInstruction = "ret";
-        popFromStack();
-      }else{
+      // if(instA == "f" && instB == "e" && instC == "0" && instD == "004"){
+      //   currentInstruction = "ret";
+      //   regs[stoi(instA)] = popFromStack(); //zameni ovo kasnije
+      // }else{
         regs[stoi(instA)] = popFromStack();
-      }
+      // }
     }
     else if(instM == "4"){
       csr[stoi(instA)] = regs[stoi(instB)];
     }
     else if(instM == "5"){
-      csr[stoi(instA)] = regs[stoi(instB)] | stoi(instD);
+      csr[stoi(instA)] = csr[stoi(instB)] | stoi(instD);
     }
     else if(instM == "6"){
 
@@ -404,6 +418,7 @@ void Emulator::setInstructionReg(){
   instB = bytes[regs[pc] + 1].at(1);
   instC = bytes[regs[pc] + 2].at(0);
   instD = bytes[regs[pc] + 2].at(1) + bytes[regs[pc] + 3];
+  regs[pc] += 4;
 
 }
 
@@ -445,11 +460,12 @@ void Emulator::startInterrupt(){
     return;
 
     pushOnStack(csr[status]);
+
     pushOnStack(regs[pc]);
 
     regs[pc] = csr[handler];
 
-    csr[status] = I | TR | TL;
+    csr[status] = I; //ne treba maskiranje prekida povedi racuna
 }
 
 ////////////////////////POMOCNE FUNKCIJE/////////////////////////////
@@ -486,7 +502,6 @@ string Emulator::binaryToHex(const string& binaryString, int size) {
 string Emulator::decimalToHex(int decimalValue) {
   
   stringstream ss;
-  // ss << hex << decimalValue;
   ss << hex << setw(8) << setfill('0') << decimalValue;
   return ss.str();
 
@@ -507,22 +522,26 @@ void Emulator::displayCode(const vector<Code>& codeVector){
 
 void Emulator::showCurrentState(){
 
-  cout << "\nTrenutna instrukcija: " << currentInstruction << endl;
+  cout << "\nCurrent instruction name: " << currentInstruction << endl;
 
-  cout << "Izgled: "<< bytes[regs[15]] + bytes[regs[15] + 1] + bytes[regs[15] + 2] + bytes[regs[15] + 3] << endl;
+  cout << "Current instruction code: "<< bytes[regs[15]] + bytes[regs[15] + 1] + bytes[regs[15] + 2] + bytes[regs[15] + 3] << endl;
 
-  for(int i = 0; i < regs.size() - 2; i++){
-    cout << "REG" << i << ": " << regs[i] << " ";
+  for(int i = 0; i < regs.size() - 2; i = i + 2){
+    cout << "REG" << i << ": 0x" << setfill('0') << setw(8) << regs[i] << "    ";
+    cout << "REG" << i + 1 << ": 0x" << setfill('0') << setw(8) << regs[i + 1] << endl;
   }
-  cout << "\nSP: "<< regs[14] << " PC: " << regs[15] << endl;
-  cout << "Status: " << csr[0] << " Handler: " << csr[1] << " Cause: " << csr[2] << endl;
+  cout << "\nSP: 0x" << setfill('0') << setw(8) << hex << regs[14];
+  cout << " PC: 0x" << setfill('0') << setw(8) << hex << regs[15] << endl;
+  cout << "Status: 0x" << setfill('0') << setw(8) << hex << csr[0];
+  cout << " Handler: 0x" << setfill('0') << setw(8) << hex << csr[1];
+  cout << " Cause: 0x" << setfill('0') << setw(8) << hex << csr[2] << endl;
 
 }
 
 int main(int argc, char* argv[]){
 
   if(argc != 2){
-    cout << "ERROR: incorect input instruction" << endl;
+    cout << "ERROR: Incorect input instruction" << endl;
     exit(1);
   }
 
@@ -545,7 +564,7 @@ int main(int argc, char* argv[]){
   Emulator::init(argv[1]);
   Emulator::startEmulator();
 
-  printf("Prosao emulator bez greske :)\n");
+  printf("EMULATOR DONE!!!\n");
 
   return 1;
 }

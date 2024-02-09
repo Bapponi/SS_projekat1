@@ -1,9 +1,9 @@
-lexer: spec/lexer.l inc/assembler.hpp
-	flex -l spec/lexer.l
+lexer: misc/lexer.l inc/assembler.hpp
+	flex -l misc/lexer.l
 	mv lex.yy.c src
 
-parser: spec/lexer.l spec/parser.y inc/assembler.hpp
-	bison -d spec/parser.y
+parser: misc/lexer.l misc/parser.y inc/assembler.hpp
+	bison -d misc/parser.y
 	mv parser.tab.c src
 	mv parser.tab.h src
 
@@ -42,7 +42,7 @@ a6:
 	./assembler -o isr_timer.o isr_timer.s
 
 linker1:
-	./linker -o program.hex -hex handler.o math.o main.o isr_terminal.o isr_timer.o isr_software.o -place=my_code@0x00000500 -place=math@0x0000A00
+	./linker -o program.hex -hex handler.o math.o main.o isr_terminal.o isr_timer.o isr_software.o -place=my_code@0x40000000 -place=math@0xF0000000
 
 emulator1:
 	./emulator program.hex

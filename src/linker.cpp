@@ -85,7 +85,6 @@ void Linker::getTextFile(string fileName){
 
     relocations.insert(make_pair(section, relVector));
     relocationMaps.insert(make_pair(fileName, relocations));
-    // displayRelocationTable(relocations);
     relocations.clear();
     relVector.clear();
   }
@@ -129,7 +128,6 @@ void Linker::getTextFile(string fileName){
   sectionMaps.insert(make_pair(fileName, sections));
   sections.clear();
 
-  //simboli
   getline(file, line);
   int num = stoi(line);
 
@@ -242,7 +240,7 @@ void Linker::sectionConnect(){
         Symbol s = symbols.second;
         
         if(!s.isLocal && !s.isSection){ // && s.section != "UND" - izbrisano zbog realokacija
-          connectedSections[secName].globalStart.insert(make_pair(s.name ,connectedSections[secName].size));
+          connectedSections[secName].globalStart.insert(make_pair(s.name, connectedSections[secName].size));
         }
       }
  
@@ -274,7 +272,6 @@ void Linker::sectionConnect(){
       for(int i = 0; i < cs.offsets.size(); i++)
         sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
     }
-    
 
     if (sectionName == "UND")
       sec.serialNum = 0;
@@ -303,6 +300,11 @@ void Linker::relocationConnect(){
 
         RealocationEntry re = relVector.at(i);
         //pocetak te sekcije + pocetak te instance sekcije
+        if(re.section == re.symbol){
+          re.addent += sections[secName].sectionStart; //potencijalno je problem ovde
+        }
+
+        //potencijalno problem ovde na desnom delu
         re.offset += sections[secName].sectionStart + connectedSections[secName].globalStart[relVector.at(i).symbol];
         relocations[secName].push_back(re);
 
@@ -327,7 +329,7 @@ void Linker::symbolConnect(){
     s.name = sec.name;
     s.section = secName;
     s.isSection = true;
-    s.offset = -1; //vidieti kako ovo - mappedAddress
+    s.offset = 0;
 
     symbols[secName] = s;
     currentSymbolNum++;
@@ -366,14 +368,32 @@ void Linker::symbolConnect(){
 }
 
 void Linker::changeCodeRelocations(){
-  // iskoristiti ovo - string a = to_string(pool.symbolAddress - currentSectionSize - 4);
+
+  for(const auto& relocation : relocations){
+    string secName = relocation.first;
+    vector<RealocationEntry> relVector = relocation.second;
+
+    for(int i = 0; i < relVector.size(); i++){
+      RealocationEntry re = relVector.at(i);
+      long long value = re.addent;
+      value += symbols[re.symbol].value;
+      long long start = sections[secName].sectionStart;
+      string stringVal = getBits(to_string(value), 32);
+      long long index = (re.offset - start) / 4;
+      sections[secName].data.at(index) = stringVal;
+    }
+  }
+
+  displaySectionTable(sections);
+
 }
 
 void Linker::makeOutputFile(string fileName){
+
   ofstream file(fileName, ios::out | ios::binary);
   file.close();
-
   makeTextFile(fileName);
+
 }
 
 void Linker::makeTextFile(string fileName){
@@ -393,12 +413,24 @@ void Linker::makeTextFile(string fileName){
   }
 
   file << "===\n";
-
   file.close();
-
 }
 
-//POMOCNE FUNKCIJE//////////////////////////////////
+//////////////////////////POMOCNE FUNKCIJE//////////////////////////////////
+
+string Linker::getBits(const string& stringInt, int nBits) {
+    unsigned long intValue = stoul(stringInt);
+    
+    if (intValue >= (1 << nBits-1)) {
+        cout << "ERROR: Integer value exceeds " << nBits << " bits representation." << endl;
+        exit(1);
+    }
+
+    bitset<32> bits(intValue);
+    string bitString = bits.to_string();
+
+    return bitString.substr(32 - nBits);
+}
 
 vector<string> Linker::splitString(const string& input, char delimiter) {
   
@@ -605,19 +637,25 @@ int main(int argc, char* argv[]){
   string fileOutput;
   map<string,long long> sectionStart;
   regex inputReg("\\.o$");
+  regex outputReg("\\.hex$");
   regex startReg("^-place=([a-zA-Z_][a-zA-Z_0-9]*)@(0[xX][0-9a-fA-F]+)$");
   bool isHex = false;
   vector<string> files;
 
   for (int i = 1; i < argc; i++){
+
+    string arg = argv[i];
     
     if(regex_search(argv[i], inputReg)){
       files.push_back(argv[i]);
-    }else if(argv[i] == "-hex"){
+    }else if(arg == "-hex"){
       isHex = true;
-    }else if(argv[i] == "-o"){
-      fileOutput = argv[i + 1];
+    }else if(regex_search(argv[i], outputReg)){
+      fileOutput = argv[i];
+    }else if(arg == "-o"){
+      isHex = true;
     }else if(regex_search(argv[i], startReg)){
+
       string all = argv[i];
       vector<string> vektor = Linker::splitString(all, '@');
       long long hex = stoll(vektor.at(1), nullptr, 16);
@@ -625,6 +663,10 @@ int main(int argc, char* argv[]){
       vektor = Linker::splitString(vektor.at(0), '=');
       string section = vektor.at(1);
       sectionStart[section] = hex;
+
+    }else{
+      cout << "ERROR: Bad input: " << argv[i] << endl;
+      exit(1);
     }
 
   }
@@ -640,7 +682,9 @@ int main(int argc, char* argv[]){
 
   Linker::linkerStart(files);
 
-  Linker::makeOutputFile(argv[2]);
+  if(isHex)
+    Linker::makeOutputFile(fileOutput);
+  
 
   printf("Prosao linker bez greske :)\n");
 

@@ -10,18 +10,8 @@
 
 using namespace std;
 
-enum Flags{
-  TR = 1,
-  FAULT=1,
-  TL = 2,
-  TIMER=2,
-  TERMINAL=3,
-  I = 4,
-  INT=4
-};
-
 struct Code{
-  int address;
+  long long address;
   string addressHex; 
   string data;
   string dataHex; 
@@ -39,7 +29,7 @@ private:
   static vector<int> regs;
   static vector<int> csr;
 
-  static int startAddress;
+  static unsigned int startAddress;
   static unsigned int regM;
   static int pc;
   static int sp;
@@ -55,6 +45,9 @@ private:
   static string instC;
   static string instD;
   static string variation;
+  static int TR;
+  static int TL;
+  static int I;
 
 public:
 

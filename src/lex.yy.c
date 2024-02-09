@@ -599,8 +599,8 @@ int yy_flex_debug = 0;
 
 char yytext[YYLMAX];
 char *yytext_ptr;
-#line 1 "spec/lexer.l"
-#line 2 "spec/lexer.l"
+#line 1 "misc/lexer.l"
+#line 2 "misc/lexer.l"
 //#include <iostream>
 //#include <fstream>
 //#include <string>
@@ -827,7 +827,7 @@ YY_DECL
 		}
 
 	{
-#line 29 "spec/lexer.l"
+#line 29 "misc/lexer.l"
 
 #line 833 "lex.yy.c"
 
@@ -898,7 +898,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 30 "spec/lexer.l"
+#line 30 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" GLOBAL");
                           //token = 1;
@@ -906,35 +906,35 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 34 "spec/lexer.l"
+#line 34 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" EXTERN");
                           return EXTERN; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 37 "spec/lexer.l"
+#line 37 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" SECTION");
                           return SECTION; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 40 "spec/lexer.l"
+#line 40 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" WORD");
                           return WORD; }  
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 43 "spec/lexer.l"
+#line 43 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" SKIP");
                           return SKIP; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 46 "spec/lexer.l"
+#line 46 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           lineNumber=1;
                           printf(" END");
@@ -942,125 +942,125 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 51 "spec/lexer.l"
+#line 51 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" ONE_WORD_INST");
                           return ONE_WORD_INST; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 54 "spec/lexer.l"
+#line 54 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" TWO_WORD_INST");
                           return TWO_WORD_INST; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 57 "spec/lexer.l"
+#line 57 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" THREE_WORD_INST");
                           return THREE_WORD_INST; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 60 "spec/lexer.l"
+#line 60 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" FOUR_WORD_INST");
                           return FOUR_WORD_INST; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 63 "spec/lexer.l"
+#line 63 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" CALL_JUMP");
                           return CALL_JUMP; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 66 "spec/lexer.l"
+#line 66 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" LD");
                           return LD; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 69 "spec/lexer.l"
+#line 69 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" ST");
                           return ST; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 72 "spec/lexer.l"
+#line 72 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" CSRRD");
                           return CSRRD; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 75 "spec/lexer.l"
+#line 75 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" CSRWR");
                           return CSRWR; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 79 "spec/lexer.l"
+#line 79 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" PLUS");
                           return PLUS; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 82 "spec/lexer.l"
+#line 82 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" MINUS");
                           return MINUS; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 85 "spec/lexer.l"
+#line 85 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" LPARREN");
                           return LPARREN; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 88 "spec/lexer.l"
+#line 88 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" RPARREN");
                           return RPARREN; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 91 "spec/lexer.l"
+#line 91 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" SEMI");
                           return SEMI; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 94 "spec/lexer.l"
+#line 94 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" COMMA");
                           return COMMA; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 99 "spec/lexer.l"
+#line 99 "misc/lexer.l"
 { printf(" komentar");
                           /* skips comments */ }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 101 "spec/lexer.l"
+#line 101 "misc/lexer.l"
 { printf(" ");
                           /* whitespace */ }
 	YY_BREAK
 case 24:
 /* rule 24 can match eol */
 YY_RULE_SETUP
-#line 103 "spec/lexer.l"
+#line 103 "misc/lexer.l"
 { printf("\n");
                           lineNumber++;
                           /* new row */ }                          
@@ -1068,35 +1068,35 @@ YY_RULE_SETUP
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 106 "spec/lexer.l"
+#line 106 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" STRING");
                           return STRING; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 109 "spec/lexer.l"
+#line 109 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" OPR_STRING");
                           return OPR_STRING; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 112 "spec/lexer.l"
+#line 112 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" CSR_REG");
                           return CSR_REG; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 115 "spec/lexer.l"
+#line 115 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" GPR_REG");
                           return GPR_REG; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 118 "spec/lexer.l"
+#line 118 "misc/lexer.l"
 { //sscanf(yytext, "%x", &yylval.num);
                           yylval.string = strdup(yytext);
                           printf(" OPR_HEX");
@@ -1104,7 +1104,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 122 "spec/lexer.l"
+#line 122 "misc/lexer.l"
 { //sscanf(yytext, "%x", &yylval.num);
                           yylval.string = strdup(yytext);
                           printf(" HEX");
@@ -1112,7 +1112,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 126 "spec/lexer.l"
+#line 126 "misc/lexer.l"
 { //sscanf(yytext, "%d", &yylval.num); 
                           yylval.string = strdup(yytext);
                           printf(" OPR_DEC");
@@ -1120,7 +1120,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 130 "spec/lexer.l"
+#line 130 "misc/lexer.l"
 { //sscanf(yytext, "%d", &yylval.num); 
                            yylval.string = strdup(yytext);
                            printf(" DEC");
@@ -1128,33 +1128,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 134 "spec/lexer.l"
+#line 134 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" LABEL");
                           return LABEL; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 137 "spec/lexer.l"
+#line 137 "misc/lexer.l"
 { yylval.string = strdup(yytext);
                           printf(" IDENT");
                           return IDENT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 142 "spec/lexer.l"
+#line 142 "misc/lexer.l"
 { printf(" BAD IDENTIFICATOR!!!"); 
                           return 1; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 144 "spec/lexer.l"
+#line 144 "misc/lexer.l"
 { printf(" UNKNOWN TOKEN: %s", yytext);
                           return 1;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 146 "spec/lexer.l"
+#line 146 "misc/lexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
 #line 1161 "lex.yy.c"
@@ -2174,7 +2174,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 146 "spec/lexer.l"
+#line 146 "misc/lexer.l"
 
 
 int

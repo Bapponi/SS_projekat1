@@ -111,13 +111,12 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
 void Assembler::getIdent(string name, bool isGlobal){
 
   if (inTable(name)) {
-    cout << "ERROR:Label already in table " << name << endl;
+    cout << "ERROR: Label already in table " << name << endl;
     exit(1);
   }
 
   Symbol s;
   s.name = name;
-  // s.offset = -1;
   s.offset = 0;
   s.isLocal = !isGlobal;
   s.isSection = false;
@@ -137,12 +136,12 @@ void Assembler::getIdent(string name, bool isGlobal){
 void Assembler::startSection(string name){
 
   if(currentSectionName != ""){
+
     Section sec;
     sec.name = currentSectionName;
     sec.serialNum = secSerialNum++;
     sec.size = currentSectionSize;
     sec.hasPool = hasPool;
-    // sec.poolSize = 0;
     sec.poolSize = poolOffset;
 
     sections.insert(make_pair(currentSectionName, sec));
@@ -153,7 +152,7 @@ void Assembler::startSection(string name){
     hasPool = false;
 
     if (inTable(currentSectionName)) {
-        cout << "ERROR:Section already somewhere else! " << currentSectionName << endl;
+        cout << "ERROR: Section already somewhere else! " << currentSectionName << endl;
         exit(1);
     }
 
@@ -182,12 +181,12 @@ void Assembler::startSection(string name){
 void Assembler::programEnd(){
 
   if(currentSectionName != ""){
+
     Section sec;
     sec.name = currentSectionName;
     sec.serialNum = secSerialNum++;
     sec.size = currentSectionSize;
     sec.hasPool = hasPool;
-    // sec.poolSize = 0;
     sec.poolSize = poolOffset;
 
     sections.insert(make_pair(currentSectionName, sec));
@@ -198,14 +197,13 @@ void Assembler::programEnd(){
     hasPool = false;
 
     if (inTable(currentSectionName)) {
-      cout << "ERROR:Section already somewhere else! " << currentSectionName << endl;
+      cout << "ERROR: Section already somewhere else! " << currentSectionName << endl;
       exit(1);
     }
 
     Symbol s;
     s.name = currentSectionName;
     s.section = "UND";
-    // s.offset = fileOffset - currentSectionSize;
     s.offset = 0;
     s.isLocal = true;
     s.isSection = true;
@@ -242,14 +240,15 @@ void Assembler::labelStart(string name){
       cout << "ERROR: Label " << name << " must be defined inside of section!" << endl;
       exit(1);
   }
+
   map<string,Symbol>::iterator itSym = symbols.find(name);
   if(itSym!=symbols.end()){
 
       if(!itSym->second.isLocal && itSym->second.section == "UND"){
 
         cout<<"ERROR: Label "<< name <<" is extern variable!!!"<<endl;
-        // exit(1);
-        return;
+        exit(1);
+        // return;
       }
       if(itSym->second.isSection){
         cout << "ERROR: Label "<< name << " is a section!!!" << endl;
@@ -265,8 +264,6 @@ void Assembler::labelStart(string name){
       s.serialNum = symSerialNum++;
       s.section = currentSectionName;
       s.value = currentSectionSize;
-      // s.value = 0;
-      // s.offset = currentSectionSize;
       s.offset = 0;
       s.isLocal = true;
       s.isSection = false;
@@ -276,6 +273,7 @@ void Assembler::labelStart(string name){
 }
 
 void Assembler::instructionPass(string name){
+  
   if(name == ".skip "){
     currentSectionSize += skipWordNum;
     fileOffset += skipWordNum;
@@ -332,13 +330,10 @@ void Assembler::getLiteral(string name, string type){
     }
 
   }else{
+    // ZA IZBACIVANJE DUPLIKATA
     // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    // cout << " USAO BANANA " << itPool->second.size() << endl;
     // for (int i = 0; i < itPool->second.size(); i++) {
-    //   cout << " CIGANEEE " << endl;
-    //   // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
     //   if(itPool->second[i].symbolName == name){
-    //     cout << " USAO FOR " << endl;
     //     return;
     //   };
     // }
@@ -370,7 +365,8 @@ void Assembler::getOperand(string name, string type){
       hasPool = true;
       poolOffset += 4;
 
-      if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
+      //zbog dodatne instrukcije koja mora da se generise
+      if(currentInstruction == "ld " || currentInstruction == "st "){
         fileOffset += 4;
         currentSectionSize += 4;
       }
@@ -390,7 +386,8 @@ void Assembler::getOperand(string name, string type){
       hasPool = true;
       poolOffset += 4;
 
-      if(currentInstruction == "ld " || currentInstruction == "st "){ //dodatna instrukcija koja mora da se generise
+      //zbog dodatne instrukcije koja mora da se generise
+      if(currentInstruction == "ld " || currentInstruction == "st "){
         fileOffset += 4;
         currentSectionSize += 4;
       }
@@ -402,12 +399,8 @@ void Assembler::getOperand(string name, string type){
 
     // ZA IZBACIVANJE DUPLIKATA
     // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    // cout << " USAO BANANA " << itPool->second.size() << endl;
     // for (int i = 0; i < itPool->second.size(); i++) {
-    //   cout << " CIGANEEE " << endl;
-    //   // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;      
     //   if(itPool->second[i].symbolName == name){
-    //     cout << " USAO FOR " << endl;
     //     return;
     //   };
     // }
@@ -424,12 +417,8 @@ void Assembler::getOperand(string name, string type){
   }else{
     // ZA IZBACIVANJE DUPLIKATA
     // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    // cout << " USAO BANANA " << itPool->second.size() << endl;
     // for (int i = 0; i < itPool->second.size(); i++) {
-    //   cout << " CIGANEEE " << i << endl;
-    //   // cout << " PRE FOR-a name: " << name << "    symbolName:" << itPool->second[i].symbolName << endl;
     //   if(itPool->second[i].symbolName == name){
-    //     cout << " USAO FOR " << endl;
     //     return;
     //   };
     // }
@@ -476,6 +465,7 @@ void Assembler::getParrensBody(string name, string type){
 void Assembler::instructionName(string name){
   currentInstruction = name;
 }
+
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
@@ -504,13 +494,16 @@ void Assembler::programEnd2(){
     vector<PoolOfLiterals> v = itPool->second;
 
     for (size_t i = 0; i < v.size(); i++) {
+
       if(v[i].isSymbol == true){
+
         auto itSym = symbols.find(v[i].symbolName);
         Symbol s = itSym->second;
         RealocationEntry re;
         re.section = itPool->first;
         re.offset = v[i].symbolAddress;
         // if(!s.isLocal && !s.isSection && s.section != "UND"){
+          
         if(s.isLocal && !s.isSection && s.section != "UND"){
           re.symbol = itPool->first;
           re.addent = s.value;
@@ -1145,7 +1138,6 @@ void Assembler::addPoolToSec(){
     Section sec = section.second;
 
     for(int i = 0; i < pools[secName].size(); i++){
-      cout << "MAJMUNE" << endl;
       sec.offsets.push_back(pools[secName].at(i).symbolAddress);
       // string strValue = to_string(pools[secName].at(i).symbolValue);
       // cout << strValue << endl;
@@ -1153,12 +1145,6 @@ void Assembler::addPoolToSec(){
       string strValue = bitset<32>(pools[secName].at(i).symbolValue).to_string();
       sec.data.push_back(strValue);
     }
-
-    for(int i = 0; i < sec.offsets.size(); i++){
-      cout << "OFFSETS: " << sec.offsets.at(i) << " DATA: " << sec.data.at(i) << endl;
-    }
-
-    cout << "------------------" << endl;
 
     sections[secName].offsets = sec.offsets;
     sections[secName].data = sec.data;
