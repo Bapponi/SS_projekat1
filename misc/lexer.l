@@ -1,12 +1,6 @@
 %{
-//#include <iostream>
-//#include <fstream>
-//#include <string>
 #include "parser.tab.h"
-//#include "parser.h"
-//#include "./inc/assembler.hpp"
-int lineNumber=1;
-
+int lineNum=1;
 %}
 
 %option noyywrap
@@ -23,13 +17,11 @@ OPR_DECI                \$(0|[1-9][0-9]*)
 DECI                    (0|[1-9][0-9]*)
 LAB                     [A-Za-z_][A-Za-z0-9_]*:
 IDENTIFICATOR           [A-Za-z_][A-Za-z0-9_]*
-BADIDENT                [0-9][A-Za-z0-9_]*
 
 
 %%
 \.global[ \t]           { yylval.string = strdup(yytext);
                           printf(" GLOBAL");
-                          //token = 1;
                           return GLOBAL; }
 \.extern[ \t]           { yylval.string = strdup(yytext);
                           printf(" EXTERN");
@@ -44,7 +36,7 @@ BADIDENT                [0-9][A-Za-z0-9_]*
                           printf(" SKIP");
                           return SKIP; }
 \.end                   { yylval.string = strdup(yytext);
-                          lineNumber=1;
+                          lineNum=1;
                           printf(" END");
                           return END; }  
 
@@ -101,7 +93,7 @@ csrwr[ \t]              { yylval.string = strdup(yytext);
 [ \t]*                  { printf(" ");
                           /* whitespace */ }
 [ \n]                  { printf("\n");
-                          lineNumber++;
+                          lineNum++;
                           /* new row */ }                          
 \"(.+|\n+)\"            { yylval.string = strdup(yytext);
                           printf(" STRING");
@@ -138,16 +130,13 @@ csrwr[ \t]              { yylval.string = strdup(yytext);
                           printf(" IDENT");
                           return IDENT; }
 
-
-{BADIDENT}              { printf(" BAD IDENTIFICATOR!!!"); 
-                          return 1; }
-.                       { printf(" UNKNOWN TOKEN: %s", yytext);
+.                       { printf("ERROR: UNKNOWN LEXER ELEMENT: %s", yytext);
                           return 1;}
 %%
 
 int
 yyerror(const char* msg)
 {
-    fprintf(stderr, "Lexer ERROR: %s on line %d\n", msg, lineNumber);
+    fprintf(stderr, "Lexer ERROR: %s on line %d\n", msg, lineNum);
     exit(EXIT_FAILURE);
 }

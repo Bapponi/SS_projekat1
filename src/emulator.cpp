@@ -341,26 +341,7 @@ void Emulator::instructionStart(){
       regs[stoi(instA)] = csr[stoi(instB)];
     }
     else if(instM == "1"){
-
-      // na prvo nailazenje postaviti neki flag
-      // pa onda postaviti instA,B,C...
-      // i onda izvrsiti ponovo
-      // if(instA == "e" && instB == "e" && instC == "0" && instD == "008"){
-      //   currentInstruction = "iret";
-        
-      //   string nextInstr = getStringFromAddress(regs[pc]);
-      //   regs[pc] += 4;
-      //   if(nextInstr == "10010110000011100000111111111100"){
-          
-      //     string nextInstr = getStringFromAddress(regs[pc]);
-      //     regs[pc] += 4;
-      //     if(nextInstr == "10010110000011100000111111111100"){
-
-      //     }else error = true;
-      //   }else error = true;
-      // }else{
-        regs[stoi(instA)] = regs[stoi(instB)] + stoi(instB);
-      // }
+      regs[stoi(instA)] = regs[stoi(instB)] + stoi(instB);
     }
     else if(instM == "2"){
 
@@ -369,12 +350,7 @@ void Emulator::instructionStart(){
 
     }
     else if(instM == "3"){
-      // if(instA == "f" && instB == "e" && instC == "0" && instD == "004"){
-      //   currentInstruction = "ret";
-      //   regs[stoi(instA)] = popFromStack(); //zameni ovo kasnije
-      // }else{
-        regs[stoi(instA)] = popFromStack();
-      // }
+      regs[stoi(instA)] = popFromStack();
     }
     else if(instM == "4"){
       csr[stoi(instA)] = regs[stoi(instB)];
@@ -395,7 +371,9 @@ void Emulator::instructionStart(){
       regs[stoi(instB)] = regs[stoi(instB)] + stoi(instD);
 
     }
-    else error = true;
+    else if(instM == "f"){
+      currentInstruction = "iret";
+    }else error = true;
 
   }else{
     cout << "\nERROR: Bad instruction" << endl;

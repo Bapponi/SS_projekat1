@@ -278,9 +278,9 @@ void Assembler::instructionPass(string name){
     currentSectionSize += skipWordNum;
     fileOffset += skipWordNum;
     skipWordNum = -1;
-  }else if(name == "iret"){
-    currentSectionSize += 12;
-    fileOffset += 12;
+  // }else if(name == "iret"){
+  //   currentSectionSize += 12;
+  //   fileOffset += 12;
   }else if(currentInstruction == ".word "){
     currentSectionSize += 0;
     fileOffset += 0;
@@ -503,7 +503,7 @@ void Assembler::programEnd2(){
         re.section = itPool->first;
         re.offset = v[i].symbolAddress;
         // if(!s.isLocal && !s.isSection && s.section != "UND"){
-          
+
         if(s.isLocal && !s.isSection && s.section != "UND"){
           re.symbol = itPool->first;
           re.addent = s.value;
@@ -547,23 +547,11 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
   }else if(name.compare("int") == 0){
 
-    sec->second.data.push_back("00010000000000000000000000000000");
+    sec->second.data.push_back("00111000111000000000111111111000");
 
   }else if(name.compare("iret") == 0){
 
-    // string code = "10010001111011100000000000001000";
-    // code += "10010110000011100000111111111100";
-    // code += "10010001111011100000000000001000";
-
-    // sec->second.data.push_back(code);
-
-    sec->second.data.push_back("10010001111011100000000000001000");
-    sec->second.offsets.push_back(currentSectionSize + 4);
-    sec->second.data.push_back("10010110000011100000111111111100");
-    sec->second.offsets.push_back(currentSectionSize + 8);
-    sec->second.data.push_back("10010001111011100000000000001000");
-
-    currentSectionSize += 8;
+    sec->second.data.push_back("11110000000000000000000000000000");
 
   }else if(name.compare("ret") == 0){
 

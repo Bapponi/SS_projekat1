@@ -12,7 +12,6 @@ extern char* yytext;  // Bison needs to know about yytext
 
 %union {
     int num;
-    char* ident;
     char* string;
 }
 
