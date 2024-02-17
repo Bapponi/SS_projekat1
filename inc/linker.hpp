@@ -77,6 +77,8 @@ public:
   static void sectionConnect();
   static void makeOutputFile(string fileName);
   static void makeTextFile(string fileName);
+  static string decimalToHex(int decimalValue);
+
 
   static string getBits(const string& stringInt, int nBits);
   static vector<string> splitString(const string& input, char delimiter);

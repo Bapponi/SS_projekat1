@@ -26,12 +26,12 @@ int Emulator::handler;
 int Emulator::cause;
 bool Emulator::executing;
 bool Emulator::error;
-string Emulator::inst1;
-string Emulator::instM;
-string Emulator::instA;
-string Emulator::instB;
-string Emulator::instC;
-string Emulator::instD;
+int Emulator::inst1;
+int Emulator::instM;
+int Emulator::instA;
+int Emulator::instB;
+int Emulator::instC;
+int Emulator::instD;
 string Emulator::variation;
 
 int Emulator::TR;
@@ -56,7 +56,7 @@ void Emulator::init(string fileName){
   handler = 1;
   cause = 2;
 
-  regM = 0xFFFFFF00;
+  regM = 0xFFFF0000;
   startAddress = 0x40000000;
   pc = 15;
   sp = 14;
@@ -66,12 +66,12 @@ void Emulator::init(string fileName){
   csr[handler] = regM;
   executing = true;
   error = false;
-  inst1 = "";
-  instM = "";
-  instA = "";
-  instB = "";
-  instC = "";
-  instD = "";
+  inst1 = -1;
+  instM = -1;
+  instA = -1;
+  instB = -1;
+  instC = -1;
+  instD = -1;
   variation = "";
 
   TR = 1;
@@ -95,8 +95,8 @@ void Emulator::getTextFile(string fileName){
 
     vector<string> vektor = splitString(line, ',');
     Code c;
-    c.address = stoll(vektor.at(0), nullptr, 16);
-    c.addressHex = decimalToHex(stoll(vektor.at(0), nullptr, 16));
+    c.address = stoll("0x" + vektor.at(3), nullptr, 16);
+    c.addressHex = vektor.at(3);
     c.data = vektor.at(1);
     c.size = stoi(vektor.at(2));
     c.dataHex = binaryToHex(vektor.at(1), stoi(vektor.at(2)));
@@ -112,14 +112,18 @@ void Emulator::setupBytes(){
     int size = codes.at(i).dataHex.length();
     
     for(int j = 0; j < size / 2; j++){
-      bytes.insert(make_pair(codes.at(i).address + j, codes.at(i).dataHex.substr(j*2, 2)));
+      // bytes.insert(make_pair(codes.at(i).address + j, codes.at(i).dataHex.substr(j*2, 2)));
+      bytes[codes.at(i).address + j] = codes.at(i).dataHex.substr(j*2, 2);
     }
   }
+
+  // bytes[55] = "90";
+  // cout << "BAJT: " << bytes[55] << endl;
 
 }
 
 void Emulator::startEmulator(){
-  cout << "BANANA" << endl;
+  cout << "START" << endl;
   getTextFile(inputFile);
   displayCode(codes);
   setupBytes();
@@ -133,7 +137,7 @@ void Emulator::programExecute(){
   
   while(executing){
     
-    showCurrentState();
+    // showCurrentState();
     instructionStart();
 
   }
@@ -143,236 +147,239 @@ void Emulator::instructionStart(){
 
   setInstructionReg();
 
-  if(inst1 == "0"){
+  if(inst1 == 0){
   
     currentInstruction = "halt";
-    if(instM != "0" || instA != "0" || instB != "0" || instC != "0" || instD != "000"){
+    if(instM != 0 || instA != 0 || instB != 0 || instC != 0 || instD != 0){
       error = true;
     }
     executing = false;
   
-  }else if(inst1 == "1"){
+  }else if(inst1 == 1){
     
     //nesmes da radis int ako su prekidi maskirani - ovo je bitno za tajmer
     currentInstruction = "int";
-    if(instM != "0" || instA != "0" || instB != "0" || instC != "0" || instD != "000"){
+    if(instM != 0 || instA != 0 || instB != 0 || instC != 0 || instD != 0){
       error = true;
     }
     startInterrupt();
   
-  }else if(inst1 == "2"){
+  }else if(inst1 == 2){
 
     currentInstruction = "call";
 
-    if(instM == "0"){
-      regs[pc] = regs[stoi(instA)] + regs[stoi(instB)] + stoi(instD);
+    if(instM == 0){
+      regs[pc] = regs[instA] + regs[instB] + instD;
     }        
-    else if(instM == "1"){
-      regs[pc] = getValueFromAddress(regs[stoi(instA)] + regs[stoi(instB)] + stoi(instD));
+    else if(instM == 1){
+      regs[pc] = getValueFromAddress(regs[instA] + regs[instB] + instD);
     }
     else error = true;    
 
-    if(instC != "0") error = true;  
+    if(instC != 0) error = true;  
 
-  }else if(inst1 == "3"){
+  }else if(inst1 == 3){
     
-    if(instM == "0"){
+    if(instM == 0){
       currentInstruction = "jmp";
       
-      regs[pc] = regs[stoi(instA)] + stoi(instD);
+      regs[pc] = regs[instA] + instD;
 
-      if(instB != "0" || instC != "0") error = true;         
+      if(instB != 0 || instC != 0) error = true;         
     }
-    else if(instM == "1"){
+    else if(instM == 1){
       currentInstruction = "beq";
       
-      if(regs[stoi(instB)] == regs[stoi(instC)])
-        regs[pc] = regs[stoi(instA)] + stoi(instD);
+      if(regs[instB] == regs[instC])
+        regs[pc] = regs[instA] + instD;
 
     }
-    else if(instM == "2"){
+    else if(instM == 2){
       currentInstruction = "bne";
       
-      if(regs[stoi(instB)] != regs[stoi(instC)])
-        regs[pc] = regs[stoi(instA)] + stoi(instD);
+      if(regs[instB] != regs[instC])
+        regs[pc] = regs[instA] + instD;
 
     }
-    else if(instM == "3"){
+    else if(instM == 3){
       currentInstruction = "bgt";
       
-      if(regs[stoi(instB)] > regs[stoi(instC)])
-        regs[pc] = regs[stoi(instA)] + stoi(instD);
+      if(regs[instB] > regs[instC])
+        regs[pc] = regs[instA] + instD;
 
     }
-    else if(instM == "8"){
+    else if(instM == 8){
       currentInstruction = "jmp";
-      regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+      regs[pc] = getValueFromAddress((regs[instA] + instD));
 
-      if(instB != "0" || instC != "0") error = true;         
+      if(instB != 0 || instC != 0) error = true;         
     }
-    else if(instM == "9"){
+    else if(instM == 9){
       currentInstruction = "beq";
       
-      if(regs[stoi(instB)] == regs[stoi(instC)])
-        regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+      if(regs[instB] == regs[instC])
+        regs[pc] = getValueFromAddress((regs[instA] + instD));
 
     }
-    else if(instM == "a"){
+    else if(instM == 0xa){
       currentInstruction = "bne";
       
-      if(regs[stoi(instB)] != regs[stoi(instC)])
-        regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+      if(regs[instB] != regs[instC])
+        regs[pc] = getValueFromAddress((regs[instA] + instD));
 
     }
-    else if(instM == "b"){
+    else if(instM == 0xb){
       currentInstruction = "bgt";
       
-      if(regs[stoi(instB)] > regs[stoi(instC)])
-        regs[pc] = getValueFromAddress((regs[stoi(instA)] + stoi(instD)));
+      if(regs[instB] > regs[instC])
+        regs[pc] = getValueFromAddress((regs[instA] + instD));
 
     }
     else error = true;
 
-  }else if(inst1 == "4"){
+  }else if(inst1 == 4){
 
     currentInstruction = "xchg";
 
-    int help = regs[stoi(instA)];
-    regs[stoi(instA)] = regs[stoi(instB)];
-    regs[stoi(instB)] = help;
+    int help = regs[instA];
+    regs[instA] = regs[instB];
+    regs[instB] = help;
 
-    if(instM != "0" || instA != "0" || instD != "000"){
+    if(instM != 0 || instA != 0 || instD != 0){
       error = true;
     }
 
-  }else if(inst1 == "5"){
+  }else if(inst1 == 5){
 
-    if(instM == "0"){
+    if(instM == 0){
       currentInstruction = "add";
-      regs[stoi(instA)] = regs[stoi(instB)] + regs[stoi(instC)];
+      regs[instA] = regs[instB] + regs[instC];
     } 
-    else if(instM == "1"){
+    else if(instM == 1){
       currentInstruction = "sub";
-      regs[stoi(instA)] = regs[stoi(instB)] - regs[stoi(instC)];
+      regs[instA] = regs[instB] - regs[instC];
     } 
-    else if(instM == "2"){
+    else if(instM == 2){
       currentInstruction = "mul";
-      regs[stoi(instA)] = regs[stoi(instB)] * regs[stoi(instC)];
+      regs[instA] = regs[instB] * regs[instC];
     } 
-    else if(instM == "3"){
+    else if(instM == 3){
       currentInstruction = "div";
 
-      if(instC != "0")
-        regs[stoi(instA)] = regs[stoi(instB)] / regs[stoi(instC)];
+      if(instC != 0)
+        regs[instA] = regs[instB] / regs[instC];
       else
         error = true;
 
     } 
     else error = true;
 
-    if(instD != "000") error = true;
+    if(instD != 0) error = true;
 
-  }else if(inst1 == "6"){
-    if(instM == "0"){
+  }else if(inst1 == 6){
+    if(instM == 0){
       currentInstruction = "not";
 
-      regs[stoi(instA)] = !regs[stoi(instB)];
+      regs[instA] = !regs[instB];
 
-      if(instC != "0") error = true;
+      if(instC != 0) error = true;
     } 
-    else if(instM == "1"){
+    else if(instM == 1){
       currentInstruction = "and";
-      regs[stoi(instA)] = regs[stoi(instB)] & regs[stoi(instC)];
+      regs[instA] = regs[instB] & regs[instC];
     }
-    else if(instM == "2"){
+    else if(instM == 2){
       currentInstruction = "or";
-      regs[stoi(instA)] = regs[stoi(instB)] | regs[stoi(instC)];
+      regs[instA] = regs[instB] | regs[instC];
     }
-    else if(instM == "3"){
+    else if(instM == 3){
       currentInstruction = "xor";
-      regs[stoi(instA)] = regs[stoi(instB)] ^ regs[stoi(instC)];
+      regs[instA] = regs[instB] ^ regs[instC];
     }
     else error = true;
 
-    if(instD != "000") error = true;
+    if(instD != 0) error = true;
 
-  }else if(inst1 == "7"){
+  }else if(inst1 == 7){
 
-    if(instM == "0"){
+    if(instM == 0){
       currentInstruction = "shl";
-      regs[stoi(instA)] = regs[stoi(instB)] << regs[stoi(instC)];
+      regs[instA] = regs[instB] << regs[instC];
     }
-    else if(instM == "1"){
+    else if(instM == 1){
       currentInstruction = "shr";
-      regs[stoi(instA)] = regs[stoi(instB)] >> regs[stoi(instC)];
+      regs[instA] = regs[instB] >> regs[instC];
     }
     else error = true;
 
-    if(instD != "000") error = true;
+    if(instD != 0) error = true;
 
-  }else if(inst1 == "8"){
+  }else if(inst1 == 8){
 
     currentInstruction = "st";
-    if(instM == "0"){
+    if(instM == 0){
 
-      int address = regs[stoi(instA)] + regs[stoi(instB)] + stoi(instD);
-      int value = regs[stoi(instC)];
+      int address = regs[instA] + regs[instB] + instD;
+      int value = regs[instC];
       setValueOnAddress(address, value);
 
     }
-    else if(instM == "1"){
+    else if(instM == 1){
 
-      pushOnStack(regs[stoi(instC)]);
+      pushOnStack(regs[instC]);
 
-    }else if(instM == "2"){
+    }else if(instM == 2){
 
-      int address = getValueFromAddress(regs[stoi(instA) + regs[stoi(instB) + stoi(instB)]]);
-      int value = regs[stoi(instC)];
+      int address = getValueFromAddress(regs[instA] + regs[instB] + instB);
+      int value = regs[instC];
       setValueOnAddress(address, value);
 
     }
     else error = true;
 
-  }else if(inst1 == "9"){
+  }else if(inst1 == 9){
 
     currentInstruction = "ld";
-    cout << "BANANA" << endl;
-    if(instM == "0"){
-      regs[stoi(instA)] = csr[stoi(instB)];
+    if(instM == 0){
+      regs[instA] = csr[instB];
     }
-    else if(instM == "1"){
-      regs[stoi(instA)] = regs[stoi(instB)] + stoi(instB);
+    else if(instM == 1){
+      regs[instA] = regs[instB] + instD;
     }
-    else if(instM == "2"){
+    else if(instM == 2){
 
-      int address = regs[stoi(instB)] + regs[stoi(instC)] + stoi(instD);
-      regs[stoi(instA)] = getValueFromAddress(address);
-
-    }
-    else if(instM == "3"){
-      regs[stoi(instA)] = popFromStack();
-    }
-    else if(instM == "4"){
-      csr[stoi(instA)] = regs[stoi(instB)];
-    }
-    else if(instM == "5"){
-      csr[stoi(instA)] = csr[stoi(instB)] | stoi(instD);
-    }
-    else if(instM == "6"){
-
-      int address = regs[stoi(instB)] + regs[stoi(instC)] + stoi(instD);
-      csr[stoi(instA)] = getValueFromAddress(address);
+      int address = regs[instB] + regs[instC] + instD;
+      regs[instA] = getValueFromAddress(address);
 
     }
-    else if(instM == "7"){
+    else if(instM == 3){
+      regs[instA] = popFromStack();
+    }
+    else if(instM == 4){
+      csr[instA] = regs[instB];
+    }
+    else if(instM == 5){
+      csr[instA] = csr[instB] | instD;
+    }
+    else if(instM == 6){
 
-      int address = regs[stoi(instB)];
-      csr[stoi(instA)] = getValueFromAddress(address);
-      regs[stoi(instB)] = regs[stoi(instB)] + stoi(instD);
+      int address = regs[instB] + regs[instC] + instD;
+      csr[instA] = getValueFromAddress(address);
 
     }
-    else if(instM == "f"){
+    else if(instM == 7){
+
+      int address = regs[instB];
+      csr[instA] = getValueFromAddress(address);
+      regs[instB] = regs[instB] + instD;
+
+    }
+    else if(instM == 0xf){
       currentInstruction = "iret";
+      // csr[status] = getValueFromAddress(regs[sp]) + 4; //ako pokazuje na poslednju zauzetu
+      // regs[pc] = popFromStack();
+      // popFromStack(); //
+      csr[status] = popFromStack(); //posto je atomicno, ovo je ok
     }else error = true;
 
   }else{
@@ -380,7 +387,7 @@ void Emulator::instructionStart(){
     error = true;
   }
 
-  showCurrentState();
+  // showCurrentState();
 
   if(error){
     cout << "ERROR: something bad with instruction: " << currentInstruction << endl;
@@ -390,18 +397,33 @@ void Emulator::instructionStart(){
 
 void Emulator::setInstructionReg(){
 
-  inst1 = bytes[regs[pc]].at(0);
-  instM = bytes[regs[pc]].at(1);
-  instA = bytes[regs[pc] + 1].at(0);
-  instB = bytes[regs[pc] + 1].at(1);
-  instC = bytes[regs[pc] + 2].at(0);
-  instD = bytes[regs[pc] + 2].at(1) + bytes[regs[pc] + 3];
+
+  string pom = string(1, bytes[regs[pc]].at(0));
+  inst1 = stoi("0x" + pom, nullptr, 16);
+
+  string pom1 = string(1, bytes[regs[pc]].at(1));
+  instM = stoi("0x" + pom1, nullptr, 16);
+
+  string pom2 = string(1, bytes[regs[pc] + 1].at(0));
+  instA = stoi("0x" + pom2, nullptr, 16);
+
+  string pom3 = string(1, bytes[regs[pc] + 1].at(1));
+  instB = stoi("0x" + pom3, nullptr, 16);
+
+  string pom4 = string(1, bytes[regs[pc] + 2].at(0));
+  instC = stoi("0x" + pom4, nullptr, 16);
+
+  string pom5 = string(1, bytes[regs[pc] + 2].at(1));
+  instD = stoi("0x" + pom5, nullptr, 16) * 256 + stoi("0x" + bytes[regs[pc] + 3], nullptr, 16);
+
+  showCurrentState();
   regs[pc] += 4;
 
 }
 
-int Emulator::getValueFromAddress(int address){
-  return stoi(bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3]); 
+long long Emulator::getValueFromAddress(int address){
+  cout << "Adresa: " << address  << "  Vrednost: " << bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3] << endl;
+  return stoll("0x" + bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3], nullptr, 16); 
 }
 
 string Emulator::getStringFromAddress(int address){
@@ -422,6 +444,8 @@ void Emulator::setValueOnAddress(int address, int value){
 int Emulator::popFromStack(){
   
   int value = getValueFromAddress(regs[sp]);
+
+  cout << "From stack: " << value << endl;
   regs[sp] = regs[sp] + 4;
   
   return value;
@@ -500,9 +524,10 @@ void Emulator::displayCode(const vector<Code>& codeVector){
 
 void Emulator::showCurrentState(){
 
-  cout << "\nCurrent instruction name: " << currentInstruction << endl;
+  cout << "Current instruction name: " << currentInstruction << endl;
+  cout << "-----------------------------------------------------------" << endl;
 
-  cout << "Current instruction code: "<< bytes[regs[15]] + bytes[regs[15] + 1] + bytes[regs[15] + 2] + bytes[regs[15] + 3] << endl;
+  cout << "\nInst1: " << inst1 << "  InstM: "<< instM << "  InstA: " << instA << "  InstB: " << instB << "  InstC: " << instC << "  InstD: " << instD << endl;
 
   for(int i = 0; i < regs.size() - 2; i = i + 2){
     cout << "REG" << i << ": 0x" << setfill('0') << setw(8) << regs[i] << "    ";
@@ -513,6 +538,8 @@ void Emulator::showCurrentState(){
   cout << "Status: 0x" << setfill('0') << setw(8) << hex << csr[0];
   cout << " Handler: 0x" << setfill('0') << setw(8) << hex << csr[1];
   cout << " Cause: 0x" << setfill('0') << setw(8) << hex << csr[2] << endl;
+
+  cout << "Current instruction code: "<< bytes[regs[15]] + bytes[regs[15] + 1] + bytes[regs[15] + 2] + bytes[regs[15] + 3] << endl;
 
 }
 

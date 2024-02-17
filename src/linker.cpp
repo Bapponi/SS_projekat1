@@ -407,7 +407,8 @@ void Linker::makeTextFile(string fileName){
     Section sec = entry.second;
 
     for(int i = 0; i < sec.offsets.size(); i++){
-      file << sec.offsets.at(i) << "," << sec.data.at(i) << "," << sec.data.at(i).length() / 8 << '\n';
+      string hexAddress = decimalToHex(sec.offsets.at(i));
+      file << sec.offsets.at(i) << "," << sec.data.at(i) << "," << sec.data.at(i).length() / 8 << "," << hexAddress << '\n';
     }
 
   }
@@ -417,6 +418,14 @@ void Linker::makeTextFile(string fileName){
 }
 
 //////////////////////////POMOCNE FUNKCIJE//////////////////////////////////
+
+string Linker::decimalToHex(int decimalValue) {
+  
+  stringstream ss;
+  ss << hex << setw(8) << setfill('0') << decimalValue;
+  return ss.str();
+
+}
 
 string Linker::getBits(const string& stringInt, int nBits) {
     unsigned long intValue = stoul(stringInt);

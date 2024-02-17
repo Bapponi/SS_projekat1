@@ -38,12 +38,12 @@ private:
   static int cause;
   static bool executing;
   static bool error;
-  static string inst1;
-  static string instM;
-  static string instA;
-  static string instB;
-  static string instC;
-  static string instD;
+  static int inst1;
+  static int instM;
+  static int instA;
+  static int instB;
+  static int instC;
+  static int instD;
   static string variation;
   static int TR;
   static int TL;
@@ -59,7 +59,7 @@ public:
   static void programExecute();
   static void instructionStart();
   static void setInstructionReg();
-  static int getValueFromAddress(int address);
+  static long long getValueFromAddress(int address);
   static string getStringFromAddress(int address);
   static void setValueOnAddress(int address, int value);
   static int popFromStack();
