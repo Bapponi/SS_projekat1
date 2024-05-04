@@ -17,7 +17,7 @@ map<long long, string> Emulator::bytes;
 vector<int> Emulator::regs;
 vector<int> Emulator::csr; 
 
-unsigned int Emulator::regM;
+unsigned int Emulator::regM; // MAJMUN: obrisi potencijalno
 unsigned int Emulator::startAddress;
 int Emulator::pc;
 int Emulator::sp;
@@ -56,14 +56,14 @@ void Emulator::init(string fileName){
   handler = 1;
   cause = 2;
 
-  regM = 0xFFFF0000;
+  regM = 0xFFFF0000;   // MAJMUN: obrisi potencijalno
   startAddress = 0x40000000;
   pc = 15;
   sp = 14;
 
   regs[pc] = startAddress;
-  regs[sp] = regM;
-  csr[handler] = regM;
+  regs[sp] = regM;     // MAJMUN: obrisi potencijalno
+  csr[handler] = regM; // MAJMUN: obrisi potencijalno
   executing = true;
   error = false;
   inst1 = -1;
@@ -74,9 +74,9 @@ void Emulator::init(string fileName){
   instD = -1;
   variation = "";
 
-  TR = 1;
-  TL = 2;
-  I = 4;
+  TR = 1; // MAJMUN: obrisi potencijalno
+  TL = 2; // MAJMUN: obrisi potencijalno
+  I = 4;  // MAJMUN: obrisi potencijalno
 }
 
 void Emulator::getTextFile(string fileName){
@@ -375,7 +375,7 @@ void Emulator::instructionStart(){
 
     }
     else if(instM == 0xf){
-      currentInstruction = "iret";
+      currentInstruction = "iret"; // MAJMUN: potencijalno problem
       // csr[status] = getValueFromAddress(regs[sp]) + 4; //ako pokazuje na poslednju zauzetu
       // regs[pc] = popFromStack();
       // popFromStack(); //
@@ -458,7 +458,7 @@ void Emulator::pushOnStack(int value){
 
 void Emulator::startInterrupt(){
   
-  if(csr[handler] == regM)
+  if(csr[handler] == regM) // MAJMUN: obrisi potencijalno
     return;
 
     pushOnStack(csr[status]);
@@ -467,7 +467,7 @@ void Emulator::startInterrupt(){
 
     regs[pc] = csr[handler];
 
-    csr[status] = I; //ne treba maskiranje prekida povedi racuna
+    csr[status] = I; //ne treba maskiranje prekida povedi racuna // MAJMUN: obrisi potencijalno
 }
 
 ////////////////////////POMOCNE FUNKCIJE/////////////////////////////

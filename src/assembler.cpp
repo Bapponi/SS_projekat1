@@ -501,7 +501,7 @@ void Assembler::programEnd2(){
         Symbol s = itSym->second;
         RealocationEntry re;
         re.section = itPool->first;
-        re.offset = v[i].symbolAddress;
+        re.offset = v[i].symbolAddress; // MAJMUN: proveri da li valja
         // if(!s.isLocal && !s.isSection && s.section != "UND"){
 
         if(s.isLocal && !s.isSection && s.section != "UND"){
@@ -848,7 +848,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
         currentSectionSize += 4;
         sec->second.offsets.push_back(currentSectionSize);
         code = "1001";
-        code += "0011"; //modifikator
+        code += "0011"; //modifikator MAJMUN: proveri da mozda ovde stoji 2
         code += getBits(op1, 4); //A - da li moraju vrednosti odavde ili samo brojevi
         code += getBits(op1, 4); //B - da li moraju vrednosti odavde ili samo brojevi
         code += "0000"; //C

@@ -12,7 +12,7 @@ my_start:
     ld $handler, %r1
     csrwr %r1, %handler
 
-    int # software interrupt
+    int # software interrupta
 
     ld $1, %r1
     push %r1

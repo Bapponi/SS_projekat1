@@ -81,6 +81,7 @@ public:
 
 
   static string getBits(const string& stringInt, int nBits);
+  static string binaryToHex(const string& binaryString, int size);
   static vector<string> splitString(const string& input, char delimiter);
   static void displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);

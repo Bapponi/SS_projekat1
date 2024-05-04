@@ -176,7 +176,7 @@ void Linker::linkerStart(vector<string> files){
       ConnectedSection cs;
       cs.size = 0;
 
-      connectedSections[section.name] = cs;
+      connectedSections[secName] = cs;
     }
   }
 
@@ -441,6 +441,17 @@ string Linker::getBits(const string& stringInt, int nBits) {
     return bitString.substr(32 - nBits);
 }
 
+string Linker::binaryToHex(const string& binaryString, int size) {
+
+  bitset<32> bitset(binaryString);
+  unsigned long hexValue = bitset.to_ulong();
+
+  stringstream ss;
+  ss << hex << setw(size*2) << setfill('0') << hexValue;
+  return ss.str();
+
+}
+
 vector<string> Linker::splitString(const string& input, char delimiter) {
   
   vector<string> result;
@@ -461,16 +472,24 @@ vector<string> Linker::splitString(const string& input, char delimiter) {
 
 void Linker::displayRelocationTable(const map<string, vector<RealocationEntry>>& symbolMap){
 
-  cout << "    --------------------------RELOCATIONS--------------------------" << std::endl;
-  cout << setw(15) << "Section" << setw(15) << "Offset" << setw(20) << "Symbol"
-       << setw(15) << "Addent" << endl;
+  cout << "    ---------------------------------------RELOCATIONS--------------------------------------" << std::endl;
+  cout << setw(15) << "Section" 
+       << setw(15) << "Offset"
+       << setw(20) << "Symbol"
+       << setw(15) << "Addent"
+       << setw(15) << "Offset HEX"  
+       << setw(15) << "Addent HEX" << endl;
 
   for (const auto& entry : symbolMap) {
       const vector<RealocationEntry>& relocations = entry.second;
 
       for (const auto& relocation : relocations) {
-        cout << setw(15) << relocation.section << setw(15) << relocation.offset
-             << setw(20) << relocation.symbol << setw(15) << relocation.addent << endl;
+        cout << setw(15) << relocation.section 
+             << setw(15) << relocation.offset
+             << setw(20) << relocation.symbol 
+             << setw(15) << relocation.addent
+             << setw(15) << hex << relocation.offset 
+             << setw(15) << relocation.addent << dec << endl;
       }
   }
 
@@ -478,28 +497,47 @@ void Linker::displayRelocationTable(const map<string, vector<RealocationEntry>>&
 }
 
 void Linker::displaySectionTable(const map<string, Section>& symbolMap){
-  cout << "       ------------------------------------------SECTIONS-------------------------------------------" << endl;
-  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "SizeAll"
-       << setw(10) << "HasPool" << setw(15) << "PoolSize" << setw(20) << "SectionStart" << endl;
+  cout << "       -----------------------------------------------SECTIONS-------------------------------------------" << endl;
+  cout << setw(15) << "Name" 
+       << setw(10) << "SerialNum" 
+       << setw(10) << "SizeAll"
+       << setw(15) << "SizeAll HEX"
+       << setw(10) << "HasPool" 
+       << setw(15) << "PoolSize" 
+       << setw(20) << "SectionStart"
+       << setw(20) << "SectionStart HEX" << endl;
 
   for (const auto& entry : sections) {
       const Section& section = entry.second;
 
-      cout << setw(15) << section.name << setw(10) << section.serialNum
-                << setw(10) << section.size << setw(10) << section.hasPool
-                << setw(15) << section.poolSize << setw(20) << section.sectionStart <<endl;
+      cout << setw(15) << section.name 
+           << setw(10) << section.serialNum
+           << setw(10) << section.size
+           << setw(15) << section.size  
+           << setw(10) << section.hasPool
+           << setw(15) << section.poolSize 
+           << setw(20) << section.sectionStart
+           << setw(20) << hex << section.sectionStart << dec <<endl;
   }
 
   cout << "\n" << endl;
 
-  cout << setw(15) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+  cout << setw(15) << "Section" 
+       << setw(20) << "Offsets" 
+       << setw(36) << "Data"
+       << setw(15) << "Offsets HEX" 
+       << setw(16) << "Data HEX" << endl;
 
   for (const auto& entry : symbolMap) {
       const vector<long long>& offsetsVector = entry.second.offsets;
       const vector<string>& dataVector = entry.second.data;
 
       for (int i = 0; i < offsetsVector.size(); i++) {
-          cout << setw(15) << entry.first << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+          cout << setw(15) << entry.first 
+               << setw(20) << offsetsVector.at(i) 
+               << setw(36) << dataVector.at(i)
+               << setw(15) << hex << offsetsVector.at(i) << dec
+               << setw(16) << binaryToHex(dataVector.at(i), 4)<< endl;
       }
   }
 
@@ -507,27 +545,41 @@ void Linker::displaySectionTable(const map<string, Section>& symbolMap){
 }
 
 void Linker::displayConnectedSectionTable(const map<string, ConnectedSection>& symbolMap){
-  cout << "       -------------------------------------CONNECTED SECTIONS--------------------------------------" << endl;
-  cout << setw(20) << "FILE" << setw(15) << "NAME" << setw(10) << "SIZE"
-       << setw(10) << "AddressStart" << endl;
+  cout << setw(60) << "    ------------------------CONNECTED SECTIONS----------------------------------------------------" << endl;
+  cout << setw(20) << "FILE" 
+       << setw(15) << "NAME" 
+       << setw(10) << "SIZE"
+       << setw(10) << "SIZE HEX"
+       << setw(15) << "AddressStart HEX" << endl;
 
   for (const auto& entry : connectedSections) {
       const ConnectedSection& section = entry.second;
 
-      cout << setw(20) << section.file << setw(15) << section.name
-                << setw(10) << section.size << setw(10) << section.addressStart << endl;
+      cout << setw(20) << section.file 
+           << setw(15) << section.name
+           << setw(10) << section.size
+           << setw(10) << hex << section.size 
+           << setw(15) << section.addressStart << dec << endl;
   }
 
   cout << "\n" << endl;
 
-  cout << setw(15) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+  cout << setw(15) << "Section" 
+       << setw(15) << "Offsets" 
+       << setw(36) << "Data"
+       << setw(15) << "Offsets HEX" 
+       << setw(16) << "Data HEX" << endl;
 
   for (const auto& entry : symbolMap) {
       const vector<long long>& offsetsVector = entry.second.offsets;
       const vector<string>& dataVector = entry.second.data;
 
       for (int i = 0; i < offsetsVector.size(); i++) {
-          cout << setw(15) << entry.first << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+          cout << setw(15) << entry.first 
+               << setw(15) << offsetsVector.at(i) 
+               << setw(36) << dataVector.at(i)
+               << setw(15) << hex << offsetsVector.at(i) << dec
+               << setw(16) << binaryToHex(dataVector.at(i), 4)<< endl;
       }
   }
 
@@ -535,16 +587,25 @@ void Linker::displayConnectedSectionTable(const map<string, ConnectedSection>& s
 }
 
 void Linker::displaySymbolTable(const map<string, Symbol>& symbolMap){
-  cout << "         -------------------------------SYMBOLS-----------------------------------" << endl;
-  cout << setw(15) << "Name" << setw(10) << "SerialNum" << setw(15) << "Value"
-       << setw(10) << "IsLocal" << setw(15) << "Section" << setw(10) << "IsSection"
+  cout << "         --------------------------------------SYMBOLS-------------------------------------------" << endl;
+  cout << setw(15) << "Name" 
+       << setw(10) << "SerialNum" 
+       << setw(15) << "Value"
+       << setw(15) << "Value HEX"
+       << setw(10) << "IsLocal" 
+       << setw(15) << "Section" 
+       << setw(10) << "IsSection"
        << setw(10) << "Offset" << endl;
   
   for (const auto& entry : symbolMap) {
       const Symbol& symbol = entry.second;
-      cout << setw(15) << symbol.name << setw(10) << symbol.serialNum
-           << setw(15) << symbol.value << setw(10) << symbol.isLocal
-           << setw(15) << symbol.section << setw(10) << symbol.isSection
+      cout << setw(15) << symbol.name 
+           << setw(10) << symbol.serialNum
+           << setw(15) << symbol.value
+           << setw(15) << hex << symbol.value << dec 
+           << setw(10) << symbol.isLocal
+           << setw(15) << symbol.section 
+           << setw(10) << symbol.isSection
            << setw(10) << symbol.offset << endl;
   }
 
@@ -552,9 +613,15 @@ void Linker::displaySymbolTable(const map<string, Symbol>& symbolMap){
 }
 
 void Linker::displaySymbolMapTable(const map<string, map<string, Symbol>>& symbolMap) {
-  cout << setw(100) << "-------------------------------------SYMBOLS---------------------------------------------" << endl;
-  cout << setw(20) << "FILE" << setw(20) << "Name" << setw(10) << "SerialNum" << setw(10) << "Value"
-       << setw(10) << "IsLocal" << setw(15) << "Section" << setw(10) << "IsSection"
+  cout << setw(110) << "--------------------------------------SYMBOL MAP-----------------------------------------------" << endl;
+  cout << setw(20) << "FILE" 
+       << setw(20) << "Name" 
+       << setw(10) << "SerialNum" 
+       << setw(10) << "Value"
+       << setw(10) << "Value HEX"
+       << setw(10) << "IsLocal" 
+       << setw(15) << "Section" 
+       << setw(10) << "IsSection"
        << setw(10) << "Offset" << endl;
 
   for (const auto& outerEntry : symbolMap) {
@@ -563,21 +630,31 @@ void Linker::displaySymbolMapTable(const map<string, map<string, Symbol>>& symbo
 
       for (const auto& innerEntry : innerMap) {
           const Symbol& symbol = innerEntry.second;
-          cout << setw(20) << fileName << setw(20) << symbol.name << setw(10) << symbol.serialNum
-               << setw(10) << symbol.value << setw(10) << symbol.isLocal
-               << setw(15) << symbol.section << setw(10) << symbol.isSection
+          cout << setw(20) << fileName 
+               << setw(20) << symbol.name 
+               << setw(10) << symbol.serialNum
+               << setw(10) << symbol.value 
+               << setw(10) << hex << symbol.value << dec 
+               << setw(10) << symbol.isLocal
+               << setw(15) << symbol.section 
+               << setw(10) << symbol.isSection
                << setw(10) << symbol.offset << endl;
       }
-      cout  << setw(100) <<"------------------------------------------------------------------------------------------" << endl;
+      cout  << setw(110) <<"------------------------------------------------------------------------------------------" << endl;
   }
 
   cout << "\n" << endl;
 }
 
 void Linker::displayRelocationMapTable(const map<string, map<string, vector<RealocationEntry>>>& symbolMap) {
-    cout << setw(80) << "-----------------------------RELOCATIONS-------------------------------" << endl;
-    cout << setw(20) << "FILE" << setw(15) << "Section" << setw(15) << "Offset" << setw(15) << "Symbol"
-         << setw(15) << "Addent" << endl;
+    cout << setw(110) << "--------------------------------------RELOCATION MAP----------------------------------------" << endl;
+    cout << setw(20) << "FILE" 
+         << setw(15) << "Section" 
+         << setw(15) << "Offset" 
+         << setw(15) << "Offset HEX"
+         << setw(15) << "Symbol"
+         << setw(15) << "Addent"
+         << setw(15) << "Addent HEX" << endl;
 
     for (const auto& outerEntry : symbolMap) {
         const string& fileName = outerEntry.first;
@@ -588,20 +665,31 @@ void Linker::displayRelocationMapTable(const map<string, map<string, vector<Real
             const vector<RealocationEntry>& relocations = innerEntry.second;
 
             for (const auto& relocation : relocations) {
-                cout << setw(20)<< fileName << setw(15) << relocation.section << setw(15) << relocation.offset
-                     << setw(15) << relocation.symbol << setw(15) << relocation.addent << endl;
+                cout << setw(20)<< fileName 
+                     << setw(15) << relocation.section 
+                     << setw(15) << relocation.offset
+                     << setw(15) << hex << relocation.offset << dec
+                     << setw(15) << relocation.symbol 
+                     << setw(15) << relocation.addent
+                     << setw(15) << hex << relocation.addent << dec << endl;
             }
         }
-        cout  << setw(80) <<"-------------------------------------------------------------------" << endl;
+        cout  << setw(110) <<"----------------------------------------------------------------------------------" << endl;
     }
 
     cout << "\n" << endl;
 }
 
 void Linker::displaySectionMapTable(const map<string, map<string, Section>>& symbolMap){
-  cout << setw(80) <<"----------------------------------SECTIONS----------------------------------" << endl;
-  cout << setw(20) << "FILE" <<setw(15) << "Name" << setw(10) << "SerialNum" << setw(10) << "Size"
-       << setw(10) << "HasPool" << setw(15) << "PoolSize" << endl;
+  cout << setw(140) <<"------------------------------------------------SECTION MAP-----------------------------------------------" << endl;
+  cout << setw(20) << "FILE" 
+       << setw(15) << "Name" 
+       << setw(10) << "SerialNum" 
+       << setw(10) << "Size"
+       << setw(10) << "Size HEX"
+       << setw(10) << "HasPool" 
+       << setw(15) << "PoolSize"
+       << setw(15) << "PoolSize HEX" << endl;
 
   for (const auto& outerEntry : symbolMap) {
     const string& sectionName = outerEntry.first;
@@ -609,17 +697,26 @@ void Linker::displaySectionMapTable(const map<string, map<string, Section>>& sym
 
     for (const auto& innerEntry : innerMap) {
       const Section& section = innerEntry.second;
-      cout << setw(20) << sectionName << setw(15) << section.name << setw(10) << section.serialNum
-           << setw(10) << section.size << setw(10) << section.hasPool
-           << setw(15) << section.poolSize << endl;
+      cout << setw(20) << sectionName 
+           << setw(15) << section.name 
+           << setw(10) << section.serialNum
+           << setw(10) << section.size
+           << setw(10) << hex << section.size << dec 
+           << setw(10) << section.hasPool
+           << setw(15) << section.poolSize
+           << setw(15) << hex << section.poolSize << dec << endl;
     }
 
-    cout  << setw(80) << "----------------------------------------------------------------------------" << endl;
+    cout << setw(140) << "----------------------------------------------------------------------------------------------------------" << endl;
   }
 
   cout << "\n" << endl;
 
-  cout << setw(20) << "Section" << setw(20) << "Offsets" << setw(36) << "Data" << endl;
+  cout << setw(20) << "Section" 
+       << setw(10) << "Offsets" 
+       << setw(36) << "Data"
+       << setw(15) << "Offsets HEX" 
+       << setw(16) << "Data HEX" << endl;
 
   for (const auto& outerEntry : symbolMap) {
     const string& sectionName = outerEntry.first;
@@ -631,11 +728,15 @@ void Linker::displaySectionMapTable(const map<string, map<string, Section>>& sym
       const vector<string>& dataVector = section.data;
 
       for (int i = 0; i < offsetsVector.size(); i++) {
-          cout << setw(20) << sectionName << setw(20) << offsetsVector.at(i) << setw(36) << dataVector.at(i) << endl;
+          cout << setw(20) << sectionName 
+               << setw(10) << offsetsVector.at(i) 
+               << setw(36) << dataVector.at(i)
+               << setw(15) << hex << offsetsVector.at(i) << dec
+               << setw(16) << binaryToHex(dataVector.at(i), 4)<< endl;
       }
     }
 
-    cout  << setw(76) <<"------------------------------------------------------------------------" << endl;
+    cout  << setw(97) <<"---------------------------------------------------------------------------------------------" << endl;
   }
 
   cout << "\n" << endl;
