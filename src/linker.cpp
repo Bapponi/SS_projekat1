@@ -31,8 +31,10 @@ map<string, map<string, Section>> Linker::sectionMaps;
 int Linker::currentSectionNum;
 int Linker::currentSymbolNum;
 int Linker::currentSectionSize;
+long long Linker::maxStartAddress;
+string Linker::sectionAddressMax;
 
-void Linker::init(map<string,long long> secStart){
+void Linker::init(map<string,long long> secStart, long long maxAddressStart, string sectionMaxAddress){
   relocations.clear();
   symbols.clear();
   sections.clear();
@@ -46,8 +48,11 @@ void Linker::init(map<string,long long> secStart){
   currentSectionNum = 1;
   currentSymbolNum = 1;
   currentSectionSize = 0;
+  maxStartAddress = 0;
 
   sectionStart = secStart;
+  maxStartAddress = maxAddressStart;
+  sectionAddressMax = sectionMaxAddress;
 }
 
 void Linker::getTextFile(string fileName){
@@ -218,20 +223,23 @@ void Linker::sectionConnect(){
       connectedSections[secName].name = secName;
       connectedSections[secName].file = fileName;
 
-      cout << "SecName:" << secName << " start: " << sectionStart[secName] << endl;
+      cout << "SecName: " << secName << " start: " << sectionStart[secName] << endl;
 
-      if(sectionStart[secName] > 0)
+      if(sectionStart[secName] > 0){
         connectedSections[secName].addressStart = sectionStart[secName];
-      else 
+      }else{
         connectedSections[secName].addressStart = 0;
       // connectedSections[secName].addressStart = sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
+      }
+        cout << "MAX ADDRESS: " << maxStartAddress << endl;
       
 
       for(int i = 0; i < section.offsets.size(); i++){ 
         if(sectionStart[secName] > 0){
           connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].addressStart);
         }else
-          connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size); //pre je bilo .size
+          connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size + 
+                                                       maxStartAddress + connectedSections[sectionAddressMax].size); //pre je bilo .size
         
         connectedSections[secName].data.push_back(section.data.at(i));
       }
@@ -681,7 +689,7 @@ void Linker::displayRelocationMapTable(const map<string, map<string, vector<Real
 }
 
 void Linker::displaySectionMapTable(const map<string, map<string, Section>>& symbolMap){
-  cout << setw(140) <<"------------------------------------------------SECTION MAP-----------------------------------------------" << endl;
+  cout << setw(105) <<"------------------------------------------------SECTION MAP-----------------------------------------------" << endl;
   cout << setw(20) << "FILE" 
        << setw(15) << "Name" 
        << setw(10) << "SerialNum" 
@@ -707,7 +715,7 @@ void Linker::displaySectionMapTable(const map<string, map<string, Section>>& sym
            << setw(15) << hex << section.poolSize << dec << endl;
     }
 
-    cout << setw(140) << "----------------------------------------------------------------------------------------------------------" << endl;
+    cout << setw(105) << "----------------------------------------------------------------------------------------------------------" << endl;
   }
 
   cout << "\n" << endl;
@@ -751,6 +759,8 @@ int main(int argc, char* argv[]){
   regex startReg("^-place=([a-zA-Z_][a-zA-Z_0-9]*)@(0[xX][0-9a-fA-F]+)$");
   bool isHex = false;
   vector<string> files;
+  long long maxStartAddress = 0;
+  string sectionMaxAddress;
 
   for (int i = 1; i < argc; i++){
 
@@ -773,7 +783,11 @@ int main(int argc, char* argv[]){
       vektor = Linker::splitString(vektor.at(0), '=');
       string section = vektor.at(1);
       sectionStart[section] = hex;
-
+      if(hex > maxStartAddress){
+        maxStartAddress = hex;
+        sectionMaxAddress = section;
+      }
+          
     }else{
       cout << "ERROR: Bad input: " << argv[i] << endl;
       exit(1);
@@ -781,7 +795,7 @@ int main(int argc, char* argv[]){
 
   }
 
-  Linker::init(sectionStart);
+  Linker::init(sectionStart, maxStartAddress, sectionMaxAddress);
   
   for(int i = 0; i < files.size(); i++){
     cout << files.at(i) << endl;

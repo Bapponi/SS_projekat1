@@ -68,10 +68,12 @@ private:
   static int currentSectionNum;
   static int currentSymbolNum;
   static int currentSectionSize;
+  static long long maxStartAddress;
+  static string sectionAddressMax;
 
 public:
 
-  static void init(map<string,long long> secStart);
+  static void init(map<string,long long> secStart, long long maxAddressStart, string sectionMaxAddress);
   static void getTextFile(string fileName);
   static void linkerStart(vector<string>);
   static void sectionConnect();
