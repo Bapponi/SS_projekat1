@@ -14,8 +14,8 @@ vector<Code> Emulator::codes;
 string Emulator::inputFile;
 string Emulator::currentInstruction;
 map<long long, string> Emulator::bytes;
-vector<int> Emulator::regs;
-vector<int> Emulator::csr; 
+vector<unsigned int> Emulator::regs;
+vector<unsigned int> Emulator::csr; 
 
 unsigned int Emulator::regM; // MAJMUN: obrisi potencijalno
 unsigned int Emulator::startAddress;
@@ -395,26 +395,24 @@ void Emulator::instructionStart(){
 }
 
 void Emulator::setInstructionReg(){
-
-  cout << "Majmunarama: " << bytes[regs[pc]]  << " PC: " << regs[pc] << endl;
   
-  string pom = string(1, bytes[(unsigned int)regs[pc]].at(0));
+  string pom = string(1, bytes[regs[pc]].at(0));
   inst1 = stoi("0x" + pom, nullptr, 16);
 
-  string pom1 = string(1, bytes[(unsigned int)regs[pc]].at(1));
+  string pom1 = string(1, bytes[regs[pc]].at(1));
   instM = stoi("0x" + pom1, nullptr, 16);
 
-  string pom2 = string(1, bytes[(unsigned int)regs[pc] + 1].at(0));
+  string pom2 = string(1, bytes[regs[pc] + 1].at(0));
   instA = stoi("0x" + pom2, nullptr, 16);
 
-  string pom3 = string(1, bytes[(unsigned int)regs[pc] + 1].at(1));
+  string pom3 = string(1, bytes[regs[pc] + 1].at(1));
   instB = stoi("0x" + pom3, nullptr, 16);
 
-  string pom4 = string(1, bytes[(unsigned int)regs[pc] + 2].at(0));
+  string pom4 = string(1, bytes[regs[pc] + 2].at(0));
   instC = stoi("0x" + pom4, nullptr, 16);
 
-  string pom5 = string(1, bytes[(unsigned int)regs[pc] + 2].at(1));
-  instD = stoi("0x" + pom5, nullptr, 16) * 256 + stoi("0x" + bytes[(unsigned int)regs[pc] + 3], nullptr, 16);
+  string pom5 = string(1, bytes[regs[pc] + 2].at(1));
+  instD = stoi("0x" + pom5, nullptr, 16) * 256 + stoi("0x" + bytes[regs[pc] + 3], nullptr, 16);
 
 
   showCurrentState();
@@ -433,6 +431,7 @@ string Emulator::getStringFromAddress(int address){
 
 void Emulator::setValueOnAddress(int address, int value){
 
+  cout << "PUSH adresa: " << address << " PUSH vrednost: " << value << endl;
   string pom = decimalToHex(value);
 
   bytes[address] = pom.substr(0, 2);
@@ -462,6 +461,8 @@ void Emulator::startInterrupt(){
   // if(csr[handler] == regM) // MAJMUN: obrisi potencijalno
   //   return;
     pushOnStack(csr[status]);
+
+    cout << "Status: " << csr[status] << " PC: " << regs[pc] << endl; 
 
     pushOnStack(regs[pc]);
 
@@ -533,13 +534,17 @@ void Emulator::showCurrentState(){
     cout << "REG" << i << ": 0x" << setfill('0') << setw(8) << regs[i] << "    ";
     cout << "REG" << i + 1 << ": 0x" << setfill('0') << setw(8) << regs[i + 1] << endl;
   }
-  cout << "\nSP: 0x" << setfill('0') << setw(8) << hex << regs[14];
+  cout << "\nSP pointer: 0x" << setfill('0') << setw(8) << hex << regs[14];
+  cout << " SP value: 0x" << setfill('0') << setw(8) << hex << bytes[regs[14]];
   cout << " PC: 0x" << setfill('0') << setw(8) << hex << regs[15] << endl;
   cout << "Status: 0x" << setfill('0') << setw(8) << hex << csr[0];
   cout << " Handler: 0x" << setfill('0') << setw(8) << hex << csr[1];
   cout << " Cause: 0x" << setfill('0') << setw(8) << hex << csr[2] << endl;
 
-  cout << "Current instruction code: "<< bytes[regs[15]] + bytes[regs[15] + 1] + bytes[regs[15] + 2] + bytes[regs[15] + 3] << endl;
+  cout << "Current instruction code: "<< bytes[regs[15]] + 
+                                         bytes[regs[15] + 1] + 
+                                         bytes[regs[15] + 2] + 
+                                         bytes[regs[15] + 3] << endl;
 
 }
 

@@ -233,19 +233,20 @@ void Linker::sectionConnect(){
       }
       
       cout << "MAX ADDRESS: " << maxStartAddress << endl;
-      
+
+
+      //TREBA PROMENA...
       for(int i = 0; i < section.offsets.size(); i++){ 
         if(sectionStart[secName] > 0){
           connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].addressStart);
         }else{
-          connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size + 
-                                                       maxStartAddress + connectedSections[sectionAddressMax].size); //pre je bilo .size
+          connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size); //pre je bilo .size
           // connectedSections[secName].addressStart = maxStartAddress + connectedSections[sectionAddressMax].size;
         }
           
         connectedSections[secName].data.push_back(section.data.at(i));
       }
-      //SREDITI OVDE SECTION START DEO
+      //...DO OVDE
 
 
       for(const auto& symbols : symbolMaps[fileName]){
@@ -263,6 +264,8 @@ void Linker::sectionConnect(){
 
   displayConnectedSectionTable(connectedSections);
 
+  currentSectionSize += connectedSections[sectionAddressMax].size;
+
   for(const auto& conSec : connectedSections){
 
     string sectionName = conSec.first;
@@ -279,10 +282,10 @@ void Linker::sectionConnect(){
       sec.sectionStart = cs.addressStart;
       sec.offsets = cs.offsets;
     }else{
-      sec.sectionStart = currentSectionSize + maxStartAddress; //promena
+      sec.sectionStart = currentSectionSize + maxStartAddress;
 
       for(int i = 0; i < cs.offsets.size(); i++)
-        sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
+        sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize + maxStartAddress);
     }
 
     if (sectionName == "UND")
@@ -525,7 +528,7 @@ void Linker::displaySectionTable(const map<string, Section>& symbolMap){
       cout << setw(15) << section.name 
            << setw(10) << section.serialNum
            << setw(10) << section.size
-           << setw(15) << section.size  
+           << setw(15) << hex << section.size << dec  
            << setw(10) << section.hasPool
            << setw(15) << section.poolSize 
            << setw(20) << section.sectionStart

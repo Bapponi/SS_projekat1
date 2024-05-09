@@ -26,8 +26,8 @@ private:
   static string inputFile;
   static string currentInstruction;
   static map<long long, string> bytes;
-  static vector<int> regs;
-  static vector<int> csr;
+  static vector<unsigned int> regs;
+  static vector<unsigned int> csr;
 
   static unsigned int startAddress;
   static unsigned int regM;
