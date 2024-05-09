@@ -547,7 +547,8 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
   }else if(name.compare("int") == 0){
 
-    sec->second.data.push_back("00111000111000000000111111111000");
+    // sec->second.data.push_back("00111000111000000000111111111000");
+    sec->second.data.push_back("00010000000000000000000000000000");
 
   }else if(name.compare("iret") == 0){
 

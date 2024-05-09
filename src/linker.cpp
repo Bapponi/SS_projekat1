@@ -231,18 +231,22 @@ void Linker::sectionConnect(){
         connectedSections[secName].addressStart = 0;
       // connectedSections[secName].addressStart = sectionMaps[fileName][secName].size + sectionMaps[fileName][secName].poolSize;
       }
-        cout << "MAX ADDRESS: " << maxStartAddress << endl;
       
-
+      cout << "MAX ADDRESS: " << maxStartAddress << endl;
+      
       for(int i = 0; i < section.offsets.size(); i++){ 
         if(sectionStart[secName] > 0){
           connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].addressStart);
-        }else
+        }else{
           connectedSections[secName].offsets.push_back(section.offsets.at(i) + connectedSections[secName].size + 
                                                        maxStartAddress + connectedSections[sectionAddressMax].size); //pre je bilo .size
-        
+          // connectedSections[secName].addressStart = maxStartAddress + connectedSections[sectionAddressMax].size;
+        }
+          
         connectedSections[secName].data.push_back(section.data.at(i));
       }
+      //SREDITI OVDE SECTION START DEO
+
 
       for(const auto& symbols : symbolMaps[fileName]){
         Symbol s = symbols.second;
@@ -275,7 +279,7 @@ void Linker::sectionConnect(){
       sec.sectionStart = cs.addressStart;
       sec.offsets = cs.offsets;
     }else{
-      sec.sectionStart = currentSectionSize;
+      sec.sectionStart = currentSectionSize + maxStartAddress; //promena
 
       for(int i = 0; i < cs.offsets.size(); i++)
         sec.offsets.push_back(cs.offsets.at(i) + currentSectionSize);
@@ -323,7 +327,7 @@ void Linker::relocationConnect(){
   displayRelocationTable(relocations);
 }
 
-void Linker::symbolConnect(){
+void Linker::symbolConnect(){  //OVDE IZMENITI VREDNOST SIMBOLA ZBOG DATA DELA!!!!!!!!!!!!!!!
 
   for(const auto& section : sections) {
 

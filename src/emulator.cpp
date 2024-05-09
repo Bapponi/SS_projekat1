@@ -118,7 +118,6 @@ void Emulator::setupBytes(){
   }
 
   // bytes[55] = "90";
-  // cout << "BAJT: " << bytes[55] << endl;
 
 }
 
@@ -397,24 +396,26 @@ void Emulator::instructionStart(){
 
 void Emulator::setInstructionReg(){
 
-
-  string pom = string(1, bytes[regs[pc]].at(0));
+  cout << "Majmunarama: " << bytes[regs[pc]]  << " PC: " << regs[pc] << endl;
+  
+  string pom = string(1, bytes[(unsigned int)regs[pc]].at(0));
   inst1 = stoi("0x" + pom, nullptr, 16);
 
-  string pom1 = string(1, bytes[regs[pc]].at(1));
+  string pom1 = string(1, bytes[(unsigned int)regs[pc]].at(1));
   instM = stoi("0x" + pom1, nullptr, 16);
 
-  string pom2 = string(1, bytes[regs[pc] + 1].at(0));
+  string pom2 = string(1, bytes[(unsigned int)regs[pc] + 1].at(0));
   instA = stoi("0x" + pom2, nullptr, 16);
 
-  string pom3 = string(1, bytes[regs[pc] + 1].at(1));
+  string pom3 = string(1, bytes[(unsigned int)regs[pc] + 1].at(1));
   instB = stoi("0x" + pom3, nullptr, 16);
 
-  string pom4 = string(1, bytes[regs[pc] + 2].at(0));
+  string pom4 = string(1, bytes[(unsigned int)regs[pc] + 2].at(0));
   instC = stoi("0x" + pom4, nullptr, 16);
 
-  string pom5 = string(1, bytes[regs[pc] + 2].at(1));
-  instD = stoi("0x" + pom5, nullptr, 16) * 256 + stoi("0x" + bytes[regs[pc] + 3], nullptr, 16);
+  string pom5 = string(1, bytes[(unsigned int)regs[pc] + 2].at(1));
+  instD = stoi("0x" + pom5, nullptr, 16) * 256 + stoi("0x" + bytes[(unsigned int)regs[pc] + 3], nullptr, 16);
+
 
   showCurrentState();
   regs[pc] += 4;
@@ -458,16 +459,15 @@ void Emulator::pushOnStack(int value){
 
 void Emulator::startInterrupt(){
   
-  if(csr[handler] == regM) // MAJMUN: obrisi potencijalno
-    return;
-
+  // if(csr[handler] == regM) // MAJMUN: obrisi potencijalno
+  //   return;
     pushOnStack(csr[status]);
 
     pushOnStack(regs[pc]);
 
     regs[pc] = csr[handler];
 
-    csr[status] = I; //ne treba maskiranje prekida povedi racuna // MAJMUN: obrisi potencijalno
+    // csr[status] = I; //ne treba maskiranje prekida povedi racuna // MAJMUN: obrisi potencijalno
 }
 
 ////////////////////////POMOCNE FUNKCIJE/////////////////////////////
