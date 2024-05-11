@@ -117,7 +117,7 @@ void Emulator::setupBytes(){
     }
   }
 
-  // bytes[55] = "90";
+  // bytes[0xFFFFFEFE] = "FF";
 
 }
 
@@ -166,6 +166,8 @@ void Emulator::instructionStart(){
   }else if(inst1 == 2){
 
     currentInstruction = "call";
+
+    pushOnStack(regs[pc]);
 
     if(instM == 0){
       regs[pc] = regs[instA] + regs[instB] + instD;
@@ -216,8 +218,10 @@ void Emulator::instructionStart(){
     else if(instM == 9){
       currentInstruction = "beq";
       
-      if(regs[instB] == regs[instC])
+      if(regs[instB] == regs[instC]){
+        cout << "AZOOOOO - skok: " << regs[instA] + instD << endl;
         regs[pc] = getValueFromAddress((regs[instA] + instD));
+      }
 
     }
     else if(instM == 0xa){
@@ -372,15 +376,15 @@ void Emulator::instructionStart(){
       csr[instA] = getValueFromAddress(address);
       regs[instB] = regs[instB] + instD;
 
-    }
-    else if(instM == 0xf){
-      currentInstruction = "iret"; // MAJMUN: potencijalno problem
-      // csr[status] = getValueFromAddress(regs[sp]) + 4; //ako pokazuje na poslednju zauzetu
-      // regs[pc] = popFromStack();
-      // popFromStack(); //
-      csr[status] = popFromStack(); //posto je atomicno, ovo je ok
     }else error = true;
 
+  }else if(inst1 == 0xf){
+    currentInstruction = "iret"; // MAJMUN: potencijalno problem
+    // csr[status] = getValueFromAddress(regs[sp]) + 4; //ako pokazuje na poslednju zauzetu
+    regs[pc] = popFromStack();
+    // popFromStack(); //
+    csr[status] = popFromStack(); //posto je atomicno, ovo je ok
+    //DO OVDE SAM STIGAO
   }else{
     cout << "\nERROR: Bad instruction" << endl;
     error = true;
@@ -420,7 +424,7 @@ void Emulator::setInstructionReg(){
 
 }
 
-long long Emulator::getValueFromAddress(int address){
+long long Emulator::getValueFromAddress(unsigned int address){
   cout << "Adresa: " << address  << "  Vrednost: " << bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3] << endl;
   return stoll("0x" + bytes[address] + bytes[address + 1] + bytes[address + 2] + bytes[address + 3], nullptr, 16); 
 }
@@ -434,20 +438,23 @@ void Emulator::setValueOnAddress(int address, int value){
   cout << "PUSH adresa: " << address << " PUSH vrednost: " << value << endl;
   string pom = decimalToHex(value);
 
-  bytes[address] = pom.substr(0, 2);
-  bytes[address + 1] = pom.substr(2, 2);
-  bytes[address + 2] = pom.substr(4, 2);
-  bytes[address + 3] = pom.substr(6, 2);
+  bytes[(unsigned int)address] = pom.substr(0, 2);
+  bytes[(unsigned int)(address + 1)] = pom.substr(2, 2);
+  bytes[(unsigned int)(address + 2)] = pom.substr(4, 2);
+  bytes[(unsigned int)(address + 3)] = pom.substr(6, 2);
 
 }
 
-int Emulator::popFromStack(){
+unsigned int Emulator::popFromStack(){
   
-  int value = getValueFromAddress(regs[sp]);
+  unsigned int value = getValueFromAddress(regs[sp]);
 
   cout << "From stack: " << value << endl;
-  regs[sp] = regs[sp] + 4;
   
+  regs[sp] = regs[sp] + 4; //promenio sam ovo ovde umesto dole
+
+  cout << "Vrednost sa stacka: " << value << endl;
+
   return value;
 }
 
@@ -461,11 +468,10 @@ void Emulator::startInterrupt(){
   // if(csr[handler] == regM) // MAJMUN: obrisi potencijalno
   //   return;
     pushOnStack(csr[status]);
-
     cout << "Status: " << csr[status] << " PC: " << regs[pc] << endl; 
-
     pushOnStack(regs[pc]);
-
+    csr[cause] = 4;
+    csr[status] = csr[status] & (~0x1);
     regs[pc] = csr[handler];
 
     // csr[status] = I; //ne treba maskiranje prekida povedi racuna // MAJMUN: obrisi potencijalno

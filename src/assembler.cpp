@@ -365,11 +365,11 @@ void Assembler::getOperand(string name, string type){
       hasPool = true;
       poolOffset += 4;
 
-      //zbog dodatne instrukcije koja mora da se generise
-      if(currentInstruction == "ld " || currentInstruction == "st "){
-        fileOffset += 4;
-        currentSectionSize += 4;
-      }
+      //zbog dodatne instrukcije koja mora da se generise //MAJMUN
+      // if(currentInstruction == "ld " || currentInstruction == "st "){
+      //   fileOffset += 4;
+      //   currentSectionSize += 4;
+      // }
     }
 
   }else if(type.compare("opr_hex") == 0){
@@ -386,11 +386,11 @@ void Assembler::getOperand(string name, string type){
       hasPool = true;
       poolOffset += 4;
 
-      //zbog dodatne instrukcije koja mora da se generise
-      if(currentInstruction == "ld " || currentInstruction == "st "){
-        fileOffset += 4;
-        currentSectionSize += 4;
-      }
+      //zbog dodatne instrukcije koja mora da se generise //MAJMUN
+      // if(currentInstruction == "ld " || currentInstruction == "st "){
+      //   fileOffset += 4;
+      //   currentSectionSize += 4;
+      // }
     }
 
   }else if(type.compare("opr_string") == 0){
@@ -974,7 +974,8 @@ void Assembler::getOperand2(string name, string type){
         if(!pool.isSymbol && pool.symbolValue == num){
           string a = to_string(pool.symbolAddress - currentSectionSize - 4);
           currentOperandOffset = getBits(a, 12);
-          hasPool2=true;
+          hasPool2 = true;
+          inOprString = true; //MAJMUN: dodao naknadno zbog prve instrukcije u emulatoru
           break;
         }
       }
@@ -988,7 +989,7 @@ void Assembler::getOperand2(string name, string type){
       if(pool.isSymbol && pool.symbolName == name){
         string a = to_string(pool.symbolAddress - currentSectionSize - 4);
         currentOperandOffset = getBits(a, 12);
-        hasPool2=true;
+        hasPool2 = true;
         break;
       }
     }

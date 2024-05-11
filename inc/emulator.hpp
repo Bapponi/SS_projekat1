@@ -59,10 +59,10 @@ public:
   static void programExecute();
   static void instructionStart();
   static void setInstructionReg();
-  static long long getValueFromAddress(int address);
+  static long long getValueFromAddress(unsigned int address);
   static string getStringFromAddress(int address);
   static void setValueOnAddress(int address, int value);
-  static int popFromStack();
+  static unsigned int popFromStack();
   static void pushOnStack(int value);
   static void startInterrupt();
   
