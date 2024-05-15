@@ -33,6 +33,7 @@ int Emulator::instB;
 int Emulator::instC;
 int Emulator::instD;
 string Emulator::variation;
+int Emulator::instructionNum;
 
 int Emulator::TR;
 int Emulator::TL;
@@ -73,6 +74,7 @@ void Emulator::init(string fileName){
   instC = -1;
   instD = -1;
   variation = "";
+  instructionNum = 0;
 
   TR = 1; // MAJMUN: obrisi potencijalno
   TL = 2; // MAJMUN: obrisi potencijalno
@@ -329,7 +331,14 @@ void Emulator::instructionStart(){
     }
     else if(instM == 1){
 
-      pushOnStack(regs[instC]);
+      if(instA == 0xE){
+        pushOnStack(regs[instC]); //MAJMUN: PROMENA
+      }else{
+        regs[instA] = regs[instA] + instD;
+        int address = regs[instA];
+        int value = regs[instC];
+        setValueOnAddress(address, value);
+      }
 
     }else if(instM == 2){
 
@@ -356,6 +365,9 @@ void Emulator::instructionStart(){
 
     }
     else if(instM == 3){
+      // if(instA == 0xF && instB == 0xE){
+      //   currentInstruction = "ret";
+      // }
       regs[instA] = popFromStack();
     }
     else if(instM == 4){
@@ -534,9 +546,11 @@ void Emulator::showCurrentState(){
   cout << "Current instruction name: " << currentInstruction << endl;
   cout << "-----------------------------------------------------------" << endl;
 
+  instructionNum++;
+  cout << dec << instructionNum << hex << ". INSTRUKCIJA" << endl;
   cout << "\nInst1: " << inst1 << "  InstM: "<< instM << "  InstA: " << instA << "  InstB: " << instB << "  InstC: " << instC << "  InstD: " << instD << endl;
 
-  for(int i = 0; i < regs.size() - 2; i = i + 2){
+  for(int i = 0; i < regs.size(); i = i + 2){
     cout << "REG" << i << ": 0x" << setfill('0') << setw(8) << regs[i] << "    ";
     cout << "REG" << i + 1 << ": 0x" << setfill('0') << setw(8) << regs[i + 1] << endl;
   }

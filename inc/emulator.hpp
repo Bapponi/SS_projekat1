@@ -45,6 +45,7 @@ private:
   static int instC;
   static int instD;
   static string variation;
+  static int instructionNum;
   static int TR;
   static int TL;
   static int I;
