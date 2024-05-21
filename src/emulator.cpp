@@ -324,7 +324,8 @@ void Emulator::instructionStart(){
     currentInstruction = "st";
     if(instM == 0){
 
-      int address = regs[instA] + regs[instB] + instD;
+      unsigned int address = regs[instA] + regs[instB] + instD;
+      cout << "Adresa: " << address << endl;
       int value = regs[instC];
       setValueOnAddress(address, value);
 
@@ -342,7 +343,7 @@ void Emulator::instructionStart(){
 
     }else if(instM == 2){
 
-      int address = getValueFromAddress(regs[instA] + regs[instB] + instB);
+      int address = getValueFromAddress(regs[instA] + regs[instB] + instD);
       int value = regs[instC];
       setValueOnAddress(address, value);
 
@@ -366,7 +367,7 @@ void Emulator::instructionStart(){
     }
     else if(instM == 3){
       // if(instA == 0xF && instB == 0xE){
-      //   currentInstruction = "ret";
+      //   currentInstruction = "ret"; //MAJMUN: ovo bi trebalo drugacije da funkcionise
       // }
       regs[instA] = popFromStack();
     }

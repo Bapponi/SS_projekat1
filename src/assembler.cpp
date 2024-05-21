@@ -423,7 +423,9 @@ void Assembler::getOperand(string name, string type){
     //   };
     // }
 
-    if(currentInstruction == "ld " || currentInstruction == "st "){
+    if(currentInstruction == "ld " 
+      // || currentInstruction == "st " //MAJMUN: izbrisao zbog st i mod 0 u 2
+    ){
       fileOffset += 4;
       currentSectionSize += 4;
     }
@@ -849,7 +851,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
         currentSectionSize += 4;
         sec->second.offsets.push_back(currentSectionSize);
         code = "1001";
-        code += "0011"; //modifikator MAJMUN: proveri da mozda ovde stoji 2
+        code += "0010"; //modifikator MAJMUN: proveri da mozda ovde stoji 2 - isto je valjda
         code += getBits(op1, 4); //A - da li moraju vrednosti odavde ili samo brojevi
         code += getBits(op1, 4); //B - da li moraju vrednosti odavde ili samo brojevi
         code += "0000"; //C
@@ -884,23 +886,23 @@ void Assembler::instructionPass2(string name, string op1, string op2){
       sec->second.data.push_back(code);
 
     }else{
-      code += "0000"; //modifikator
+      code += "0010"; //modifikator
       code += "1111"; //A - pc - da li moraju vrednosti odavde ili samo brojevi
       code += "0000"; //B - r0 - da li moraju vrednosti odavde ili samo brojevi
       op1 = op1.substr(2);
       code += getBits(op1, 4);      //C
       code += currentOperandOffset; //D
       sec->second.data.push_back(code);
-      //druga instrukcija
-      currentSectionSize += 4;
-      sec->second.offsets.push_back(currentSectionSize);
-      code = "1000";
-      code += "0001"; //modifikator
-      code += getBits(op1, 4); //A - da li moraju vrednosti odavde ili samo brojevi
-      code += "0000"; //B - r0 - da li moraju vrednosti odavde ili samo brojevi
-      code += getBits(op1, 4); //C
-      code += "000000000000"; //D - pomeraj je 0
-      sec->second.data.push_back(code);
+      // druga instrukcija //MAJMUN - ovo ne treba da postoji
+      // currentSectionSize += 4;
+      // sec->second.offsets.push_back(currentSectionSize);
+      // code = "1000";
+      // code += "0001"; //modifikator
+      // code += getBits(op1, 4); //A - da li moraju vrednosti odavde ili samo brojevi
+      // code += "0000"; //B - r0 - da li moraju vrednosti odavde ili samo brojevi
+      // code += getBits(op1, 4); //C
+      // code += "000000000000"; //D - pomeraj je 0
+      // sec->second.data.push_back(code);
     }
 
   }else if(name.compare(".skip ") == 0){
