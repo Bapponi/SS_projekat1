@@ -79,7 +79,7 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
   FILE *file = fopen(filePath, "r");
 
   if ((!file)) {
-    printf("I can't open the file!\n");
+    printf("Ne moze da se otvori fajl!\n");
     return;
   }
   
@@ -95,6 +95,12 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
 
   string boolString = to_string(secondPass);
 
+  if(passNum == 1){
+    displaySymbolTable(symbols);
+    displaySectionTable(sections);
+    displayPoolTable(pools);
+  }
+
   if(passNum == 2){
     addPoolToSec();
     displaySymbolTable(symbols);
@@ -106,76 +112,6 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
 
   fclose(file);
 
-}
-
-void Assembler::getIdent(string name, bool isGlobal){
-
-  if (inTable(name)) {
-    cout << "ERROR: Label already in table " << name << endl;
-    exit(1);
-  }
-
-  Symbol s;
-  s.name = name;
-  s.offset = 0;
-  s.isLocal = !isGlobal;
-  s.isSection = false;
-  s.serialNum = symSerialNum++;
-  s.value = 0;
-
-  if(currentDirective.compare("extern") == 0){
-    s.section = "UND";
-  }else{
-    s.section = "GLOB";
-  }
-  
-  symbols.insert(make_pair(name, s));
-
-}
-
-void Assembler::startSection(string name){
-
-  if(currentSectionName != ""){
-
-    Section sec;
-    sec.name = currentSectionName;
-    sec.serialNum = secSerialNum++;
-    sec.size = currentSectionSize;
-    sec.hasPool = hasPool;
-    sec.poolSize = poolOffset;
-
-    sections.insert(make_pair(currentSectionName, sec));
-
-    pools.insert(make_pair(currentSectionName, poolVector));
-    poolVector.clear();
-
-    hasPool = false;
-
-    if (inTable(currentSectionName)) {
-        cout << "ERROR: Section already somewhere else! " << currentSectionName << endl;
-        exit(1);
-    }
-
-    Symbol s;
-    s.name = currentSectionName;
-    s.section = "UND";
-    s.offset = fileOffset - currentSectionSize;
-    s.isLocal = true;
-    s.isSection = true;
-    s.serialNum = symSerialNum++;
-    s.value = 0;
-
-    symbols.insert(make_pair(currentSectionName, s));
-  }
-
-  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-  for (int i = 0; i < itPool->second.size(); i++) {
-    itPool->second[i].symbolAddress += currentSectionSize;
-  }
-
-  poolOffset = 0;
-  currentSectionName = name;
-  currentSectionSize = 0;
 }
 
 void Assembler::programEnd(){
@@ -224,52 +160,49 @@ void Assembler::programEnd(){
   poolOffset = 0;
 }
 
-void Assembler::directiveStart(string name){
-  currentDirective = name;
-}
+void Assembler::startSection(string name){
 
-void Assembler::directiveEnd(){
-  currentDirective = "";
-}
+  if(currentSectionName != ""){
 
-void Assembler::labelStart(string name){
+    Section sec;
+    sec.name = currentSectionName;
+    sec.serialNum = secSerialNum++;
+    sec.size = currentSectionSize;
+    sec.hasPool = hasPool;
+    sec.poolSize = poolOffset;
 
-  name.erase(name.size()-1);
+    sections.insert(make_pair(currentSectionName, sec));
 
-  if(currentSectionName == ""){
-      cout << "ERROR: Label " << name << " must be defined inside of section!" << endl;
-      exit(1);
-  }
+    pools.insert(make_pair(currentSectionName, poolVector));
+    poolVector.clear();
 
-  map<string,Symbol>::iterator itSym = symbols.find(name);
-  if(itSym!=symbols.end()){
+    hasPool = false;
 
-      if(!itSym->second.isLocal && itSym->second.section == "UND"){
-
-        cout<<"ERROR: Label "<< name <<" is extern variable!!!"<<endl;
+    if (inTable(currentSectionName)) {
+        cout << "ERROR: Section already somewhere else! " << currentSectionName << endl;
         exit(1);
-        // return;
-      }
-      if(itSym->second.isSection){
-        cout << "ERROR: Label "<< name << " is a section!!!" << endl;
-        exit(1);
-      }
+    }
 
-      itSym->second.value = currentSectionSize;
-      itSym->second.section = currentSectionName;
-  }
-  else{
-      Symbol s;
-      s.name = name;
-      s.serialNum = symSerialNum++;
-      s.section = currentSectionName;
-      s.value = currentSectionSize;
-      s.offset = 0;
-      s.isLocal = true;
-      s.isSection = false;
+    Symbol s;
+    s.name = currentSectionName;
+    s.section = "UND";
+    s.offset = fileOffset - currentSectionSize;
+    s.isLocal = true;
+    s.isSection = true;
+    s.serialNum = symSerialNum++;
+    s.value = 0;
 
-      symbols[name] = s;
+    symbols.insert(make_pair(currentSectionName, s));
   }
+
+  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+  for (int i = 0; i < itPool->second.size(); i++) {
+    itPool->second[i].symbolAddress += currentSectionSize;
+  }
+
+  poolOffset = 0;
+  currentSectionName = name;
+  currentSectionSize = 0;
 }
 
 void Assembler::instructionPass(string name){
@@ -278,9 +211,6 @@ void Assembler::instructionPass(string name){
     currentSectionSize += skipWordNum;
     fileOffset += skipWordNum;
     skipWordNum = -1;
-  // }else if(name == "iret"){
-  //   currentSectionSize += 12;
-  //   fileOffset += 12;
   }else if(currentInstruction == ".word "){
     currentSectionSize += 0;
     fileOffset += 0;
@@ -330,14 +260,6 @@ void Assembler::getLiteral(string name, string type){
     }
 
   }else{
-    // ZA IZBACIVANJE DUPLIKATA
-    // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    // for (int i = 0; i < itPool->second.size(); i++) {
-    //   if(itPool->second[i].symbolName == name){
-    //     return;
-    //   };
-    // }
-
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
     p.symbolName = name;
@@ -364,12 +286,6 @@ void Assembler::getOperand(string name, string type){
       poolVector.push_back(p);
       hasPool = true;
       poolOffset += 4;
-
-      //zbog dodatne instrukcije koja mora da se generise //MAJMUN
-      // if(currentInstruction == "ld " || currentInstruction == "st "){
-      //   fileOffset += 4;
-      //   currentSectionSize += 4;
-      // }
     }
 
   }else if(type.compare("opr_hex") == 0){
@@ -385,25 +301,11 @@ void Assembler::getOperand(string name, string type){
       poolVector.push_back(p);
       hasPool = true;
       poolOffset += 4;
-
-      //zbog dodatne instrukcije koja mora da se generise //MAJMUN
-      // if(currentInstruction == "ld " || currentInstruction == "st "){
-      //   fileOffset += 4;
-      //   currentSectionSize += 4;
-      // }
     }
 
   }else if(type.compare("opr_string") == 0){
 
     name.erase(0, 1);
-
-    // ZA IZBACIVANJE DUPLIKATA
-    // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    // for (int i = 0; i < itPool->second.size(); i++) {
-    //   if(itPool->second[i].symbolName == name){
-    //     return;
-    //   };
-    // }
     
     p.isSymbol = true;
     p.symbolAddress = poolOffset;
@@ -415,17 +317,8 @@ void Assembler::getOperand(string name, string type){
     poolOffset += 4;
 
   }else{
-    // ZA IZBACIVANJE DUPLIKATA
-    // map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
-    // for (int i = 0; i < itPool->second.size(); i++) {
-    //   if(itPool->second[i].symbolName == name){
-    //     return;
-    //   };
-    // }
 
-    if(currentInstruction == "ld " 
-      // || currentInstruction == "st " //MAJMUN: izbrisao zbog st i mod 0 u 2
-    ){
+    if(currentInstruction == "ld "){
       fileOffset += 4;
       currentSectionSize += 4;
     }
@@ -468,6 +361,85 @@ void Assembler::instructionName(string name){
   currentInstruction = name;
 }
 
+/////////////////////////////////////////////////////MOGU SE TRANSLIRATI///////////////////////////////////
+/////////////////////////////////////////////////////MOGU SE TRANSLIRATI///////////////////////////////////
+/////////////////////////////////////////////////////MOGU SE TRANSLIRATI///////////////////////////////////
+/////////////////////////////////////////////////////MOGU SE TRANSLIRATI///////////////////////////////////
+/////////////////////////////////////////////////////MOGU SE TRANSLIRATI///////////////////////////////////
+
+void Assembler::directiveStart(string name){
+  currentDirective = name;
+}
+
+void Assembler::directiveEnd(){
+  currentDirective = "";
+}
+
+void Assembler::getIdent(string name, bool isGlobal){
+
+  if (inTable(name)) {
+    cout << "ERROR: Label already in table " << name << endl;
+    exit(1);
+  }
+
+  Symbol s;
+  s.name = name;
+  s.offset = 0;
+  s.isLocal = !isGlobal;
+  s.isSection = false;
+  s.serialNum = symSerialNum++;
+  s.value = 0;
+
+  if(currentDirective.compare("extern") == 0){
+    s.section = "UND";
+  }else{
+    s.section = "GLOB";
+  }
+  
+  symbols.insert(make_pair(name, s));
+
+}
+
+void Assembler::labelStart(string name){
+
+  name.erase(name.size()-1);
+
+  if(currentSectionName == ""){
+      cout << "ERROR: Label " << name << " must be defined inside of section!" << endl;
+      exit(1);
+  }
+
+  map<string,Symbol>::iterator itSym = symbols.find(name);
+  if(itSym!=symbols.end()){
+
+      if(!itSym->second.isLocal && itSym->second.section == "UND"){
+
+        cout<<"ERROR: Label "<< name <<" is extern variable!!!"<<endl;
+        exit(1);
+        // return;
+      }
+      if(itSym->second.isSection){
+        cout << "ERROR: Label "<< name << " is a section!!!" << endl;
+        exit(1);
+      }
+
+      itSym->second.value = currentSectionSize;
+      itSym->second.section = currentSectionName;
+  }
+  else{
+      Symbol s;
+      s.name = name;
+      s.serialNum = symSerialNum++;
+      s.section = currentSectionName;
+      s.value = currentSectionSize;
+      s.offset = 0;
+      s.isLocal = true;
+      s.isSection = false;
+
+      symbols[name] = s;
+  }
+}
+
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
@@ -476,14 +448,95 @@ void Assembler::instructionName(string name){
 //////////////////DRUGI PROLAZ////////////////////////////////////////////////////////////////////////////////////////////
 
 void Assembler::startSection2(string name){
+  if(currentSectionName != ""){
+
+    Section sec;
+    sec.name = currentSectionName;
+    sec.serialNum = secSerialNum++;
+    sec.size = currentSectionSize;
+    sec.hasPool = hasPool;
+    sec.poolSize = poolOffset;
+
+    sections.insert(make_pair(currentSectionName, sec));
+
+    pools.insert(make_pair(currentSectionName, poolVector));
+    poolVector.clear();
+
+    hasPool = false;
+
+    if (inTable(currentSectionName)) {
+        cout << "ERROR: Section already somewhere else! " << currentSectionName << endl;
+        exit(1);
+    }
+
+    Symbol s;
+    s.name = currentSectionName;
+    s.section = "UND";
+    s.offset = fileOffset - currentSectionSize;
+    s.isLocal = true;
+    s.isSection = true;
+    s.serialNum = symSerialNum++;
+    s.value = 0;
+
+    symbols.insert(make_pair(currentSectionName, s));
+  }
+
+  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+  for (int i = 0; i < itPool->second.size(); i++) {
+    itPool->second[i].symbolAddress += currentSectionSize;
+  }
+
+  poolOffset = 0;
   currentSectionName = name;
   currentSectionSize = 0;
 }
 
 void Assembler::programEnd2(){
+
+  if(currentSectionName != ""){
+
+    Section sec;
+    sec.name = currentSectionName;
+    sec.serialNum = secSerialNum++;
+    sec.size = currentSectionSize;
+    sec.hasPool = hasPool;
+    sec.poolSize = poolOffset;
+
+    sections.insert(make_pair(currentSectionName, sec));
+
+    pools.insert(make_pair(currentSectionName, poolVector));
+    poolVector.clear();
+
+    hasPool = false;
+
+    if (inTable(currentSectionName)) {
+      cout << "ERROR: Section already somewhere else! " << currentSectionName << endl;
+      exit(1);
+    }
+
+    Symbol s;
+    s.name = currentSectionName;
+    s.section = "UND";
+    s.offset = 0;
+    s.isLocal = true;
+    s.isSection = true;
+    s.serialNum = symSerialNum++;
+    s.value = 0;
+
+    symbols.insert(make_pair(currentSectionName, s));
+  }
+
+  map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
+  for (int i = 0; i < itPool->second.size(); i++) {
+    itPool->second[i].symbolAddress += currentSectionSize;
+  }
+
   currentSectionName = "";
   currentSectionSize = 0;
   fileOffset = 0;
+  poolOffset = 0;
+
+  //DRUGI DEO
 
   for (auto itSec = symbols.begin(); itSec != symbols.end(); ++itSec) {
     string secName = itSec->first;
@@ -939,15 +992,30 @@ void Assembler::instructionPass2(string name, string op1, string op2){
 
 void Assembler::getOperand2(string name, string type){
 
+  PoolOfLiterals p;
+  ////////////////////////
   map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
-  if(type == "opr_dec"){
-    
+  if(type.compare("opr_dec") == 0){
     name.erase(0, 1);
     int num = stoi(name);
-    if(num <= 2047 && num >= -2048){
-      currentOperandOffset = getBits(name, 12); //potencijalno problem
+
+    if(num > 2047 || num < -2048){
+
+      currentOperandOffset = getBits(name, 12);
       hasPool2 = false;
+    
     }else{
+
+      p.isSymbol = false;
+      p.symbolAddress = poolOffset;
+      p.symbolName = "opr_dec";
+      p.symbolValue = num;
+
+      poolVector.push_back(p);
+      hasPool = true;
+      poolOffset += 4;
+
+      ///////////////////////////////////
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
           string a = to_string(pool.symbolAddress - currentSectionSize - 4);
@@ -958,8 +1026,8 @@ void Assembler::getOperand2(string name, string type){
       }
     }
 
-  }else if(type == "opr_hex"){
-    
+  }else if(type.compare("opr_hex") == 0){
+
     name.erase(0, 3);
     string zeros;
     for(int i = 0; i < 8 - name.size(); i++){
@@ -969,9 +1037,21 @@ void Assembler::getOperand2(string name, string type){
     long long num = stoll(name, nullptr, 16);
 
     if(num <= 4095){
-      currentOperandOffset = getBits(to_string(num), 12); //potencijalno problem
+      currentOperandOffset = getBits(to_string(num), 12);
       hasPool2 = false;
     }else{
+
+      p.isSymbol = false;
+      p.symbolAddress = poolOffset;
+      p.symbolName = "opr_hex";
+      p.symbolValue = num;
+
+      poolVector.push_back(p);
+      hasPool = true;
+      poolOffset += 4;
+
+      //////////////////////////////////
+
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
           string a = to_string(pool.symbolAddress - currentSectionSize - 4);
@@ -983,9 +1063,20 @@ void Assembler::getOperand2(string name, string type){
       }
     }
 
-  }else if(type == "opr_string"){
+  }else if(type.compare("opr_string") == 0){
 
     name.erase(0, 1);
+    
+    p.isSymbol = true;
+    p.symbolAddress = poolOffset;
+    p.symbolName = name;
+    p.symbolValue = 0;
+
+    poolVector.push_back(p);
+    hasPool = true;
+    poolOffset += 4;
+
+    //////////////////////////////////
 
     for(auto pool:itPool->second){
       if(pool.isSymbol && pool.symbolName == name){
@@ -999,7 +1090,23 @@ void Assembler::getOperand2(string name, string type){
     inOprString = true;
 
   }else{
-    
+
+    if(currentInstruction == "ld "){
+      fileOffset += 4;
+      currentSectionSize += 4;
+    }
+
+    p.isSymbol = true;
+    p.symbolAddress = poolOffset;
+    p.symbolName = name;
+    p.symbolValue = 0;
+
+    poolVector.push_back(p);
+    hasPool = true;
+    poolOffset += 4;
+
+    /////////////////////
+
     for(auto pool:itPool->second){
       if(pool.isSymbol && pool.symbolName == name){
         string a = to_string(pool.symbolAddress - currentSectionSize - 4);
@@ -1014,11 +1121,21 @@ void Assembler::getOperand2(string name, string type){
 
 void Assembler::getLiteral2(string name, string type){
 
+  if(currentInstruction == ".word "){
+    currentSectionSize += 4;
+    fileOffset += 4;
+  }
+
+  PoolOfLiterals p;
+
+  /////////////////////////////////////////////
+
   map<string,vector<PoolOfLiterals>>::iterator itPool=pools.find(currentSectionName);
   map<string,Section>::iterator sec = sections.find(currentSectionName);
   if(type == "dec"){
 
     int num = stoi(name);
+    skipWordNum = num;
     if(num <= 2047 && num >= -2048){
       currentOperandOffset = getBits(name, 12); //potencijalno problem
       hasPool2 = false;
@@ -1033,6 +1150,18 @@ void Assembler::getLiteral2(string name, string type){
         fileOffset += 4;
       }
     }else{
+
+      p.isSymbol = false;
+      p.symbolAddress = poolOffset;
+      p.symbolName = "dec"; 
+      p.symbolValue = num;
+
+      poolVector.push_back(p);
+      hasPool = true;
+      poolOffset += 4;
+
+      //////////////////////////////////////////////
+
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
           string a = to_string(pool.symbolAddress - currentSectionSize - 4);
@@ -1052,6 +1181,7 @@ void Assembler::getLiteral2(string name, string type){
     }
     name = zeros + name;
     long long num = stoll(name, nullptr, 16);
+    skipWordNum = num;
 
     if(num <= 4095){
       currentOperandOffset = getBits(to_string(num), 12); //potencijalno problem
@@ -1067,6 +1197,18 @@ void Assembler::getLiteral2(string name, string type){
         fileOffset += 4;
       }
     }else{
+
+      p.isSymbol = false;
+      p.symbolAddress = poolOffset;
+      p.symbolName = "hex"; 
+      p.symbolValue = num;
+
+      poolVector.push_back(p);
+      hasPool = true;
+      poolOffset += 4;
+
+      ///////////////////////////////////
+
       for(auto pool:itPool->second){
         if(!pool.isSymbol && pool.symbolValue == num){
           string a = to_string(pool.symbolAddress - currentSectionSize - 4);
@@ -1078,6 +1220,17 @@ void Assembler::getLiteral2(string name, string type){
     }
 
   }else{
+
+    p.isSymbol = true;
+    p.symbolAddress = poolOffset;
+    p.symbolName = name;
+    p.symbolValue = 0;
+
+    poolVector.push_back(p);
+    hasPool = true;
+    poolOffset += 4;
+
+    ///////////////////////
 
     for(auto pool:itPool->second){
       if(pool.isSymbol && pool.symbolName == name){
@@ -1093,6 +1246,8 @@ void Assembler::getLiteral2(string name, string type){
 
 void Assembler::getParrensBody2(string name, string type){
 
+  PoolOfLiterals p;
+  //////////////////////////////////////
   inParrens = true;
 
   if(type == "gpr_reg"){
@@ -1116,7 +1271,20 @@ void Assembler::getParrensBody2(string name, string type){
 
     if(num <= 4095){
       parrensHex = getBits(to_string(num), 12);
+
     }else{
+
+      p.isSymbol = false;
+      p.symbolAddress = poolOffset;
+      p.symbolName = "hex";
+      p.symbolValue = num;
+
+      poolVector.push_back(p);
+      hasPool = true;
+      poolOffset += 4;
+
+      ///////////////////////////
+
       cout << "ERROR: HEX num out of limit!!!" << endl;
       exit(1);
     }
@@ -1131,9 +1299,6 @@ void Assembler::addPoolToSec(){
 
     for(int i = 0; i < pools[secName].size(); i++){
       sec.offsets.push_back(pools[secName].at(i).symbolAddress);
-      // string strValue = to_string(pools[secName].at(i).symbolValue);
-      // cout << strValue << endl;
-      // strValue = getBits(strValue, 33);
       string strValue = bitset<32>(pools[secName].at(i).symbolValue).to_string();
       sec.data.push_back(strValue);
     }
