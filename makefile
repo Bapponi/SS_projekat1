@@ -22,7 +22,6 @@ emulator: src/emulator.cpp inc/emulator.hpp
 clean:
 		rm -rf *.o *txt *hex src/lex.yy.c src/parser.tab.c src/parser.tab.h assembler linker emulator 
 
-
 a1:
 	./assembler -o main.o main.s
 
