@@ -49,6 +49,7 @@ my_start:
     call mathDiv
     st %r1, value6
 
+    # ove stvari ne valjaju
     ld value1, %r1
     ld value2, %r2
     ld value3, %r3
