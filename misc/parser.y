@@ -26,7 +26,7 @@ extern char* yytext;  // Bison needs to know about yytext
 
 program : programList end
 
-end: END {if(!Assembler::secondPass) Assembler::programEnd2();}
+end: END {Assembler::programEnd2();}
 
 programList: programList programElem
            | programElem
@@ -36,37 +36,37 @@ programElem: extern
            | section
            | labelSection
 
-symbolList: symbolList COMMA IDENT {if(!Assembler::secondPass) Assembler::getIdent($3, true);}
-          | IDENT {if(!Assembler::secondPass) Assembler::getIdent($1, true);}
+symbolList: symbolList COMMA IDENT {Assembler::getIdent($3, true);}
+          | IDENT {Assembler::getIdent($1, true);}
 
-extern: externStart symbolList {if(!Assembler::secondPass) Assembler::directiveEnd();}
+extern: externStart symbolList {Assembler::directiveEnd();}
 
-externStart: EXTERN {if(!Assembler::secondPass) Assembler::directiveStart("extern");}
+externStart: EXTERN {Assembler::directiveStart("extern");}
 
-global: globalStart symbolList {if(!Assembler::secondPass) Assembler::directiveEnd();}
+global: globalStart symbolList {Assembler::directiveEnd();}
 
-globalStart: GLOBAL {if(!Assembler::secondPass) Assembler::directiveStart("global");}
+globalStart: GLOBAL {Assembler::directiveStart("global");}
 
-section: SECTION IDENT {if(!Assembler::secondPass) Assembler::startSection2($2);}
+section: SECTION IDENT {Assembler::startSection2($2);}
 
 labelSection: labelStart instructionList
 
-labelStart: LABEL {if(!Assembler::secondPass) Assembler::labelStart($1);}
+labelStart: LABEL {Assembler::labelStart($1);}
 
 instructionList: instructionList instruction
                | /* epsilon */
 
-instruction: ONE_WORD_INST                                      {if(!Assembler::secondPass) Assembler::instructionPass2($1, "", "");}
-           | TWO_WORD_INST GPR_REG                              {if(!Assembler::secondPass) Assembler::instructionPass2($1, $2, "");}
-           | THREE_WORD_INST GPR_REG COMMA GPR_REG              {if(!Assembler::secondPass) Assembler::instructionPass2($1, $2, $4);}
-           | FOUR_WORD_INST GPR_REG COMMA GPR_REG COMMA operand {if(!Assembler::secondPass) Assembler::instructionPass2($1, $2, $4);}
-           | CALL_JUMP literal                                  {if(!Assembler::secondPass) Assembler::instructionPass2($1, "", "");}
-           | ld LD operand COMMA GPR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass2($2, $5, "");}
-           | st ST GPR_REG COMMA operand                        {if(!Assembler::secondPass) Assembler::instructionPass2($2, $3, "");}
-           | CSRRD CSR_REG COMMA GPR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass2($1, $2, $4);}
-           | CSRWR GPR_REG COMMA CSR_REG                        {if(!Assembler::secondPass) Assembler::instructionPass2($1, $2, $4);}
-           | word WORD symbolLiteralList                        {if(!Assembler::secondPass) Assembler::instructionPass2($2, "", "");}
-           | skip SKIP literal                                  {if(!Assembler::secondPass) Assembler::instructionPass2($2, "", "");}
+instruction: ONE_WORD_INST                                      {Assembler::instructionPass2($1, "", "");}
+           | TWO_WORD_INST GPR_REG                              {Assembler::instructionPass2($1, $2, "");}
+           | THREE_WORD_INST GPR_REG COMMA GPR_REG              {Assembler::instructionPass2($1, $2, $4);}
+           | FOUR_WORD_INST GPR_REG COMMA GPR_REG COMMA operand {Assembler::instructionPass2($1, $2, $4);}
+           | CALL_JUMP literal                                  {Assembler::instructionPass2($1, "", "");}
+           | ld LD operand COMMA GPR_REG                        {Assembler::instructionPass2($2, $5, "");}
+           | st ST GPR_REG COMMA operand                        {Assembler::instructionPass2($2, $3, "");}
+           | CSRRD CSR_REG COMMA GPR_REG                        {Assembler::instructionPass2($1, $2, $4);}
+           | CSRWR GPR_REG COMMA CSR_REG                        {Assembler::instructionPass2($1, $2, $4);}
+           | word WORD symbolLiteralList                        {Assembler::instructionPass2($2, "", "");}
+           | skip SKIP literal                                  {Assembler::instructionPass2($2, "", "");}
 
 ld: {Assembler::instructionName("ld ");}
 
@@ -76,10 +76,10 @@ word: {Assembler::instructionName(".word ");}
 
 skip: {Assembler::instructionName(".skip ");}
 
-operand: OPR_DEC    {if(!Assembler::secondPass) Assembler::getOperand2($1, "opr_dec");}
-       | OPR_HEX    {if(!Assembler::secondPass) Assembler::getOperand2($1, "opr_hex");}
-       | OPR_STRING {if(!Assembler::secondPass) Assembler::getOperand2($1, "opr_string");}
-       | IDENT      {if(!Assembler::secondPass) Assembler::getOperand2($1, "ident");}
+operand: OPR_DEC    {Assembler::getOperand2($1, "opr_dec");}
+       | OPR_HEX    {Assembler::getOperand2($1, "opr_hex");}
+       | OPR_STRING {Assembler::getOperand2($1, "opr_string");}
+       | IDENT      {Assembler::getOperand2($1, "ident");}
        | parrens
 
 parrens: LPARREN parrensBodyList RPARREN
@@ -87,8 +87,8 @@ parrens: LPARREN parrensBodyList RPARREN
 parrensBodyList: parrensBodyList plusMinus parrensBody
                | parrensBody
 
-parrensBody: GPR_REG    {if(!Assembler::secondPass) Assembler::getParrensBody2($1, "gpr_reg");}
-           | HEX        {if(!Assembler::secondPass) Assembler::getParrensBody2($1, "hex");}
+parrensBody: GPR_REG    {Assembler::getParrensBody2($1, "gpr_reg");}
+           | HEX        {Assembler::getParrensBody2($1, "hex");}
 
 plusMinus: PLUS 
          | MINUS
@@ -96,8 +96,8 @@ plusMinus: PLUS
 symbolLiteralList: symbolLiteralList COMMA literal
                  | literal
 
-literal: DEC    {if(!Assembler::secondPass) Assembler::getLiteral2($1, "dec");}
-       | HEX    {if(!Assembler::secondPass) Assembler::getLiteral2($1, "hex");}
-       | IDENT  {if(!Assembler::secondPass) Assembler::getLiteral2($1, "ident");}
+literal: DEC    {Assembler::getLiteral2($1, "dec");}
+       | HEX    {Assembler::getLiteral2($1, "hex");}
+       | IDENT  {Assembler::getLiteral2($1, "ident");}
 
 %%

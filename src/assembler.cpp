@@ -79,8 +79,8 @@ void Assembler::init(){
 
 void Assembler::passFile(string fileName, string fileOut, int passNum){
 
+  Assembler::init();
   fileOutput = fileOut;
-
   const char * filePath = fileName.c_str();
   FILE *file = fopen(filePath, "r");
 
@@ -91,25 +91,15 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
   
   yyin = file;
 
-  if(passNum == 1 &&  !secondPass)
-    Assembler::init();
-
-  if(passNum == 2)
-    secondPass = true;
-
   while(yyparse());
-
-  string boolString = to_string(secondPass);
-
-  if(passNum == 2){
-    addPoolToSec();
-    displaySymbolTable(symbols);
-    displaySectionTable(sections);
-    displayPoolTable(pools);
-    displayRelocationTable(relocations);
-    displayOffsetsTable(offsetAlters);
-    makeOutputFile();
-  }
+    
+  addPoolToSec();
+  displaySymbolTable(symbols);
+  displaySectionTable(sections);
+  displayPoolTable(pools);
+  displayRelocationTable(relocations);
+  displayOffsetsTable(offsetAlters);
+  makeOutputFile();
 
   fclose(file);
 
@@ -1149,19 +1139,16 @@ void Assembler::makeOutputFile(){
 }
 
 void Assembler::createTextFile(){
-
+  
   fileOutput.erase(fileOutput.size() - 2);
   ofstream file(fileOutput + ".txt");
-
   for (const auto& entry : relocations) {
-
     if( entry.second.size() > 0)
       file << entry.second.size() << '\n';
 
     for (const auto& realocation : entry.second) {
       file << entry.first << "," << realocation.offset << ',' << realocation.symbol << ',' << realocation.addent << '\n';
     }
-
   }
 
   file << "===\n"; // kraj relokacija
@@ -1241,9 +1228,7 @@ int main(int argc, char* argv[]){
     cout << "INPUT ERROR: lose formatirani fajl izgled input!!!";
     exit(1);
   }
-  
-  Assembler::passFile(srcFolder + argv[3], argv[2], 1);
-  
+
   Assembler::passFile(srcFolder + argv[3], argv[2], 2);
 
   printf("Prosao ceo asembler bez greske :)\n");
