@@ -20,6 +20,9 @@ map<string, Symbol> Assembler::symbols;
 map<string, vector<PoolOfLiterals>> Assembler::pools;
 map<string, Section> Assembler::sections;
 vector<PoolOfLiterals> Assembler::poolVector;
+map<string, OffsetAlter> Assembler::offsetAlters;
+vector<int> Assembler::sectionSizes;
+vector<int> Assembler::poolSizes;
 
 string Assembler::fileOutput;
 string Assembler::currentSectionName;
@@ -49,6 +52,9 @@ void Assembler::init(){
   pools.clear();
   sections.clear();
   poolVector.clear();
+  offsetAlters.clear();
+  sectionSizes.clear();
+  poolSizes.clear();
 
   fileOutput = "";
   currentSectionName = "";
@@ -107,6 +113,7 @@ void Assembler::passFile(string fileName, string fileOut, int passNum){
     displaySectionTable(sections);
     displayPoolTable(pools);
     displayRelocationTable(relocations);
+    displayOffsetsTable(offsetAlters);
     makeOutputFile();
   }
 
@@ -475,6 +482,14 @@ void Assembler::startSection2(string name){
 
     symbols.insert(make_pair(currentSectionName, s));
 
+    OffsetAlter oa;
+    oa.sectionSize = sectionSizes;
+    oa.poolSize = poolSizes;
+    
+    offsetAlters.insert(make_pair(currentSectionName, oa));
+    sectionSizes.clear();
+    poolSizes.clear();
+
     map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
     for (int i = 0; i < itPool->second.size(); i++) {
       itPool->second[i].symbolAddress += currentSectionSize;
@@ -524,6 +539,14 @@ void Assembler::programEnd2(){
 
   symbols.insert(make_pair(currentSectionName, s));
 
+  OffsetAlter oa;
+  oa.sectionSize = sectionSizes;
+  oa.poolSize = poolSizes;
+  
+  offsetAlters.insert(make_pair(currentSectionName, oa));
+  sectionSizes.clear();
+  poolSizes.clear();
+
   map<string,vector<PoolOfLiterals>>::iterator itPool = pools.find(currentSectionName);
   for (int i = 0; i < itPool->second.size(); i++) {
     itPool->second[i].symbolAddress += currentSectionSize;
@@ -569,6 +592,23 @@ void Assembler::programEnd2(){
         itRel->second.push_back(re);
       }
 
+    }
+  }
+
+  for (auto& entry : sections) {
+    vector<long long>& offsetsVector = entry.second.offsets;
+    vector<string>& dataVector = entry.second.data;
+    OffsetAlter oa = offsetAlters.find(entry.first)->second;
+  
+    int j = 0;
+    for (int i = 0; i < offsetsVector.size(), j < oa.sectionSize.size() ; i++) {
+      if(offsetsVector.at(i) == oa.sectionSize.at(j)){
+        cout << "BANANA" << endl;
+        string a = to_string(oa.poolSize.at(j) + entry.second.size - oa.sectionSize.at(j) - 4);
+        a = getBits(a, 12);
+        dataVector.at(i) = dataVector.at(i).substr(0, dataVector.at(i).length() - 12) + a;
+        j++;
+      }
     }
   }
 }
@@ -1019,6 +1059,9 @@ void Assembler::getOperand2(string name, string type){
       string a = to_string(p.symbolAddress - currentSectionSize - 4);
       currentOperandOffset = getBits(a, 12);
       hasPool2 = true;
+
+      sectionSizes.push_back(currentSectionSize);
+      poolSizes.push_back(p.symbolAddress);
     }
 
   }else if(type.compare("opr_hex") == 0){
@@ -1052,6 +1095,8 @@ void Assembler::getOperand2(string name, string type){
       hasPool2 = true;
       inOprString = true; //MAJMUN: dodao naknadno zbog prve instrukcije u emulatoru
 
+      sectionSizes.push_back(currentSectionSize);
+      poolSizes.push_back(p.symbolAddress);
     }
 
   }else if(type.compare("opr_string") == 0){
@@ -1073,8 +1118,10 @@ void Assembler::getOperand2(string name, string type){
     string a = to_string(p.symbolAddress - currentSectionSize - 4);
     currentOperandOffset = getBits(a, 12);
     hasPool2 = true;
-
     inOprString = true;
+
+    sectionSizes.push_back(currentSectionSize);
+    poolSizes.push_back(p.symbolAddress);
 
   }else{
 
@@ -1092,6 +1139,9 @@ void Assembler::getOperand2(string name, string type){
     string a = to_string(p.symbolAddress - currentSectionSize - 4);
     currentOperandOffset = getBits(a, 12);
     hasPool2 = true;
+    
+    sectionSizes.push_back(currentSectionSize);
+    poolSizes.push_back(p.symbolAddress);
   }
 
 }
@@ -1136,6 +1186,9 @@ void Assembler::getLiteral2(string name, string type){
       string a = to_string(p.symbolAddress - currentSectionSize - 4);
       currentOperandOffset = getBits(a, 12);                             
       hasPool2 = true;
+      
+      sectionSizes.push_back(currentSectionSize);
+      poolSizes.push_back(p.symbolAddress);
     }
 
   }else if(type == "hex"){
@@ -1178,6 +1231,9 @@ void Assembler::getLiteral2(string name, string type){
       string a = to_string(p.symbolAddress - currentSectionSize - 4);
       currentOperandOffset = getBits(a, 12);                             
       hasPool2 = true;
+      
+      sectionSizes.push_back(currentSectionSize);
+      poolSizes.push_back(p.symbolAddress);
     }
 
   }else{
@@ -1196,7 +1252,9 @@ void Assembler::getLiteral2(string name, string type){
     string a = to_string(p.symbolAddress - currentSectionSize - 4);
     currentOperandOffset = getBits(a, 12);                             
     hasPool2 = true;
-
+   
+    sectionSizes.push_back(currentSectionSize);
+    poolSizes.push_back(p.symbolAddress);
   }
 }
 
@@ -1298,6 +1356,20 @@ string Assembler::getBits(const string& stringInt, int nBits) {
 
 string Assembler::getOperandOffset(){
   return "OFFSET";
+}
+
+void Assembler::displayOffsetsTable(const map<string, OffsetAlter>& symbolMap){
+  cout << "       -------------------------------OFFSETS-----------------------------------" << endl;
+  cout << setw(15) << "Section" << setw(15) << "SectionSize" << setw(15) << "PoolSize" << endl;
+
+  for (const auto& entry : symbolMap) {
+      const vector<int>& sectionSize = entry.second.sectionSize;
+      const vector<int>& poolSize = entry.second.poolSize;
+
+      for (int i = 0; i < sectionSize.size(); i++) {
+          cout << setw(15) << entry.first << setw(15) << sectionSize.at(i) << setw(15) << poolSize.at(i) << endl;
+      }
+  }
 }
 
 void Assembler::displaySymbolTable(const map<string, Symbol>& symbolMap){

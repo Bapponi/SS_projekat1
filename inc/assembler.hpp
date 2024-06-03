@@ -8,8 +8,6 @@
 #include <map>
 #include <list>
 
-//banana
-
 using namespace std;
 
 struct RealocationEntry {
@@ -46,6 +44,11 @@ struct Section {
   vector <string> data;
 };
 
+struct OffsetAlter {
+  vector<int> sectionSize;
+  vector<int> poolSize;
+};
+
 /////////////////KLASA/////////////////
 class Assembler{
 
@@ -55,6 +58,9 @@ private:
   static map<string, vector<PoolOfLiterals>> pools;
   static map<string, Section> sections;
   static vector<PoolOfLiterals> poolVector;
+  static map<string, OffsetAlter> offsetAlters;
+  static vector<int> sectionSizes;
+  static vector<int> poolSizes;
   
   static string fileOutput;
   static string currentSectionName;
@@ -107,6 +113,7 @@ public:
   static string getBits(const string& stringInt, int nBits);
   static string getOperandOffset();
 
+  static void displayOffsetsTable(const map<string, OffsetAlter>& symbolMap);
   static void displaySymbolTable(const map<string, Symbol>& symbolMap);
   static void displaySectionTable(const map<string, Section>& symbolMap);
   static void displayPoolTable(const map<string, vector<PoolOfLiterals>>& symbolMap);
