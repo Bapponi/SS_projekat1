@@ -64,7 +64,6 @@ private:
   
   static string fileOutput;
   static string currentSectionName;
-  static int instructionNum;
   static int currentSectionSize;
   static string currentDirective;
   static int symSerialNum;
@@ -85,28 +84,21 @@ private:
 
 public:
 
-  static bool secondPass;
   static void init();
-  static void passFile(string fileName, string fileOut, int passNum);
+  static void passFile(string fileName, string fileOut);
 
   static void getIdent(string name, bool isGlobal);
-  static void startSection(string name);
-  static void programEnd();
   static void directiveStart(string name);
   static void directiveEnd();
   static void labelStart(string name);
-  static void instructionPass(string name);
-  static void getLiteral(string name, string type);
-  static void getOperand(string name, string type);
-  static void getParrensBody(string name, string type);
   static void instructionName(string name);
 
-  static void instructionPass2(string name, string op1, string op2);
-  static void startSection2(string name);
-  static void programEnd2();
-  static void getOperand2(string name, string type);
-  static void getParrensBody2(string name, string type);
-  static void getLiteral2(string name, string type);
+  static void instructionPass(string name, string op1, string op2);
+  static void startSection(string name);
+  static void programEnd();
+  static void getOperand(string name, string type);
+  static void getParrensBody(string name, string type);
+  static void getLiteral(string name, string type);
   static void addPoolToSec();
 
   static bool inTable(string name);

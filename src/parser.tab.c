@@ -68,7 +68,6 @@
 /* First part of user prologue.  */
 #line 1 "misc/parser.y"
 
-//#include "parser.h"
 #include "../inc/assembler.hpp"
 #include <stdio.h>
 
@@ -78,7 +77,7 @@ extern int yyerror(const char *s);
 extern int yylex();   // Bison needs to know how to call the lexer
 extern char* yytext;  // Bison needs to know about yytext
 
-#line 82 "parser.tab.c"
+#line 81 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -165,12 +164,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 13 "misc/parser.y"
+#line 12 "misc/parser.y"
 
     int num;
     char* string;
 
-#line 174 "parser.tab.c"
+#line 173 "parser.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -548,12 +547,12 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    27,    27,    29,    31,    32,    34,    35,    36,    37,
-      39,    40,    42,    44,    46,    48,    50,    52,    54,    56,
-      57,    59,    60,    61,    62,    63,    64,    65,    66,    67,
-      68,    69,    71,    73,    75,    77,    79,    80,    81,    82,
-      83,    85,    87,    88,    90,    91,    93,    94,    96,    97,
-      99,   100,   101
+       0,    26,    26,    28,    30,    31,    33,    34,    35,    36,
+      38,    39,    41,    43,    45,    47,    49,    51,    53,    55,
+      56,    58,    59,    60,    61,    62,    63,    64,    65,    66,
+      67,    68,    70,    72,    74,    76,    78,    79,    80,    81,
+      82,    84,    86,    87,    89,    90,    92,    93,    95,    96,
+      98,    99,   100
 };
 #endif
 
@@ -1400,205 +1399,205 @@ yyreduce:
   switch (yyn)
     {
   case 3:
-#line 29 "misc/parser.y"
-         {Assembler::programEnd2();}
-#line 1406 "parser.tab.c"
+#line 28 "misc/parser.y"
+         {Assembler::programEnd();}
+#line 1405 "parser.tab.c"
     break;
 
   case 10:
-#line 39 "misc/parser.y"
+#line 38 "misc/parser.y"
                                    {Assembler::getIdent((yyvsp[0].string), true);}
-#line 1412 "parser.tab.c"
+#line 1411 "parser.tab.c"
     break;
 
   case 11:
-#line 40 "misc/parser.y"
+#line 39 "misc/parser.y"
                   {Assembler::getIdent((yyvsp[0].string), true);}
-#line 1418 "parser.tab.c"
+#line 1417 "parser.tab.c"
     break;
 
   case 12:
-#line 42 "misc/parser.y"
+#line 41 "misc/parser.y"
                                {Assembler::directiveEnd();}
-#line 1424 "parser.tab.c"
+#line 1423 "parser.tab.c"
     break;
 
   case 13:
-#line 44 "misc/parser.y"
+#line 43 "misc/parser.y"
                     {Assembler::directiveStart("extern");}
-#line 1430 "parser.tab.c"
+#line 1429 "parser.tab.c"
     break;
 
   case 14:
-#line 46 "misc/parser.y"
+#line 45 "misc/parser.y"
                                {Assembler::directiveEnd();}
-#line 1436 "parser.tab.c"
+#line 1435 "parser.tab.c"
     break;
 
   case 15:
-#line 48 "misc/parser.y"
+#line 47 "misc/parser.y"
                     {Assembler::directiveStart("global");}
-#line 1442 "parser.tab.c"
+#line 1441 "parser.tab.c"
     break;
 
   case 16:
-#line 50 "misc/parser.y"
-                       {Assembler::startSection2((yyvsp[0].string));}
-#line 1448 "parser.tab.c"
+#line 49 "misc/parser.y"
+                       {Assembler::startSection((yyvsp[0].string));}
+#line 1447 "parser.tab.c"
     break;
 
   case 18:
-#line 54 "misc/parser.y"
+#line 53 "misc/parser.y"
                   {Assembler::labelStart((yyvsp[0].string));}
-#line 1454 "parser.tab.c"
+#line 1453 "parser.tab.c"
     break;
 
   case 21:
-#line 59 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[0].string), "", "");}
-#line 1460 "parser.tab.c"
+#line 58 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[0].string), "", "");}
+#line 1459 "parser.tab.c"
     break;
 
   case 22:
-#line 60 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-1].string), (yyvsp[0].string), "");}
-#line 1466 "parser.tab.c"
+#line 59 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-1].string), (yyvsp[0].string), "");}
+#line 1465 "parser.tab.c"
     break;
 
   case 23:
-#line 61 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));}
-#line 1472 "parser.tab.c"
+#line 60 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));}
+#line 1471 "parser.tab.c"
     break;
 
   case 24:
-#line 62 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-5].string), (yyvsp[-4].string), (yyvsp[-2].string));}
-#line 1478 "parser.tab.c"
+#line 61 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-5].string), (yyvsp[-4].string), (yyvsp[-2].string));}
+#line 1477 "parser.tab.c"
     break;
 
   case 25:
-#line 63 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-1].string), "", "");}
-#line 1484 "parser.tab.c"
+#line 62 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-1].string), "", "");}
+#line 1483 "parser.tab.c"
     break;
 
   case 26:
-#line 64 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[0].string), "");}
-#line 1490 "parser.tab.c"
+#line 63 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-3].string), (yyvsp[0].string), "");}
+#line 1489 "parser.tab.c"
     break;
 
   case 27:
-#line 65 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), "");}
-#line 1496 "parser.tab.c"
+#line 64 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-3].string), (yyvsp[-2].string), "");}
+#line 1495 "parser.tab.c"
     break;
 
   case 28:
-#line 66 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));}
-#line 1502 "parser.tab.c"
+#line 65 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));}
+#line 1501 "parser.tab.c"
     break;
 
   case 29:
-#line 67 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));}
-#line 1508 "parser.tab.c"
+#line 66 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-3].string), (yyvsp[-2].string), (yyvsp[0].string));}
+#line 1507 "parser.tab.c"
     break;
 
   case 30:
-#line 68 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-1].string), "", "");}
-#line 1514 "parser.tab.c"
+#line 67 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-1].string), "", "");}
+#line 1513 "parser.tab.c"
     break;
 
   case 31:
-#line 69 "misc/parser.y"
-                                                                {Assembler::instructionPass2((yyvsp[-1].string), "", "");}
-#line 1520 "parser.tab.c"
+#line 68 "misc/parser.y"
+                                                                {Assembler::instructionPass((yyvsp[-1].string), "", "");}
+#line 1519 "parser.tab.c"
     break;
 
   case 32:
-#line 71 "misc/parser.y"
+#line 70 "misc/parser.y"
     {Assembler::instructionName("ld ");}
-#line 1526 "parser.tab.c"
+#line 1525 "parser.tab.c"
     break;
 
   case 33:
-#line 73 "misc/parser.y"
+#line 72 "misc/parser.y"
     {Assembler::instructionName("st ");}
-#line 1532 "parser.tab.c"
+#line 1531 "parser.tab.c"
     break;
 
   case 34:
-#line 75 "misc/parser.y"
+#line 74 "misc/parser.y"
       {Assembler::instructionName(".word ");}
-#line 1538 "parser.tab.c"
+#line 1537 "parser.tab.c"
     break;
 
   case 35:
-#line 77 "misc/parser.y"
+#line 76 "misc/parser.y"
       {Assembler::instructionName(".skip ");}
-#line 1544 "parser.tab.c"
+#line 1543 "parser.tab.c"
     break;
 
   case 36:
-#line 79 "misc/parser.y"
-                    {Assembler::getOperand2((yyvsp[0].string), "opr_dec");}
-#line 1550 "parser.tab.c"
+#line 78 "misc/parser.y"
+                    {Assembler::getOperand((yyvsp[0].string), "opr_dec");}
+#line 1549 "parser.tab.c"
     break;
 
   case 37:
-#line 80 "misc/parser.y"
-                    {Assembler::getOperand2((yyvsp[0].string), "opr_hex");}
-#line 1556 "parser.tab.c"
+#line 79 "misc/parser.y"
+                    {Assembler::getOperand((yyvsp[0].string), "opr_hex");}
+#line 1555 "parser.tab.c"
     break;
 
   case 38:
-#line 81 "misc/parser.y"
-                    {Assembler::getOperand2((yyvsp[0].string), "opr_string");}
-#line 1562 "parser.tab.c"
+#line 80 "misc/parser.y"
+                    {Assembler::getOperand((yyvsp[0].string), "opr_string");}
+#line 1561 "parser.tab.c"
     break;
 
   case 39:
-#line 82 "misc/parser.y"
-                    {Assembler::getOperand2((yyvsp[0].string), "ident");}
-#line 1568 "parser.tab.c"
+#line 81 "misc/parser.y"
+                    {Assembler::getOperand((yyvsp[0].string), "ident");}
+#line 1567 "parser.tab.c"
     break;
 
   case 44:
-#line 90 "misc/parser.y"
-                        {Assembler::getParrensBody2((yyvsp[0].string), "gpr_reg");}
-#line 1574 "parser.tab.c"
+#line 89 "misc/parser.y"
+                        {Assembler::getParrensBody((yyvsp[0].string), "gpr_reg");}
+#line 1573 "parser.tab.c"
     break;
 
   case 45:
-#line 91 "misc/parser.y"
-                        {Assembler::getParrensBody2((yyvsp[0].string), "hex");}
-#line 1580 "parser.tab.c"
+#line 90 "misc/parser.y"
+                        {Assembler::getParrensBody((yyvsp[0].string), "hex");}
+#line 1579 "parser.tab.c"
     break;
 
   case 50:
-#line 99 "misc/parser.y"
-                {Assembler::getLiteral2((yyvsp[0].string), "dec");}
-#line 1586 "parser.tab.c"
+#line 98 "misc/parser.y"
+                {Assembler::getLiteral((yyvsp[0].string), "dec");}
+#line 1585 "parser.tab.c"
     break;
 
   case 51:
-#line 100 "misc/parser.y"
-                {Assembler::getLiteral2((yyvsp[0].string), "hex");}
-#line 1592 "parser.tab.c"
+#line 99 "misc/parser.y"
+                {Assembler::getLiteral((yyvsp[0].string), "hex");}
+#line 1591 "parser.tab.c"
     break;
 
   case 52:
-#line 101 "misc/parser.y"
-                {Assembler::getLiteral2((yyvsp[0].string), "ident");}
-#line 1598 "parser.tab.c"
+#line 100 "misc/parser.y"
+                {Assembler::getLiteral((yyvsp[0].string), "ident");}
+#line 1597 "parser.tab.c"
     break;
 
 
-#line 1602 "parser.tab.c"
+#line 1601 "parser.tab.c"
 
       default: break;
     }
@@ -1830,5 +1829,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 103 "misc/parser.y"
+#line 102 "misc/parser.y"
 

@@ -14,7 +14,6 @@ using namespace std;
 extern int yyparse();
 extern FILE *yyin, *yyout;
 
-bool Assembler::secondPass;
 map<string, vector<RealocationEntry>> Assembler::relocations;
 map<string, Symbol> Assembler::symbols;
 map<string, vector<PoolOfLiterals>> Assembler::pools;
@@ -26,7 +25,6 @@ vector<int> Assembler::poolSizes;
 
 string Assembler::fileOutput;
 string Assembler::currentSectionName;
-int Assembler::instructionNum;
 int Assembler::currentSectionSize;
 string Assembler::currentDirective;
 int Assembler::symSerialNum;
@@ -46,7 +44,6 @@ string Assembler::parrensHex;
 bool Assembler::inOprString;
 
 void Assembler::init(){
-  secondPass = false;
   relocations.clear();
   symbols.clear();
   pools.clear();
@@ -77,7 +74,7 @@ void Assembler::init(){
   inOprString = false;
 }
 
-void Assembler::passFile(string fileName, string fileOut, int passNum){
+void Assembler::passFile(string fileName, string fileOut){
 
   Assembler::init();
   fileOutput = fileOut;
@@ -180,7 +177,7 @@ void Assembler::labelStart(string name){
   }
 }
 
-void Assembler::startSection2(string name){
+void Assembler::startSection(string name){
 
   if(currentSectionName != ""){
     map<string, Section>::iterator itSec = sections.find(currentSectionName);
@@ -236,7 +233,7 @@ void Assembler::startSection2(string name){
   currentSectionSize = 0;
 }
 
-void Assembler::programEnd2(){
+void Assembler::programEnd(){
 
   map<string, Section>::iterator itSec = sections.find(currentSectionName);
   itSec->second.size = currentSectionSize;
@@ -331,7 +328,7 @@ void Assembler::programEnd2(){
   }
 }
 
-void Assembler::instructionPass2(string name, string op1, string op2){
+void Assembler::instructionPass(string name, string op1, string op2){
 
   auto sec = sections.find(currentSectionName);
 
@@ -732,7 +729,7 @@ void Assembler::instructionPass2(string name, string op1, string op2){
   inOprString = false;
 }
 
-void Assembler::getOperand2(string name, string type){
+void Assembler::getOperand(string name, string type){
 
   PoolOfLiterals p;
   
@@ -755,8 +752,7 @@ void Assembler::getOperand2(string name, string type){
       sec->second.hasPool = true;
       sec->second.poolSize += 4;
 
-      string a = to_string(p.symbolAddress - currentSectionSize - 4);
-      currentOperandOffset = getBits(a, 12);
+      currentOperandOffset = "ZAMENITIOVO!";
       hasPool2 = true;
 
       sectionSizes.push_back(currentSectionSize);
@@ -787,8 +783,7 @@ void Assembler::getOperand2(string name, string type){
       sec->second.hasPool = true;
       sec->second.poolSize += 4;
 
-      string a = to_string(p.symbolAddress - currentSectionSize - 4);
-      currentOperandOffset = getBits(a, 12);
+      currentOperandOffset = "ZAMENITIOVO!";
       hasPool2 = true;
       inOprString = true; 
 
@@ -810,8 +805,7 @@ void Assembler::getOperand2(string name, string type){
     sec->second.hasPool = true;
     sec->second.poolSize += 4;
 
-    string a = to_string(p.symbolAddress - currentSectionSize - 4);
-    currentOperandOffset = getBits(a, 12);
+    currentOperandOffset = "ZAMENITIOVO!";
     hasPool2 = true;
     inOprString = true;
 
@@ -829,8 +823,7 @@ void Assembler::getOperand2(string name, string type){
     sec->second.hasPool = true;
     sec->second.poolSize += 4;
 
-    string a = to_string(p.symbolAddress - currentSectionSize - 4);
-    currentOperandOffset = getBits(a, 12);
+    currentOperandOffset = "ZAMENITIOVO!";
     hasPool2 = true;
     
     sectionSizes.push_back(currentSectionSize);
@@ -839,7 +832,7 @@ void Assembler::getOperand2(string name, string type){
 
 }
 
-void Assembler::getLiteral2(string name, string type){
+void Assembler::getLiteral(string name, string type){
 
   PoolOfLiterals p;
 
@@ -872,8 +865,7 @@ void Assembler::getLiteral2(string name, string type){
       sec->second.hasPool = true;
       sec->second.poolSize += 4;
 
-      string a = to_string(p.symbolAddress - currentSectionSize - 4);
-      currentOperandOffset = getBits(a, 12);                             
+      currentOperandOffset = "ZAMENITIOVO!";                            
       hasPool2 = true;
       
       sectionSizes.push_back(currentSectionSize);
@@ -915,8 +907,7 @@ void Assembler::getLiteral2(string name, string type){
       sec->second.hasPool = true;
       sec->second.poolSize += 4;
 
-      string a = to_string(p.symbolAddress - currentSectionSize - 4);
-      currentOperandOffset = getBits(a, 12);                             
+      currentOperandOffset = "ZAMENITIOVO!";                           
       hasPool2 = true;
       
       sectionSizes.push_back(currentSectionSize);
@@ -934,8 +925,7 @@ void Assembler::getLiteral2(string name, string type){
     sec->second.hasPool = true;
     sec->second.poolSize += 4;
 
-    string a = to_string(p.symbolAddress - currentSectionSize - 4);
-    currentOperandOffset = getBits(a, 12);                             
+    currentOperandOffset = "ZAMENITIOVO!";                            
     hasPool2 = true;
    
     sectionSizes.push_back(currentSectionSize);
@@ -943,7 +933,7 @@ void Assembler::getLiteral2(string name, string type){
   }
 }
 
-void Assembler::getParrensBody2(string name, string type){
+void Assembler::getParrensBody(string name, string type){
 
   PoolOfLiterals p;
   
@@ -1229,7 +1219,7 @@ int main(int argc, char* argv[]){
     exit(1);
   }
 
-  Assembler::passFile(srcFolder + argv[3], argv[2], 2);
+  Assembler::passFile(srcFolder + argv[3], argv[2]);
 
   printf("Prosao ceo asembler bez greske :)\n");
 
