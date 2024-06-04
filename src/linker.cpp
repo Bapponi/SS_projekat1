@@ -406,6 +406,20 @@ void Linker::changeCodeRelocations(){
 void Linker::makeOutputFile(string fileName){
 
   ofstream file(fileName, ios::out | ios::binary);
+  for (const auto& entry : sections) {
+    string secName = entry.first;
+    const Section& sec = entry.second;
+
+    for (size_t i = 0; i < sec.offsets.size(); i++) {
+      string hexAddress = decimalToHex(sec.offsets.at(i));
+      file << setw(8) << setfill('0') << uppercase << hex << sec.offsets.at(i) << "," 
+           << sec.data.at(i) << "," 
+           << dec << (sec.data.at(i).length() / 8) << "," 
+           << hexAddress << '\n';
+    }
+  }
+
+  file << "===\n";
   file.close();
   makeTextFile(fileName);
 

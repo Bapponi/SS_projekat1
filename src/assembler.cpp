@@ -1123,7 +1123,74 @@ void Assembler::displayRelocationTable(const map<string, vector<RealocationEntry
 }
 
 void Assembler::makeOutputFile(){
+
   ofstream file(fileOutput, ios::out | ios::binary);
+
+  for (const auto& entry : relocations) {
+    size_t relocationSize = entry.second.size();
+    file.write(reinterpret_cast<const char*>(&relocationSize), sizeof(relocationSize));
+    
+    for (const auto& realocation : entry.second) {
+      size_t nameLength = entry.first.size();
+      file.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+      file.write(entry.first.c_str(), nameLength);
+      file.write(reinterpret_cast<const char*>(&realocation.offset), sizeof(realocation.offset));
+      size_t symbolLength = realocation.symbol.size();
+      file.write(reinterpret_cast<const char*>(&symbolLength), sizeof(symbolLength));
+      file.write(realocation.symbol.c_str(), symbolLength);
+      file.write(reinterpret_cast<const char*>(&realocation.addent), sizeof(realocation.addent));
+    }
+  }
+  
+  file.write("===\n", 4);
+  
+  for (const auto& entry : sections) {
+    const Section& section = entry.second;
+    
+    size_t nameLength = section.name.size();
+    file.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+    file.write(section.name.c_str(), nameLength);
+    file.write(reinterpret_cast<const char*>(&section.size), sizeof(section.size));
+    file.write(reinterpret_cast<const char*>(&section.serialNum), sizeof(section.serialNum));
+    file.write(reinterpret_cast<const char*>(&section.hasPool), sizeof(section.hasPool));
+    file.write(reinterpret_cast<const char*>(&section.poolSize), sizeof(section.poolSize));
+    
+    size_t offsetsSize = section.offsets.size();
+    file.write(reinterpret_cast<const char*>(&offsetsSize), sizeof(offsetsSize));
+    for (long long offset : section.offsets) {
+      file.write(reinterpret_cast<const char*>(&offset), sizeof(offset));
+    }
+    
+    size_t dataSize = section.data.size();
+    file.write(reinterpret_cast<const char*>(&dataSize), sizeof(dataSize));
+    for (const std::string& data : section.data) {
+      size_t dataLength = data.size();
+      file.write(reinterpret_cast<const char*>(&dataLength), sizeof(dataLength));
+      file.write(data.c_str(), dataLength);
+    }
+  }
+  
+  file.write("===\n", 4);
+  
+  size_t symbolsSize = symbols.size();
+  file.write(reinterpret_cast<const char*>(&symbolsSize), sizeof(symbolsSize));
+  for (const auto& entry : symbols) {
+    const Symbol& symbol = entry.second;
+    
+    size_t nameLength = symbol.name.size();
+    file.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+    file.write(symbol.name.c_str(), nameLength);
+    file.write(reinterpret_cast<const char*>(&symbol.serialNum), sizeof(symbol.serialNum));
+    file.write(reinterpret_cast<const char*>(&symbol.value), sizeof(symbol.value));
+    file.write(reinterpret_cast<const char*>(&symbol.isLocal), sizeof(symbol.isLocal));
+    
+    size_t sectionLength = symbol.section.size();
+    file.write(reinterpret_cast<const char*>(&sectionLength), sizeof(sectionLength));
+    file.write(symbol.section.c_str(), sectionLength);
+    file.write(reinterpret_cast<const char*>(&symbol.isSection), sizeof(symbol.isSection));
+    file.write(reinterpret_cast<const char*>(&symbol.offset), sizeof(symbol.offset));
+  }
+
   file.close();
   createTextFile();
 }
@@ -1191,7 +1258,7 @@ int main(int argc, char* argv[]){
   }
   
   if(strcmp(argv[1], "-o")){
-    cout << "INPUT ERROR: lose formatirana funkcija!!!";
+    cout << "INPUT ERROR: Lose formatirana funkcija!!!";
     exit(1);
   }
   size_t lengthOutput = strlen(argv[2]);

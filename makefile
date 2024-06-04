@@ -40,6 +40,8 @@ a5:
 a6:
 	./assembler -o isr_timer.o isr_timer.s
 
+asembler1: a1 a2 a3 a4 a5 a6
+
 linker1:
 	./linker -o program.hex -hex handler.o math.o main.o isr_terminal.o isr_timer.o isr_software.o -place=my_code@0x40000000 -place=math@0xF0000000
 

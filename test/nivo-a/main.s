@@ -7,12 +7,12 @@
 .global value1, value2, value3, value4, value5, value6, value7
 
 .section my_code
-my_start:              
+my_start:
     ld $0xFFFFFEFE, %sp
     ld $handler, %r1
     csrwr %r1, %handler
 
-    int # software interrupta
+    int # software interrupt
 
     ld $1, %r1
     push %r1
@@ -49,7 +49,6 @@ my_start:
     call mathDiv
     st %r1, value6
 
-    # ove stvari ne valjaju
     ld value1, %r1
     ld value2, %r2
     ld value3, %r3
@@ -57,8 +56,6 @@ my_start:
     ld value5, %r5
     ld value6, %r6
     ld value7, %r7
-
-    # .skip 19
 
     halt
 
